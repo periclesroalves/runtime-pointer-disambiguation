@@ -1,2 +1,7 @@
 - LLVM, Clang, and Polly taken from LLVM SVN trunk on:
   r217065 | dblaikie | 2014-09-03 16:48:09 -0300 (Wed, 03 Sep 2014)
+
+- Configure w/ assert, wo/ optmize:
+  Dist files are stored under build/Debug+Asserts
+  NOTE: other build can be put under this same build directory.
+/Users/periclesalves/ufmg-research/llvm/configure --prefix=/Users/periclesalves/ufmg-research/dist/ --enable-libcpp=yes
