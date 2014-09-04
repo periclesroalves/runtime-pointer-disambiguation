@@ -1,0 +1,2 @@
+- LLVM, Clang, and Polly taken from LLVM SVN trunk on:
+  r217065 | dblaikie | 2014-09-03 16:48:09 -0300 (Wed, 03 Sep 2014)

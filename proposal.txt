@@ -1,0 +1,44 @@
+- Goal: improve LLVM Polly optimizations by providing better alias info for arrays inside loops.
+    . Statically instrument a loop to verify that, at runtime, some alias constraints regarding arrays hold through all iterations.
+
+Tasks:
+------
+  - Read draft CGO submission (section 3).
+  - Understand LLVM Polly:
+    . Which information (constraints) may be useful for improvement.
+    . Define exactly which constraints will be verified.
+    . How to feed it information.
+  - Understand the LLVM compiler infrastructure and how to use it.
+  - Understand SPM code.
+  - Use SPM code to analyse and instrument the program with the constraint tests.
+  - Experiment.
+
+Induction variable analysis (SPM code):
+----------------------------
+  - From the outermost to the innermost loop.
+  - Each loop must be of the form: "for (i = I0; i op IN; i = i + S)" (for simplicity purposes). We call it a numeric loop.
+  - "op" must be <, <=, >, or >=.
+  - We call "i" the loop induction variable.
+  - "IN" depend only on values not assigned within the loop and/or induction variables of outer loops that also follow the conditions defined here.
+  - "i" is assigned only once, incremented or decremented by a value S which is not assigned with the loop.
+  - "i"'s assignment must happen either before or after all indexing operations within the loop body.
+  - For each loop, induction variable information and the symbolic expression for its range is stored.
+
+Indexing range analysis (Henrique's code):
+------------------------------------------
+  - From the innermost to the outermost loop.
+  - Build symbolic expressions for the ranges of all indexing operations on the loop body.
+  - Include all symbolic expressions already computed for inner loops (they need to be evaluated again).
+  - All expressions must depend on induction variables or values that are not assigned within the loop.
+  - If these conditions hold, the loop can be instrumented.
+
+Instrumentation:
+----------------
+  - Instrumentation is inserted in the loop pre-header or the pre-header of the outermost possible loop, given value availability restrictions.
+  - Insert range computation for all indexing expressions (which will now include the base pointer), to be filled with runtime values.
+  - After calculating ranges, check alias constraints and mark the loop as "clean" or not.
+
+
+- Dealing with function calls:
+    . For global arrays, nothing can be said in the presence of function calls (may have alias on the called function).
+    . For arrays local to the function, function calls only matter if array addresses are passed as parameters.
