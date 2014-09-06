@@ -3,7 +3,7 @@
 *.DS_Store
 
 #Project files
-[Bb]uild/
+build/
 
 #Subversion files
 .svn
@@ -14,6 +14,7 @@
 # PDFs
 dragon-book.pdf
 lecture-ipl-dcc888.pdf
+grosser-polly-thesis.pdf
 
 # CLooG lib
 cloog_install/
