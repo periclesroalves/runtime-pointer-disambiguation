@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/215563/polly/trunk/www/documentation
+END
+passes.html
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/215563/polly/trunk/www/documentation/passes.html
+END
+memaccess.html
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/197760/polly/trunk/www/documentation/memaccess.html
+END
+architecture.html
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/197794/polly/trunk/www/documentation/architecture.html
+END
+gpgpucodegen.html
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/197738/polly/trunk/www/documentation/gpgpucodegen.html
+END

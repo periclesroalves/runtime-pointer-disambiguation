@@ -1,0 +1,143 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Dependences
+END
+reduction_complex_location.ll
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/llvm-project/!svn/ver/211957/polly/trunk/test/Dependences/reduction_complex_location.ll
+END
+reduction_privatization_deps_2.ll
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/llvm-project/!svn/ver/211369/polly/trunk/test/Dependences/reduction_privatization_deps_2.ll
+END
+reduction_privatization_deps_3.ll
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/llvm-project/!svn/ver/211369/polly/trunk/test/Dependences/reduction_privatization_deps_3.ll
+END
+reduction_privatization_deps_4.ll
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/llvm-project/!svn/ver/211369/polly/trunk/test/Dependences/reduction_privatization_deps_4.ll
+END
+reduction_partially_escaping_intermediate_in_other_stmt.ll
+K 25
+svn:wc:ra_dav:version-url
+V 121
+/svn/llvm-project/!svn/ver/211957/polly/trunk/test/Dependences/reduction_partially_escaping_intermediate_in_other_stmt.ll
+END
+reduction_privatization_deps_5.ll
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/llvm-project/!svn/ver/211369/polly/trunk/test/Dependences/reduction_privatization_deps_5.ll
+END
+reduction_simple_privatization_deps_2.ll
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/llvm-project/!svn/ver/211369/polly/trunk/test/Dependences/reduction_simple_privatization_deps_2.ll
+END
+reduction_multiple_loops_array_sum_2.ll
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/llvm-project/!svn/ver/211957/polly/trunk/test/Dependences/reduction_multiple_loops_array_sum_2.ll
+END
+sequential_loops.ll
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/203476/polly/trunk/test/Dependences/sequential_loops.ll
+END
+reduction_multiple_reductions_2.ll
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/llvm-project/!svn/ver/211369/polly/trunk/test/Dependences/reduction_multiple_reductions_2.ll
+END
+reduction_multiple_loops_array_sum_3.ll
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/llvm-project/!svn/ver/211957/polly/trunk/test/Dependences/reduction_multiple_loops_array_sum_3.ll
+END
+do_pluto_matmult.ll
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/205799/polly/trunk/test/Dependences/do_pluto_matmult.ll
+END
+reduction_simple_iv_debug_wrapped_dependences.ll
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/llvm-project/!svn/ver/211795/polly/trunk/test/Dependences/reduction_simple_iv_debug_wrapped_dependences.ll
+END
+reduction_simple_privatization_deps_w_parameter.ll
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/llvm-project/!svn/ver/211369/polly/trunk/test/Dependences/reduction_simple_privatization_deps_w_parameter.ll
+END
+reduction_privatization_deps.ll
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/llvm-project/!svn/ver/211795/polly/trunk/test/Dependences/reduction_privatization_deps.ll
+END
+reduction_only_reduction_like_access.ll
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/llvm-project/!svn/ver/211369/polly/trunk/test/Dependences/reduction_only_reduction_like_access.ll
+END
+reduction_dependences_equal_non_reduction_dependences.ll
+K 25
+svn:wc:ra_dav:version-url
+V 119
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Dependences/reduction_dependences_equal_non_reduction_dependences.ll
+END
+reduction_mixed_reduction_and_non_reduction_dependences.ll
+K 25
+svn:wc:ra_dav:version-url
+V 121
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Dependences/reduction_mixed_reduction_and_non_reduction_dependences.ll
+END
+reduction_simple_iv.ll
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/llvm-project/!svn/ver/211794/polly/trunk/test/Dependences/reduction_simple_iv.ll
+END
+computeout.ll
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/200156/polly/trunk/test/Dependences/computeout.ll
+END
+reduction_multiple_loops_array_sum.ll
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/llvm-project/!svn/ver/211957/polly/trunk/test/Dependences/reduction_multiple_loops_array_sum.ll
+END
+reduction_multiple_reductions.ll
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/llvm-project/!svn/ver/211795/polly/trunk/test/Dependences/reduction_multiple_reductions.ll
+END
+reduction_two_reductions_different_rloops.ll
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/llvm-project/!svn/ver/211957/polly/trunk/test/Dependences/reduction_two_reductions_different_rloops.ll
+END

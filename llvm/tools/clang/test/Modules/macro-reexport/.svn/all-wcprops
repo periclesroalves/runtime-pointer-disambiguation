@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/213922/cfe/trunk/test/Modules/macro-reexport
+END
+a1.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/213498/cfe/trunk/test/Modules/macro-reexport/a1.h
+END
+module.modulemap
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/llvm-project/!svn/ver/213922/cfe/trunk/test/Modules/macro-reexport/module.modulemap
+END
+a2.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/213498/cfe/trunk/test/Modules/macro-reexport/a2.h
+END
+b1.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/213498/cfe/trunk/test/Modules/macro-reexport/b1.h
+END
+macro-reexport.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/llvm-project/!svn/ver/213922/cfe/trunk/test/Modules/macro-reexport/macro-reexport.cpp
+END
+b2.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/213498/cfe/trunk/test/Modules/macro-reexport/b2.h
+END
+c1.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/213922/cfe/trunk/test/Modules/macro-reexport/c1.h
+END
+d1.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/213922/cfe/trunk/test/Modules/macro-reexport/d1.h
+END
+d2.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/213498/cfe/trunk/test/Modules/macro-reexport/d2.h
+END
+e1.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/213922/cfe/trunk/test/Modules/macro-reexport/e1.h
+END
+e2.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/213922/cfe/trunk/test/Modules/macro-reexport/e2.h
+END
+f1.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/213922/cfe/trunk/test/Modules/macro-reexport/f1.h
+END

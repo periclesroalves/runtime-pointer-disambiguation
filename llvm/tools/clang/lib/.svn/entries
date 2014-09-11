@@ -1,0 +1,156 @@
+10
+
+dir
+217066
+http://llvm.org/svn/llvm-project/cfe/trunk/lib
+http://llvm.org/svn/llvm-project
+
+
+
+2014-09-03T18:45:45.760380Z
+217059
+samsonov
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+91177308-0d34-0410-b5e6-96231b3b80d8
+
+Frontend
+dir
+
+Basic
+dir
+
+Rewrite
+dir
+
+Analysis
+dir
+
+Sema
+dir
+
+Edit
+dir
+
+AST
+dir
+
+Lex
+dir
+
+Format
+dir
+
+Driver
+dir
+
+StaticAnalyzer
+dir
+
+CodeGen
+dir
+
+Index
+dir
+
+Parse
+dir
+
+Headers
+dir
+
+Tooling
+dir
+
+FrontendTool
+dir
+
+Serialization
+dir
+
+CMakeLists.txt
+file
+
+
+
+
+2014-09-03T20:03:29.000000Z
+7ae55988a6611221029277d42c65a44a
+2014-07-14T22:17:22.312784Z
+212996
+alp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+601
+
+Makefile
+file
+
+
+
+
+2014-09-03T20:03:29.000000Z
+ca4ca5cb5476d34f92f8b18bd5da5403
+2014-07-16T16:48:33.434442Z
+213171
+alp
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+836
+
+ASTMatchers
+dir
+
+ARCMigrate
+dir
+

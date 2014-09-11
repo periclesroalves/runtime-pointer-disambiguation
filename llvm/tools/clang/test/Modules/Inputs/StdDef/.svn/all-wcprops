@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/177686/cfe/trunk/test/Modules/Inputs/StdDef
+END
+module.map
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/177686/cfe/trunk/test/Modules/Inputs/StdDef/module.map
+END
+size_t.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/177686/cfe/trunk/test/Modules/Inputs/StdDef/size_t.h
+END
+other.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/177686/cfe/trunk/test/Modules/Inputs/StdDef/other.h
+END

@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/llvm-project/!svn/ver/216844/polly/trunk
+END
+LICENSE.txt
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/llvm-project/!svn/ver/198274/polly/trunk/LICENSE.txt
+END
+configure
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/llvm-project/!svn/ver/215563/polly/trunk/configure
+END
+Makefile.config.in
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/215563/polly/trunk/Makefile.config.in
+END
+.gitattributes
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/llvm-project/!svn/ver/187326/polly/trunk/.gitattributes
+END
+.arcconfig
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/llvm-project/!svn/ver/215871/polly/trunk/.arcconfig
+END
+Makefile.common.in
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/171224/polly/trunk/Makefile.common.in
+END
+.arclint
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/llvm-project/!svn/ver/215871/polly/trunk/.arclint
+END
+CREDITS.txt
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/llvm-project/!svn/ver/215307/polly/trunk/CREDITS.txt
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/llvm-project/!svn/ver/215871/polly/trunk/CMakeLists.txt
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/llvm-project/!svn/ver/154486/polly/trunk/Makefile
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/llvm-project/!svn/ver/165481/polly/trunk/README
+END

@@ -1,0 +1,455 @@
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/llvm-project/!svn/ver/215946/cfe/trunk/test/Misc
+END
+backend-optimization-failure.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/llvm-project/!svn/ver/213441/cfe/trunk/test/Misc/backend-optimization-failure.cpp
+END
+diag-aka-types.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/159369/cfe/trunk/test/Misc/diag-aka-types.cpp
+END
+emit-html-insert.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Misc/emit-html-insert.c
+END
+caret-diags-macros.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/172762/cfe/trunk/test/Misc/caret-diags-macros.c
+END
+diag-trailing-null-bytes.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/diag-trailing-null-bytes.cpp
+END
+show-diag-options.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/show-diag-options.c
+END
+dev-fd-fs.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/188182/cfe/trunk/test/Misc/dev-fd-fs.c
+END
+ast-dump-stmt.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/174022/cfe/trunk/test/Misc/ast-dump-stmt.c
+END
+ast-dump-arm-attr.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/197343/cfe/trunk/test/Misc/ast-dump-arm-attr.c
+END
+diag-mapping2.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/210510/cfe/trunk/test/Misc/diag-mapping2.c
+END
+serialized-diags.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/169437/cfe/trunk/test/Misc/serialized-diags.c
+END
+remap-file.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/91446/cfe/trunk/test/Misc/remap-file.c
+END
+unprintable.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/unprintable.c
+END
+serialized-diags.h
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/146820/cfe/trunk/test/Misc/serialized-diags.h
+END
+diag-presumed.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/diag-presumed.c
+END
+ast-dump-decl.mm
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/170634/cfe/trunk/test/Misc/ast-dump-decl.mm
+END
+ast-dump-templates.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/213718/cfe/trunk/test/Misc/ast-dump-templates.cpp
+END
+warning-flags-enabled.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/165653/cfe/trunk/test/Misc/warning-flags-enabled.c
+END
+backend-stack-frame-diagnostics.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/llvm-project/!svn/ver/212670/cfe/trunk/test/Misc/backend-stack-frame-diagnostics.cpp
+END
+serialized-diags-stable.c
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/202747/cfe/trunk/test/Misc/serialized-diags-stable.c
+END
+ast-dump-stmt.m
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/170634/cfe/trunk/test/Misc/ast-dump-stmt.m
+END
+serialized-diags.m
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/175986/cfe/trunk/test/Misc/serialized-diags.m
+END
+ast-dump-comment.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/204236/cfe/trunk/test/Misc/ast-dump-comment.cpp
+END
+warning-flags-tree.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/190972/cfe/trunk/test/Misc/warning-flags-tree.c
+END
+diag-mapping.c
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/diag-mapping.c
+END
+serialized-diags-frontend.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/169437/cfe/trunk/test/Misc/serialized-diags-frontend.c
+END
+unnecessary-elipses.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/167364/cfe/trunk/test/Misc/unnecessary-elipses.cpp
+END
+diag-template-diffing-cxx98.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/diag-template-diffing-cxx98.cpp
+END
+attr-source-range.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/215444/cfe/trunk/test/Misc/attr-source-range.cpp
+END
+wrong-encoding2.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/167360/cfe/trunk/test/Misc/wrong-encoding2.c
+END
+message-length.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/154980/cfe/trunk/test/Misc/message-length.c
+END
+verify.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/llvm-project/!svn/ver/197299/cfe/trunk/test/Misc/verify.c
+END
+serialized-diags-no-category.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/169437/cfe/trunk/test/Misc/serialized-diags-no-category.c
+END
+permissions.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/193507/cfe/trunk/test/Misc/permissions.cpp
+END
+tabstop.c
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/188174/cfe/trunk/test/Misc/tabstop.c
+END
+caret-diags-scratch-buffer.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/caret-diags-scratch-buffer.c
+END
+ast-dump-stmt.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/189941/cfe/trunk/test/Misc/ast-dump-stmt.cpp
+END
+serialized-diags-no-issue.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/144349/cfe/trunk/test/Misc/serialized-diags-no-issue.c
+END
+diagnostic-crash.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/176912/cfe/trunk/test/Misc/diagnostic-crash.cpp
+END
+working-directory.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/118203/cfe/trunk/test/Misc/working-directory.c
+END
+predefines.c
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/166280/cfe/trunk/test/Misc/predefines.c
+END
+error-limit-multiple-notes.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/207796/cfe/trunk/test/Misc/error-limit-multiple-notes.cpp
+END
+diag-format.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/213119/cfe/trunk/test/Misc/diag-format.c
+END
+ast-dump-decl.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/205396/cfe/trunk/test/Misc/ast-dump-decl.c
+END
+ast-dump-attr.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/209965/cfe/trunk/test/Misc/ast-dump-attr.cpp
+END
+error-limit.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/error-limit.c
+END
+ast-dump-color.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/212774/cfe/trunk/test/Misc/ast-dump-color.cpp
+END
+languageOptsOpenCL.cl
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/198417/cfe/trunk/test/Misc/languageOptsOpenCL.cl
+END
+diag-verify.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/diag-verify.cpp
+END
+ast-print-pragmas.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/210925/cfe/trunk/test/Misc/ast-print-pragmas.cpp
+END
+ast-dump-decl.m
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/200953/cfe/trunk/test/Misc/ast-dump-decl.m
+END
+ast-print-pragmas-xfail.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/210925/cfe/trunk/test/Misc/ast-print-pragmas-xfail.cpp
+END
+macro-backtrace.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/142836/cfe/trunk/test/Misc/macro-backtrace.c
+END
+diag-macro-backtrace.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/diag-macro-backtrace.c
+END
+wrong-encoding.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/167089/cfe/trunk/test/Misc/wrong-encoding.c
+END
+warn-in-system-header.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/179677/cfe/trunk/test/Misc/warn-in-system-header.c
+END
+backend-stack-frame-diagnostics-fallback.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/llvm-project/!svn/ver/210293/cfe/trunk/test/Misc/backend-stack-frame-diagnostics-fallback.cpp
+END
+ast-dump-msp430-attr.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/197343/cfe/trunk/test/Misc/ast-dump-msp430-attr.c
+END
+warn-in-system-header.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/129951/cfe/trunk/test/Misc/warn-in-system-header.h
+END
+diag-template-diffing-color.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/diag-template-diffing-color.cpp
+END
+driver-verify.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/199456/cfe/trunk/test/Misc/driver-verify.c
+END
+warning-flags.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/215946/cfe/trunk/test/Misc/warning-flags.c
+END
+ast-dump-decl.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/211344/cfe/trunk/test/Misc/ast-dump-decl.cpp
+END
+emit-html.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Misc/emit-html.c
+END
+interpreter.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/207950/cfe/trunk/test/Misc/interpreter.c
+END
+diag-line-wrapping.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/diag-line-wrapping.cpp
+END
+integer-literal-printing.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/174766/cfe/trunk/test/Misc/integer-literal-printing.cpp
+END
+diag-template-diffing.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/214008/cfe/trunk/test/Misc/diag-template-diffing.cpp
+END
+freebsd-arm-size_t.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/170096/cfe/trunk/test/Misc/freebsd-arm-size_t.c
+END
+include-stack-for-note-flag.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Misc/include-stack-for-note-flag.cpp
+END
+ast-dump-lookups.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/215393/cfe/trunk/test/Misc/ast-dump-lookups.cpp
+END
+serialized-diags-single-issue.c
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/llvm-project/!svn/ver/154567/cfe/trunk/test/Misc/serialized-diags-single-issue.c
+END
+win32-macho.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/210699/cfe/trunk/test/Misc/win32-macho.c
+END
+ast-dump-wchar.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/174022/cfe/trunk/test/Misc/ast-dump-wchar.cpp
+END
+warn-sysheader.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/207936/cfe/trunk/test/Misc/warn-sysheader.cpp
+END

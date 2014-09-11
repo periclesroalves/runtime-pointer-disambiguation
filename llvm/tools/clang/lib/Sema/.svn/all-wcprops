@@ -1,0 +1,305 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/llvm-project/!svn/ver/217059/cfe/trunk/lib/Sema
+END
+TreeTransform.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/216936/cfe/trunk/lib/Sema/TreeTransform.h
+END
+SemaDeclCXX.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/217043/cfe/trunk/lib/Sema/SemaDeclCXX.cpp
+END
+SemaCast.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/212551/cfe/trunk/lib/Sema/SemaCast.cpp
+END
+SemaOpenMP.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/213925/cfe/trunk/lib/Sema/SemaOpenMP.cpp
+END
+SemaExprCXX.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/216528/cfe/trunk/lib/Sema/SemaExprCXX.cpp
+END
+SemaDeclAttr.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/216976/cfe/trunk/lib/Sema/SemaDeclAttr.cpp
+END
+Scope.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/llvm-project/!svn/ver/213971/cfe/trunk/lib/Sema/Scope.cpp
+END
+SemaInit.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/216313/cfe/trunk/lib/Sema/SemaInit.cpp
+END
+SemaCodeComplete.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/212442/cfe/trunk/lib/Sema/SemaCodeComplete.cpp
+END
+SemaDeclObjC.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/216271/cfe/trunk/lib/Sema/SemaDeclObjC.cpp
+END
+SemaTemplateInstantiateDecl.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/217059/cfe/trunk/lib/Sema/SemaTemplateInstantiateDecl.cpp
+END
+MultiplexExternalSemaSource.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/209613/cfe/trunk/lib/Sema/MultiplexExternalSemaSource.cpp
+END
+SemaDecl.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/216696/cfe/trunk/lib/Sema/SemaDecl.cpp
+END
+SemaTemplateDeduction.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/215982/cfe/trunk/lib/Sema/SemaTemplateDeduction.cpp
+END
+SemaOverload.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/216710/cfe/trunk/lib/Sema/SemaOverload.cpp
+END
+SemaTemplate.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/216311/cfe/trunk/lib/Sema/SemaTemplate.cpp
+END
+DeclSpec.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/216342/cfe/trunk/lib/Sema/DeclSpec.cpp
+END
+SemaLambda.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/216649/cfe/trunk/lib/Sema/SemaLambda.cpp
+END
+TypeLocBuilder.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/209613/cfe/trunk/lib/Sema/TypeLocBuilder.cpp
+END
+SemaType.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/216558/cfe/trunk/lib/Sema/SemaType.cpp
+END
+SemaStmtAttr.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/214432/cfe/trunk/lib/Sema/SemaStmtAttr.cpp
+END
+SemaObjCProperty.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/216769/cfe/trunk/lib/Sema/SemaObjCProperty.cpp
+END
+SemaPseudoObject.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/216825/cfe/trunk/lib/Sema/SemaPseudoObject.cpp
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/llvm-project/!svn/ver/108633/cfe/trunk/lib/Sema/Makefile
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/217043/cfe/trunk/lib/Sema/CMakeLists.txt
+END
+SemaStmt.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/215982/cfe/trunk/lib/Sema/SemaStmt.cpp
+END
+SemaStmtAsm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/216260/cfe/trunk/lib/Sema/SemaStmtAsm.cpp
+END
+AttributeList.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/214407/cfe/trunk/lib/Sema/AttributeList.cpp
+END
+SemaConsumer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/146959/cfe/trunk/lib/Sema/SemaConsumer.cpp
+END
+JumpDiagnostics.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/213443/cfe/trunk/lib/Sema/JumpDiagnostics.cpp
+END
+IdentifierResolver.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/216628/cfe/trunk/lib/Sema/IdentifierResolver.cpp
+END
+SemaAccess.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/209728/cfe/trunk/lib/Sema/SemaAccess.cpp
+END
+SemaFixItUtils.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/191057/cfe/trunk/lib/Sema/SemaFixItUtils.cpp
+END
+SemaExprMember.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/211005/cfe/trunk/lib/Sema/SemaExprMember.cpp
+END
+DelayedDiagnostic.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/211039/cfe/trunk/lib/Sema/DelayedDiagnostic.cpp
+END
+SemaCXXScopeSpec.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/215683/cfe/trunk/lib/Sema/SemaCXXScopeSpec.cpp
+END
+SemaLookup.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/216824/cfe/trunk/lib/Sema/SemaLookup.cpp
+END
+CodeCompleteConsumer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/209613/cfe/trunk/lib/Sema/CodeCompleteConsumer.cpp
+END
+SemaExceptionSpec.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/214458/cfe/trunk/lib/Sema/SemaExceptionSpec.cpp
+END
+SemaAttr.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/216825/cfe/trunk/lib/Sema/SemaAttr.cpp
+END
+SemaChecking.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/216824/cfe/trunk/lib/Sema/SemaChecking.cpp
+END
+SemaCUDA.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/217043/cfe/trunk/lib/Sema/SemaCUDA.cpp
+END
+SemaExprObjC.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/216824/cfe/trunk/lib/Sema/SemaExprObjC.cpp
+END
+SemaExpr.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/217043/cfe/trunk/lib/Sema/SemaExpr.cpp
+END
+SemaTemplateVariadic.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/216778/cfe/trunk/lib/Sema/SemaTemplateVariadic.cpp
+END
+ScopeInfo.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/216649/cfe/trunk/lib/Sema/ScopeInfo.cpp
+END
+SemaTemplateInstantiate.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/214059/cfe/trunk/lib/Sema/SemaTemplateInstantiate.cpp
+END
+Sema.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/llvm-project/!svn/ver/215232/cfe/trunk/lib/Sema/Sema.cpp
+END
+AnalysisBasedWarnings.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/215706/cfe/trunk/lib/Sema/AnalysisBasedWarnings.cpp
+END
+TypeLocBuilder.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/215557/cfe/trunk/lib/Sema/TypeLocBuilder.h
+END

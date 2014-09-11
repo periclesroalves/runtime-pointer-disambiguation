@@ -1,0 +1,40 @@
+10
+
+dir
+217066
+http://llvm.org/svn/llvm-project/cfe/trunk/test/CXX/dcl.dcl/basic.namespace
+http://llvm.org/svn/llvm-project
+
+
+
+2014-04-02T21:44:35.800694Z
+205467
+rsmith
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+91177308-0d34-0410-b5e6-96231b3b80d8
+
+namespace.alias
+dir
+
+namespace.udecl
+dir
+
+namespace.def
+dir
+
+namespace.udir
+dir
+

@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/130689/polly/trunk/www/images/performance
+END
+sequential-small.png
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/llvm-project/!svn/ver/130689/polly/trunk/www/images/performance/sequential-small.png
+END
+parallel-small.png
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/llvm-project/!svn/ver/130689/polly/trunk/www/images/performance/parallel-small.png
+END
+sequential-large.png
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/llvm-project/!svn/ver/130689/polly/trunk/www/images/performance/sequential-large.png
+END
+parallel-large.png
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/llvm-project/!svn/ver/130689/polly/trunk/www/images/performance/parallel-large.png
+END

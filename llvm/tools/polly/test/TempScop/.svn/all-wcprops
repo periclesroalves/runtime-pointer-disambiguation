@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/llvm-project/!svn/ver/187342/polly/trunk/test/TempScop
+END
+intra_bb_scalar_dep.ll
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/186419/polly/trunk/test/TempScop/intra_bb_scalar_dep.ll
+END
+intra_and_inter_bb_scalar_dep.ll
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/llvm-project/!svn/ver/186419/polly/trunk/test/TempScop/intra_and_inter_bb_scalar_dep.ll
+END
+inter_bb_scalar_dep.ll
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/186419/polly/trunk/test/TempScop/inter_bb_scalar_dep.ll
+END
+tempscop-printing.ll
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/186419/polly/trunk/test/TempScop/tempscop-printing.ll
+END
+scalar_to_array.ll
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/186419/polly/trunk/test/TempScop/scalar_to_array.ll
+END
+not-a-reduction.ll
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/187342/polly/trunk/test/TempScop/not-a-reduction.ll
+END

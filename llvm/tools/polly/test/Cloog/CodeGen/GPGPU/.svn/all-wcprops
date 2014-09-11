@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/214633/polly/trunk/test/Cloog/CodeGen/GPGPU
+END
+lit.local.cfg
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/206901/polly/trunk/test/Cloog/CodeGen/GPGPU/lit.local.cfg
+END
+3d_innermost_non_parallel.ll
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/llvm-project/!svn/ver/214633/polly/trunk/test/Cloog/CodeGen/GPGPU/3d_innermost_non_parallel.ll
+END
+2d_innermost_parallel.ll
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/llvm-project/!svn/ver/208779/polly/trunk/test/Cloog/CodeGen/GPGPU/2d_innermost_parallel.ll
+END
+gpu_no_pure___%for.cond---%for.end18.jscop.transformed+gpu
+K 25
+svn:wc:ra_dav:version-url
+V 133
+/svn/llvm-project/!svn/ver/169159/polly/trunk/test/Cloog/CodeGen/GPGPU/gpu_no_pure___%25for.cond---%25for.end18.jscop.transformed+gpu
+END
+1d_parallel.ll
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/llvm-project/!svn/ver/211573/polly/trunk/test/Cloog/CodeGen/GPGPU/1d_parallel.ll
+END
+gpu___%1---%5.jscop.transformed+gpu
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/llvm-project/!svn/ver/211573/polly/trunk/test/Cloog/CodeGen/GPGPU/gpu___%251---%255.jscop.transformed+gpu
+END
+gpu_pure___%for.cond---%for.end8.jscop.transformed+gpu
+K 25
+svn:wc:ra_dav:version-url
+V 129
+/svn/llvm-project/!svn/ver/169159/polly/trunk/test/Cloog/CodeGen/GPGPU/gpu_pure___%25for.cond---%25for.end8.jscop.transformed+gpu
+END
+gpu_no_pure___%for.cond---%for.end18.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/svn/llvm-project/!svn/ver/169159/polly/trunk/test/Cloog/CodeGen/GPGPU/gpu_no_pure___%25for.cond---%25for.end18.jscop
+END
+gpu___%1---%5.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/llvm-project/!svn/ver/211573/polly/trunk/test/Cloog/CodeGen/GPGPU/gpu___%251---%255.jscop
+END
+gpu_pure___%for.cond---%for.end8.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/llvm-project/!svn/ver/169159/polly/trunk/test/Cloog/CodeGen/GPGPU/gpu_pure___%25for.cond---%25for.end8.jscop
+END

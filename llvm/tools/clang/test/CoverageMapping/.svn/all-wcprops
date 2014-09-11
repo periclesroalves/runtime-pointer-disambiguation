@@ -1,0 +1,155 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/216208/cfe/trunk/test/CoverageMapping
+END
+templates.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/templates.cpp
+END
+if.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/if.c
+END
+classtemplate.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/216085/cfe/trunk/test/CoverageMapping/classtemplate.cpp
+END
+switch.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/switch.c
+END
+macroparams.c
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/macroparams.c
+END
+nestedclass.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/216085/cfe/trunk/test/CoverageMapping/nestedclass.cpp
+END
+logical.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/logical.cpp
+END
+ir.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/216208/cfe/trunk/test/CoverageMapping/ir.c
+END
+casts.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/casts.c
+END
+test.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/test.c
+END
+return.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/return.c
+END
+label.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/label.cpp
+END
+trycatch.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/trycatch.cpp
+END
+macroception.c
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/macroception.c
+END
+macros.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/macros.c
+END
+break.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/break.c
+END
+continue.c
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/continue.c
+END
+preprocessor.c
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/preprocessor.c
+END
+macroparams2.c
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/macroparams2.c
+END
+objc.m
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/216082/cfe/trunk/test/CoverageMapping/objc.m
+END
+builtinmacro.c
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/builtinmacro.c
+END
+header.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/216085/cfe/trunk/test/CoverageMapping/header.cpp
+END
+includehell.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/includehell.cpp
+END
+loopmacro.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/loopmacro.c
+END
+loops.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/215995/cfe/trunk/test/CoverageMapping/loops.cpp
+END

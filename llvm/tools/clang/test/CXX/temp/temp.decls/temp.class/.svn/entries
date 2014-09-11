@@ -1,0 +1,40 @@
+10
+
+dir
+217066
+http://llvm.org/svn/llvm-project/cfe/trunk/test/CXX/temp/temp.decls/temp.class
+http://llvm.org/svn/llvm-project
+
+
+
+2014-08-19T15:55:55.184284Z
+215982
+aaronballman
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+91177308-0d34-0410-b5e6-96231b3b80d8
+
+temp.mem.enum
+dir
+
+temp.mem.class
+dir
+
+temp.static
+dir
+
+temp.mem.func
+dir
+

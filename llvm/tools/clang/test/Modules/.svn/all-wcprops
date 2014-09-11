@@ -1,0 +1,755 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/llvm-project/!svn/ver/217008/cfe/trunk/test/Modules
+END
+cxx-templates.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/216652/cfe/trunk/test/Modules/cxx-templates.cpp
+END
+macro-hiding.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/213498/cfe/trunk/test/Modules/macro-hiding.cpp
+END
+system_version.m
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/206201/cfe/trunk/test/Modules/system_version.m
+END
+epic-fail.m
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Modules/epic-fail.m
+END
+subframeworks.m
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/188821/cfe/trunk/test/Modules/subframeworks.m
+END
+add-remove-private.m
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/215455/cfe/trunk/test/Modules/add-remove-private.m
+END
+redecl-merge.m
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/179677/cfe/trunk/test/Modules/redecl-merge.m
+END
+recursive_visibility.mm
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/194018/cfe/trunk/test/Modules/recursive_visibility.mm
+END
+dependency-gen-inferred-map.m
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/llvm-project/!svn/ver/203882/cfe/trunk/test/Modules/dependency-gen-inferred-map.m
+END
+macros2.c
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/203063/cfe/trunk/test/Modules/macros2.c
+END
+dependency-gen-pch.m
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/206201/cfe/trunk/test/Modules/dependency-gen-pch.m
+END
+linkage-merge.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/200897/cfe/trunk/test/Modules/linkage-merge.cpp
+END
+recursive.c
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/203034/cfe/trunk/test/Modules/recursive.c
+END
+lookup.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/lookup.cpp
+END
+header-import.m
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/174645/cfe/trunk/test/Modules/header-import.m
+END
+objc-categories.m
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/objc-categories.m
+END
+Werror-Wsystem-headers.m
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/207549/cfe/trunk/test/Modules/Werror-Wsystem-headers.m
+END
+extern_c_bad.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/202615/cfe/trunk/test/Modules/extern_c_bad.cpp
+END
+auto-module-import.m
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/195543/cfe/trunk/test/Modules/auto-module-import.m
+END
+direct-module-import.m
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/174645/cfe/trunk/test/Modules/direct-module-import.m
+END
+namespaces.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/205398/cfe/trunk/test/Modules/namespaces.cpp
+END
+fatal-module-loader-error.m
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/201249/cfe/trunk/test/Modules/fatal-module-loader-error.m
+END
+merge-typedefs.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/216417/cfe/trunk/test/Modules/merge-typedefs.cpp
+END
+undefined-type-fixit1.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/206977/cfe/trunk/test/Modules/undefined-type-fixit1.cpp
+END
+config_macros.m
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/config_macros.m
+END
+templates-2.mm
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/215675/cfe/trunk/test/Modules/templates-2.mm
+END
+modify-module.m
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/177621/cfe/trunk/test/Modules/modify-module.m
+END
+renamed.m
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/197222/cfe/trunk/test/Modules/renamed.m
+END
+load_failure.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/load_failure.c
+END
+no-stale-modtime.m
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/215046/cfe/trunk/test/Modules/no-stale-modtime.m
+END
+wildcard-submodule-exports.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/llvm-project/!svn/ver/174645/cfe/trunk/test/Modules/wildcard-submodule-exports.cpp
+END
+system_headers.m
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/184560/cfe/trunk/test/Modules/system_headers.m
+END
+Werror.m
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/207549/cfe/trunk/test/Modules/Werror.m
+END
+serialized-diags.m
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/181199/cfe/trunk/test/Modules/serialized-diags.m
+END
+submodules.m
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/174645/cfe/trunk/test/Modules/submodules.m
+END
+module-private.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/module-private.cpp
+END
+on-demand-macros.m
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/174645/cfe/trunk/test/Modules/on-demand-macros.m
+END
+validate-system-headers.m
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/205773/cfe/trunk/test/Modules/validate-system-headers.m
+END
+resolution-change.m
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/207549/cfe/trunk/test/Modules/resolution-change.m
+END
+cxx-many-overloads.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/174690/cfe/trunk/test/Modules/cxx-many-overloads.cpp
+END
+autolink.m
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/211276/cfe/trunk/test/Modules/autolink.m
+END
+decldef.m
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/188821/cfe/trunk/test/Modules/decldef.m
+END
+redecl-namespaces.mm
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/redecl-namespaces.mm
+END
+submodules-preprocess.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/174645/cfe/trunk/test/Modules/submodules-preprocess.cpp
+END
+build-fail-notes.m
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Modules/build-fail-notes.m
+END
+declare-use.S
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/204144/cfe/trunk/test/Modules/declare-use.S
+END
+cxx-lookup.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/215518/cfe/trunk/test/Modules/cxx-lookup.cpp
+END
+private.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/184472/cfe/trunk/test/Modules/private.cpp
+END
+diamond.c
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/diamond.c
+END
+import-self.m
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/207948/cfe/trunk/test/Modules/import-self.m
+END
+load-after-failure.m
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/209138/cfe/trunk/test/Modules/load-after-failure.m
+END
+initializer_list.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/192951/cfe/trunk/test/Modules/initializer_list.cpp
+END
+separate_map_tree.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/193151/cfe/trunk/test/Modules/separate_map_tree.cpp
+END
+pch-used.m
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/190016/cfe/trunk/test/Modules/pch-used.m
+END
+cycles.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Modules/cycles.c
+END
+dependency-dump-dependent-module.m
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/llvm-project/!svn/ver/211363/cfe/trunk/test/Modules/dependency-dump-dependent-module.m
+END
+method_pool.m
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/184504/cfe/trunk/test/Modules/method_pool.m
+END
+modular_maps.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/197389/cfe/trunk/test/Modules/modular_maps.cpp
+END
+macros.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/215272/cfe/trunk/test/Modules/macros.c
+END
+subframework-from-intermediate-path.m
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/llvm-project/!svn/ver/204368/cfe/trunk/test/Modules/subframework-from-intermediate-path.m
+END
+templates.mm
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/217008/cfe/trunk/test/Modules/templates.mm
+END
+inferred-frameworks.m
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/174645/cfe/trunk/test/Modules/inferred-frameworks.m
+END
+normal-module-map.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/188821/cfe/trunk/test/Modules/normal-module-map.cpp
+END
+requires.mm
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/193549/cfe/trunk/test/Modules/requires.mm
+END
+redecl-merge2.m
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/174895/cfe/trunk/test/Modules/redecl-merge2.m
+END
+cxx-decls.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/216806/cfe/trunk/test/Modules/cxx-decls.cpp
+END
+private1.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/193314/cfe/trunk/test/Modules/private1.cpp
+END
+include-relative.c
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/203550/cfe/trunk/test/Modules/include-relative.c
+END
+modules-with-same-name.m
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/206201/cfe/trunk/test/Modules/modules-with-same-name.m
+END
+update-after-load.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/203534/cfe/trunk/test/Modules/update-after-load.cpp
+END
+macro-undef-through-pch.m
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/206201/cfe/trunk/test/Modules/macro-undef-through-pch.m
+END
+prune.m
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/206203/cfe/trunk/test/Modules/prune.m
+END
+irgen.c
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/irgen.c
+END
+cxx-irgen.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/215607/cfe/trunk/test/Modules/cxx-irgen.cpp
+END
+extern_c.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/203317/cfe/trunk/test/Modules/extern_c.cpp
+END
+cxx-inline-namespace.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/204570/cfe/trunk/test/Modules/cxx-inline-namespace.cpp
+END
+diag-pragma.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/diag-pragma.c
+END
+module_file_info.m
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/215046/cfe/trunk/test/Modules/module_file_info.m
+END
+declare-use1.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/197034/cfe/trunk/test/Modules/declare-use1.cpp
+END
+declare-use2.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/197021/cfe/trunk/test/Modules/declare-use2.cpp
+END
+inferred-framework-case.m
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/212989/cfe/trunk/test/Modules/inferred-framework-case.m
+END
+declare-use3.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/204220/cfe/trunk/test/Modules/declare-use3.cpp
+END
+template-specialization-visibility.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/llvm-project/!svn/ver/208150/cfe/trunk/test/Modules/template-specialization-visibility.cpp
+END
+declare-use4.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/204220/cfe/trunk/test/Modules/declare-use4.cpp
+END
+decldef.mm
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/209046/cfe/trunk/test/Modules/decldef.mm
+END
+Rmodule-build.m
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/215129/cfe/trunk/test/Modules/Rmodule-build.m
+END
+exclude-header.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/205762/cfe/trunk/test/Modules/exclude-header.c
+END
+filename.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/215541/cfe/trunk/test/Modules/filename.cpp
+END
+stddef.m
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/177686/cfe/trunk/test/Modules/stddef.m
+END
+diamond-pch.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/206201/cfe/trunk/test/Modules/diamond-pch.c
+END
+modulemap-locations.m
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/204261/cfe/trunk/test/Modules/modulemap-locations.m
+END
+pr20786.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/216685/cfe/trunk/test/Modules/pr20786.cpp
+END
+fmodules-validate-once-per-build-session.c
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/llvm-project/!svn/ver/201231/cfe/trunk/test/Modules/fmodules-validate-once-per-build-session.c
+END
+using-decl.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/193219/cfe/trunk/test/Modules/using-decl.cpp
+END
+dependency-dump.m
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/211310/cfe/trunk/test/Modules/dependency-dump.m
+END
+driver.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/188174/cfe/trunk/test/Modules/driver.c
+END
+objc_redef.m
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/objc_redef.m
+END
+unnecessary-module-map-parsing.c
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/llvm-project/!svn/ver/197485/cfe/trunk/test/Modules/unnecessary-module-map-parsing.c
+END
+conflicts.m
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/177577/cfe/trunk/test/Modules/conflicts.m
+END
+dependency-gen.m
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/203215/cfe/trunk/test/Modules/dependency-gen.m
+END
+redecl-add-after-load.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/209161/cfe/trunk/test/Modules/redecl-add-after-load.cpp
+END
+global_index.m
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/174645/cfe/trunk/test/Modules/global_index.m
+END
+builtins.m
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/178711/cfe/trunk/test/Modules/builtins.m
+END
+ignored_macros.m
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/174645/cfe/trunk/test/Modules/ignored_macros.m
+END
+malformed.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/195545/cfe/trunk/test/Modules/malformed.cpp
+END
+cstd.m
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/180934/cfe/trunk/test/Modules/cstd.m
+END
+requires.m
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/193549/cfe/trunk/test/Modules/requires.m
+END
+on-demand-build.m
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/179677/cfe/trunk/test/Modules/on-demand-build.m
+END
+redeclarations.m
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/redeclarations.m
+END
+missing-header.m
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/206664/cfe/trunk/test/Modules/missing-header.m
+END
+cxx-linkage-cache.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/174943/cfe/trunk/test/Modules/cxx-linkage-cache.cpp
+END
+import-decl.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/194225/cfe/trunk/test/Modules/import-decl.cpp
+END
+missing-submodule.m
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/207024/cfe/trunk/test/Modules/missing-submodule.m
+END
+linkage-merge.m
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/linkage-merge.m
+END
+submodules.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/207948/cfe/trunk/test/Modules/submodules.cpp
+END
+lookup.m
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/199852/cfe/trunk/test/Modules/lookup.m
+END
+implementation-of-module.m
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/llvm-project/!svn/ver/213767/cfe/trunk/test/Modules/implementation-of-module.m
+END
+odr.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/216369/cfe/trunk/test/Modules/odr.cpp
+END
+inferred-submodules.m
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/174645/cfe/trunk/test/Modules/inferred-submodules.m
+END
+string_names.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/196573/cfe/trunk/test/Modules/string_names.cpp
+END
+strict-decluse.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/206027/cfe/trunk/test/Modules/strict-decluse.cpp
+END
+require-modular-includes.m
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/llvm-project/!svn/ver/208345/cfe/trunk/test/Modules/require-modular-includes.m
+END
+incomplete-module.m
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/182263/cfe/trunk/test/Modules/incomplete-module.m
+END
+compiler_builtins_arm.m
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/211738/cfe/trunk/test/Modules/compiler_builtins_arm.m
+END
+compiler_builtins.m
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/179860/cfe/trunk/test/Modules/compiler_builtins.m
+END

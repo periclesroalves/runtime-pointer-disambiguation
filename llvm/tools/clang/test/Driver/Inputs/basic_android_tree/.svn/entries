@@ -1,0 +1,46 @@
+10
+
+dir
+217066
+http://llvm.org/svn/llvm-project/cfe/trunk/test/Driver/Inputs/basic_android_tree
+http://llvm.org/svn/llvm-project
+
+
+
+2014-06-26T14:38:46.300782Z
+211786
+logan
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+91177308-0d34-0410-b5e6-96231b3b80d8
+
+sysroot
+dir
+
+aarch64-linux-android
+dir
+
+mipsel-linux-android
+dir
+
+lib
+dir
+
+bin
+dir
+
+arm-linux-androideabi
+dir
+

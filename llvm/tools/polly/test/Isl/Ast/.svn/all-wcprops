@@ -1,0 +1,215 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/llvm-project/!svn/ver/214665/polly/trunk/test/Isl/Ast
+END
+reduction_modulo_schedule_multiple_dimensions_3.ll
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_modulo_schedule_multiple_dimensions_3.ll
+END
+rmalrs2___%for.cond---%for.end10.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rmalrs2___%25for.cond---%25for.end10.jscop
+END
+reduction_modulo_schedule_multiple_dimensions_5.ll
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_modulo_schedule_multiple_dimensions_5.ll
+END
+reduction_multiple_dimensions_2.ll
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_multiple_dimensions_2.ll
+END
+reduction_clauses_onedimensional_access.ll
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/llvm-project/!svn/ver/214491/polly/trunk/test/Isl/Ast/reduction_clauses_onedimensional_access.ll
+END
+reduction_multiple_dimensions_4.ll
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_multiple_dimensions_4.ll
+END
+run-time-condition.ll
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/193652/polly/trunk/test/Isl/Ast/run-time-condition.ll
+END
+reduction_loop_reversal.ll
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_loop_reversal.ll
+END
+reduction_in_one_dimension.ll
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_in_one_dimension.ll
+END
+reduction_modulo_schedule_multiple_dimensions.ll
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_modulo_schedule_multiple_dimensions.ll
+END
+rms___%for.cond---%for.end10.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rms___%25for.cond---%25for.end10.jscop
+END
+rmsmd___%for.cond---%for.end6.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rmsmd___%25for.cond---%25for.end6.jscop
+END
+rmd3___%for.cond---%for.end12.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rmd3___%25for.cond---%25for.end12.jscop
+END
+reduction_dependences_equal_non_reduction_dependences.ll
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_dependences_equal_non_reduction_dependences.ll
+END
+single_loop_strip_mine.ll
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/177313/polly/trunk/test/Isl/Ast/single_loop_strip_mine.ll
+END
+reduction_modulo_and_loop_reversal_schedule.ll
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_modulo_and_loop_reversal_schedule.ll
+END
+simple-run-time-condition.ll
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/llvm-project/!svn/ver/214665/polly/trunk/test/Isl/Ast/simple-run-time-condition.ll
+END
+reduction_modulo_schedule_multiple_dimensions_2.ll
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_modulo_schedule_multiple_dimensions_2.ll
+END
+reduction_different_reduction_clauses.ll
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/llvm-project/!svn/ver/214491/polly/trunk/test/Isl/Ast/reduction_different_reduction_clauses.ll
+END
+reduction_modulo_schedule_multiple_dimensions_4.ll
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_modulo_schedule_multiple_dimensions_4.ll
+END
+rmd___%for.cond---%for.end12.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rmd___%25for.cond---%25for.end12.jscop
+END
+reduction_multiple_dimensions_3.ll
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_multiple_dimensions_3.ll
+END
+rmsmd2___%for.cond---%for.end6.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rmsmd2___%25for.cond---%25for.end6.jscop
+END
+rmsmd3___%for.cond---%for.end6.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rmsmd3___%25for.cond---%25for.end6.jscop
+END
+rmsmd4___%for.cond---%for.end6.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rmsmd4___%25for.cond---%25for.end6.jscop
+END
+reduction_modulo_and_loop_reversal_schedule_2.ll
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_modulo_and_loop_reversal_schedule_2.ll
+END
+reduction_modulo_schedule.ll
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_modulo_schedule.ll
+END
+rmsmd5___%for.cond---%for.end6.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rmsmd5___%25for.cond---%25for.end6.jscop
+END
+reduction_clauses_multidimensional_access.ll
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/llvm-project/!svn/ver/214491/polly/trunk/test/Isl/Ast/reduction_clauses_multidimensional_access.ll
+END
+rlr___%for.cond---%for.end10.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rlr___%25for.cond---%25for.end10.jscop
+END
+rmalrs___%for.cond---%for.end10.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rmalrs___%25for.cond---%25for.end10.jscop
+END
+single_loop_strip_mine___%for.cond---%for.end.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/svn/llvm-project/!svn/ver/177313/polly/trunk/test/Isl/Ast/single_loop_strip_mine___%25for.cond---%25for.end.jscop
+END
+reduction_multiple_dimensions.ll
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/reduction_multiple_dimensions.ll
+END
+rmd2___%for.cond---%for.end12.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rmd2___%25for.cond---%25for.end12.jscop
+END
+rmd4___%for.cond---%for.end12.jscop
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/llvm-project/!svn/ver/213019/polly/trunk/test/Isl/Ast/rmd4___%25for.cond---%25for.end12.jscop
+END

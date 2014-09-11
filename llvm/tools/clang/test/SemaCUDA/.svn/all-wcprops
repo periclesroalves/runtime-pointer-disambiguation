@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/llvm-project/!svn/ver/214407/cfe/trunk/test/SemaCUDA
+END
+function-target.cu
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/207453/cfe/trunk/test/SemaCUDA/function-target.cu
+END
+kernel-call.cu
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/207453/cfe/trunk/test/SemaCUDA/kernel-call.cu
+END
+lit.local.cfg
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/206688/cfe/trunk/test/SemaCUDA/lit.local.cfg
+END
+config-type.cu
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/125216/cfe/trunk/test/SemaCUDA/config-type.cu
+END
+launch_bounds.cu
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/214407/cfe/trunk/test/SemaCUDA/launch_bounds.cu
+END
+qualifiers.cu
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/207453/cfe/trunk/test/SemaCUDA/qualifiers.cu
+END

@@ -1,0 +1,77 @@
+10
+
+dir
+217066
+http://llvm.org/svn/llvm-project/cfe/trunk/test/Modules/Inputs/ModuleMapLocations
+http://llvm.org/svn/llvm-project
+
+
+
+2014-03-19T20:23:34.157097Z
+204261
+benlangmuir
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+91177308-0d34-0410-b5e6-96231b3b80d8
+
+module.modulemap
+file
+
+
+
+
+2014-09-03T20:03:32.000000Z
+1af215a6cad4495022556fe8e61f9423
+2014-03-19T20:23:34.157097Z
+204261
+benlangmuir
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+23
+
+Module_ModuleMap
+dir
+
+Module_ModuleMap_F.framework
+dir
+
+Inferred.framework
+dir
+
+Both
+dir
+
+Both_F.framework
+dir
+

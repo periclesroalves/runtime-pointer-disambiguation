@@ -1,0 +1,377 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/llvm-project/!svn/ver/216456/cfe/trunk/test/Frontend
+END
+lit.local.cfg
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/211843/cfe/trunk/test/Frontend/lit.local.cfg
+END
+warning-options.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/215046/cfe/trunk/test/Frontend/warning-options.cpp
+END
+warning-mapping-3.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/140764/cfe/trunk/test/Frontend/warning-mapping-3.c
+END
+preprocessed-output-macro-first-token.c
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/llvm-project/!svn/ver/106026/cfe/trunk/test/Frontend/preprocessed-output-macro-first-token.c
+END
+warning-mapping-4.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/166280/cfe/trunk/test/Frontend/warning-mapping-4.c
+END
+warning-mapping-5.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/141119/cfe/trunk/test/Frontend/warning-mapping-5.c
+END
+disable-output.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/210115/cfe/trunk/test/Frontend/disable-output.c
+END
+undef.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/132708/cfe/trunk/test/Frontend/undef.c
+END
+rewrite-macros.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Frontend/rewrite-macros.c
+END
+optimization-remark.c
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/215046/cfe/trunk/test/Frontend/optimization-remark.c
+END
+output-failures.c
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/216456/cfe/trunk/test/Frontend/output-failures.c
+END
+ast-main.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/91460/cfe/trunk/test/Frontend/ast-main.c
+END
+backend-diagnostic.c
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/210503/cfe/trunk/test/Frontend/backend-diagnostic.c
+END
+Weverything.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/140770/cfe/trunk/test/Frontend/Weverything.c
+END
+dependency-gen-escaping.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/llvm-project/!svn/ver/178540/cfe/trunk/test/Frontend/dependency-gen-escaping.c
+END
+diagnostics-option-names.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/140752/cfe/trunk/test/Frontend/diagnostics-option-names.c
+END
+cpp-output.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/91460/cfe/trunk/test/Frontend/cpp-output.c
+END
+stdin.c
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/91446/cfe/trunk/test/Frontend/stdin.c
+END
+ir-support.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/211856/cfe/trunk/test/Frontend/ir-support.c
+END
+Wno-everything.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/149123/cfe/trunk/test/Frontend/Wno-everything.c
+END
+dependency-gen.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/144887/cfe/trunk/test/Frontend/dependency-gen.c
+END
+print-header-includes.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/215434/cfe/trunk/test/Frontend/print-header-includes.c
+END
+windows-nul.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/207623/cfe/trunk/test/Frontend/windows-nul.c
+END
+rewrite-includes-invalid-hasinclude.c
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Frontend/rewrite-includes-invalid-hasinclude.c
+END
+invalid-o-level.c
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/212972/cfe/trunk/test/Frontend/invalid-o-level.c
+END
+rewrite-includes-modules.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Frontend/rewrite-includes-modules.c
+END
+mfpmath.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/188939/cfe/trunk/test/Frontend/mfpmath.c
+END
+rewrite-includes-eof.c
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Frontend/rewrite-includes-eof.c
+END
+rewrite-includes-bom.c
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Frontend/rewrite-includes-bom.c
+END
+rewrite-includes-header-cmd-line.c
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Frontend/rewrite-includes-header-cmd-line.c
+END
+verify.c
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/212735/cfe/trunk/test/Frontend/verify.c
+END
+system-header-prefix.c
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/204775/cfe/trunk/test/Frontend/system-header-prefix.c
+END
+dependency-generation-crash.c
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/llvm-project/!svn/ver/129587/cfe/trunk/test/Frontend/dependency-generation-crash.c
+END
+iframework.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/166280/cfe/trunk/test/Frontend/iframework.c
+END
+optimization-remark-line-directive.c
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/llvm-project/!svn/ver/210326/cfe/trunk/test/Frontend/optimization-remark-line-directive.c
+END
+darwin-version.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/215245/cfe/trunk/test/Frontend/darwin-version.c
+END
+ast-main.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/177655/cfe/trunk/test/Frontend/ast-main.cpp
+END
+rewrite-includes-cli-include.c
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Frontend/rewrite-includes-cli-include.c
+END
+ir-support-codegen.ll
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/197837/cfe/trunk/test/Frontend/ir-support-codegen.ll
+END
+x86_64-nacl-types.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/194919/cfe/trunk/test/Frontend/x86_64-nacl-types.cpp
+END
+rewrite-includes-warnings.c
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Frontend/rewrite-includes-warnings.c
+END
+mips-long-double.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/194919/cfe/trunk/test/Frontend/mips-long-double.c
+END
+cc1-return-codes.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/187888/cfe/trunk/test/Frontend/cc1-return-codes.c
+END
+exceptions.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/210582/cfe/trunk/test/Frontend/exceptions.c
+END
+plugins.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/198747/cfe/trunk/test/Frontend/plugins.c
+END
+darwin-eabi.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/200164/cfe/trunk/test/Frontend/darwin-eabi.c
+END
+ir-support-errors.ll
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Frontend/ir-support-errors.ll
+END
+macros.c
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/166280/cfe/trunk/test/Frontend/macros.c
+END
+verify-directive.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/160068/cfe/trunk/test/Frontend/verify-directive.h
+END
+rewrite-includes.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Frontend/rewrite-includes.c
+END
+verify2.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/212735/cfe/trunk/test/Frontend/verify2.c
+END
+verify3.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/194070/cfe/trunk/test/Frontend/verify3.c
+END
+unknown-pragmas.c
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/166280/cfe/trunk/test/Frontend/unknown-pragmas.c
+END
+verify-fatal.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/185652/cfe/trunk/test/Frontend/verify-fatal.c
+END
+ast-codegen.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/166551/cfe/trunk/test/Frontend/ast-codegen.c
+END
+rewrite-includes-messages.c
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Frontend/rewrite-includes-messages.c
+END
+verify2.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/212735/cfe/trunk/test/Frontend/verify2.h
+END
+stdlang.c
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/209824/cfe/trunk/test/Frontend/stdlang.c
+END
+rewrite-includes-missing.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/213159/cfe/trunk/test/Frontend/rewrite-includes-missing.c
+END
+hexagon-target-basic.c
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/171422/cfe/trunk/test/Frontend/hexagon-target-basic.c
+END
+warning-mapping-1.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/166280/cfe/trunk/test/Frontend/warning-mapping-1.c
+END
+warning-mapping-2.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/140770/cfe/trunk/test/Frontend/warning-mapping-2.c
+END

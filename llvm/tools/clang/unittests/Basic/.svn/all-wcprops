@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/llvm-project/!svn/ver/216715/cfe/trunk/unittests/Basic
+END
+CharInfoTest.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/174768/cfe/trunk/unittests/Basic/CharInfoTest.cpp
+END
+FileManagerTest.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/215388/cfe/trunk/unittests/Basic/FileManagerTest.cpp
+END
+SourceManagerTest.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/216715/cfe/trunk/unittests/Basic/SourceManagerTest.cpp
+END
+VirtualFileSystemTest.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/llvm-project/!svn/ver/216585/cfe/trunk/unittests/Basic/VirtualFileSystemTest.cpp
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/201818/cfe/trunk/unittests/Basic/CMakeLists.txt
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/147056/cfe/trunk/unittests/Basic/Makefile
+END

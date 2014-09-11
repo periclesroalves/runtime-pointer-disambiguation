@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/llvm-project/!svn/ver/216816/polly/trunk/test
+END
+create_ll.sh
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/215422/polly/trunk/test/create_ll.sh
+END
+polly.ll
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/llvm-project/!svn/ver/216815/polly/trunk/test/polly.ll
+END
+lit.cfg
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/llvm-project/!svn/ver/208779/polly/trunk/test/lit.cfg
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/llvm-project/!svn/ver/130476/polly/trunk/test/README
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/208779/polly/trunk/test/CMakeLists.txt
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/llvm-project/!svn/ver/206900/polly/trunk/test/Makefile
+END
+lit.site.cfg.in
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/216815/polly/trunk/test/lit.site.cfg.in
+END

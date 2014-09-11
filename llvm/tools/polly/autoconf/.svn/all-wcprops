@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/llvm-project/!svn/ver/215871/polly/trunk/autoconf
+END
+LICENSE.TXT
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/130476/polly/trunk/autoconf/LICENSE.TXT
+END
+AutoRegen.sh
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/130476/polly/trunk/autoconf/AutoRegen.sh
+END
+configure.ac
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/215871/polly/trunk/autoconf/configure.ac
+END
+config.guess
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/130476/polly/trunk/autoconf/config.guess
+END
+aclocal.m4
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/206026/polly/trunk/autoconf/aclocal.m4
+END
+config.sub
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/130476/polly/trunk/autoconf/config.sub
+END
+configure.bak
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/215871/polly/trunk/autoconf/configure.bak
+END

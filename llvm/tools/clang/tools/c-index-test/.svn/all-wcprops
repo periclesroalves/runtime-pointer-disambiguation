@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/llvm-project/!svn/ver/215898/cfe/trunk/tools/c-index-test
+END
+c-index-test.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/215898/cfe/trunk/tools/c-index-test/c-index-test.c
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/198748/cfe/trunk/tools/c-index-test/CMakeLists.txt
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/213171/cfe/trunk/tools/c-index-test/Makefile
+END

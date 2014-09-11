@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/181988/cfe/trunk/test/Modules/self-import-header
+END
+test.m
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/181988/cfe/trunk/test/Modules/self-import-header/test.m
+END

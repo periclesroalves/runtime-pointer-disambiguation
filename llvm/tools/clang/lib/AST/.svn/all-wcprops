@@ -1,0 +1,353 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/llvm-project/!svn/ver/217008/cfe/trunk/lib/AST
+END
+DeclFriend.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/DeclFriend.cpp
+END
+ExprCXX.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/216649/cfe/trunk/lib/AST/ExprCXX.cpp
+END
+Comment.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/216824/cfe/trunk/lib/AST/Comment.cpp
+END
+MicrosoftCXXABI.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/216259/cfe/trunk/lib/AST/MicrosoftCXXABI.cpp
+END
+ItaniumCXXABI.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/216259/cfe/trunk/lib/AST/ItaniumCXXABI.cpp
+END
+DeclObjC.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/216610/cfe/trunk/lib/AST/DeclObjC.cpp
+END
+Decl.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/llvm-project/!svn/ver/217008/cfe/trunk/lib/AST/Decl.cpp
+END
+CommentSema.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/CommentSema.cpp
+END
+RawCommentList.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/204936/cfe/trunk/lib/AST/RawCommentList.cpp
+END
+ASTImporter.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/216715/cfe/trunk/lib/AST/ASTImporter.cpp
+END
+NSAPI.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/llvm-project/!svn/ver/216405/cfe/trunk/lib/AST/NSAPI.cpp
+END
+DeclPrinter.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/213719/cfe/trunk/lib/AST/DeclPrinter.cpp
+END
+NestedNameSpecifier.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/213178/cfe/trunk/lib/AST/NestedNameSpecifier.cpp
+END
+TypeLoc.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/TypeLoc.cpp
+END
+CommentParser.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/CommentParser.cpp
+END
+Type.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/llvm-project/!svn/ver/215982/cfe/trunk/lib/AST/Type.cpp
+END
+RecordLayoutBuilder.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/214274/cfe/trunk/lib/AST/RecordLayoutBuilder.cpp
+END
+VTableBuilder.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/216527/cfe/trunk/lib/AST/VTableBuilder.cpp
+END
+TypePrinter.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/213446/cfe/trunk/lib/AST/TypePrinter.cpp
+END
+DeclOpenMP.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/DeclOpenMP.cpp
+END
+ParentMap.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/ParentMap.cpp
+END
+Stmt.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/llvm-project/!svn/ver/216260/cfe/trunk/lib/AST/Stmt.cpp
+END
+ExprConstant.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/216528/cfe/trunk/lib/AST/ExprConstant.cpp
+END
+MicrosoftMangle.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/215972/cfe/trunk/lib/AST/MicrosoftMangle.cpp
+END
+ItaniumMangle.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/214699/cfe/trunk/lib/AST/ItaniumMangle.cpp
+END
+StmtPrinter.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/216649/cfe/trunk/lib/AST/StmtPrinter.cpp
+END
+AttrImpl.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/197629/cfe/trunk/lib/AST/AttrImpl.cpp
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/216259/cfe/trunk/lib/AST/CMakeLists.txt
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/llvm-project/!svn/ver/108633/cfe/trunk/lib/AST/Makefile
+END
+ASTDiagnostic.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/216526/cfe/trunk/lib/AST/ASTDiagnostic.cpp
+END
+StmtIterator.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/StmtIterator.cpp
+END
+CommentLexer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/216825/cfe/trunk/lib/AST/CommentLexer.cpp
+END
+DeclBase.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/215518/cfe/trunk/lib/AST/DeclBase.cpp
+END
+SelectorLocationsKind.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/141215/cfe/trunk/lib/AST/SelectorLocationsKind.cpp
+END
+Mangle.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/llvm-project/!svn/ver/204045/cfe/trunk/lib/AST/Mangle.cpp
+END
+DeclTemplate.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/211764/cfe/trunk/lib/AST/DeclTemplate.cpp
+END
+ASTConsumer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/169237/cfe/trunk/lib/AST/ASTConsumer.cpp
+END
+ASTDumper.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/215518/cfe/trunk/lib/AST/ASTDumper.cpp
+END
+TemplateBase.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/213095/cfe/trunk/lib/AST/TemplateBase.cpp
+END
+StmtProfile.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/216649/cfe/trunk/lib/AST/StmtProfile.cpp
+END
+ExternalASTSource.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/209300/cfe/trunk/lib/AST/ExternalASTSource.cpp
+END
+CXXInheritance.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/CXXInheritance.cpp
+END
+RecordLayout.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/209567/cfe/trunk/lib/AST/RecordLayout.cpp
+END
+TemplateName.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/TemplateName.cpp
+END
+Expr.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/llvm-project/!svn/ver/216183/cfe/trunk/lib/AST/Expr.cpp
+END
+ASTTypeTraits.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/ASTTypeTraits.cpp
+END
+StmtViz.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/llvm-project/!svn/ver/90137/cfe/trunk/lib/AST/StmtViz.cpp
+END
+CXXABI.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/llvm-project/!svn/ver/215557/cfe/trunk/lib/AST/CXXABI.h
+END
+VTTBuilder.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/203803/cfe/trunk/lib/AST/VTTBuilder.cpp
+END
+DeclGroup.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/169237/cfe/trunk/lib/AST/DeclGroup.cpp
+END
+DeclarationName.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/DeclarationName.cpp
+END
+CommentBriefParser.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/176401/cfe/trunk/lib/AST/CommentBriefParser.cpp
+END
+CommentCommandTraits.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/CommentCommandTraits.cpp
+END
+DeclCXX.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/215982/cfe/trunk/lib/AST/DeclCXX.cpp
+END
+ExprClassification.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/208517/cfe/trunk/lib/AST/ExprClassification.cpp
+END
+InheritViz.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/210817/cfe/trunk/lib/AST/InheritViz.cpp
+END
+ASTContext.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/216370/cfe/trunk/lib/AST/ASTContext.cpp
+END
+APValue.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/216528/cfe/trunk/lib/AST/APValue.cpp
+END

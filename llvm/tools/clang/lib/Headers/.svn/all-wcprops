@@ -1,0 +1,317 @@
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/llvm-project/!svn/ver/216669/cfe/trunk/lib/Headers
+END
+iso646.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/51360/cfe/trunk/lib/Headers/iso646.h
+END
+bmiintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/209769/cfe/trunk/lib/Headers/bmiintrin.h
+END
+ammintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/157638/cfe/trunk/lib/Headers/ammintrin.h
+END
+avx512erintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/213641/cfe/trunk/lib/Headers/avx512erintrin.h
+END
+limits.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/201738/cfe/trunk/lib/Headers/limits.h
+END
+emmintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/195558/cfe/trunk/lib/Headers/emmintrin.h
+END
+Intrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/212557/cfe/trunk/lib/Headers/Intrin.h
+END
+avx2intrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/208664/cfe/trunk/lib/Headers/avx2intrin.h
+END
+cpuid.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/197399/cfe/trunk/lib/Headers/cpuid.h
+END
+stdint.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/214119/cfe/trunk/lib/Headers/stdint.h
+END
+float.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/201731/cfe/trunk/lib/Headers/float.h
+END
+immintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/213641/cfe/trunk/lib/Headers/immintrin.h
+END
+stddef.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/207606/cfe/trunk/lib/Headers/stddef.h
+END
+x86intrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/212556/cfe/trunk/lib/Headers/x86intrin.h
+END
+__wmmintrin_aes.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/167420/cfe/trunk/lib/Headers/__wmmintrin_aes.h
+END
+nmmintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/111645/cfe/trunk/lib/Headers/nmmintrin.h
+END
+pmmintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/172666/cfe/trunk/lib/Headers/pmmintrin.h
+END
+lzcntintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/147263/cfe/trunk/lib/Headers/lzcntintrin.h
+END
+smmintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/208664/cfe/trunk/lib/Headers/smmintrin.h
+END
+avx512fintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/215666/cfe/trunk/lib/Headers/avx512fintrin.h
+END
+tmmintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/172666/cfe/trunk/lib/Headers/tmmintrin.h
+END
+module.modulemap
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/213731/cfe/trunk/lib/Headers/module.modulemap
+END
+ia32intrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/212053/cfe/trunk/lib/Headers/ia32intrin.h
+END
+f16cintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/191483/cfe/trunk/lib/Headers/f16cintrin.h
+END
+wmmintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/167420/cfe/trunk/lib/Headers/wmmintrin.h
+END
+mm3dnow.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/178041/cfe/trunk/lib/Headers/mm3dnow.h
+END
+xmmintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/212556/cfe/trunk/lib/Headers/xmmintrin.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/206431/cfe/trunk/lib/Headers/Makefile
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/213645/cfe/trunk/lib/Headers/CMakeLists.txt
+END
+stdnoreturn.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/172761/cfe/trunk/lib/Headers/stdnoreturn.h
+END
+rdseedintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/186275/cfe/trunk/lib/Headers/rdseedintrin.h
+END
+xopintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/181514/cfe/trunk/lib/Headers/xopintrin.h
+END
+mmintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/130945/cfe/trunk/lib/Headers/mmintrin.h
+END
+__wmmintrin_pclmul.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/167420/cfe/trunk/lib/Headers/__wmmintrin_pclmul.h
+END
+shaintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/191003/cfe/trunk/lib/Headers/shaintrin.h
+END
+mm_malloc.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/172666/cfe/trunk/lib/Headers/mm_malloc.h
+END
+arm_acle.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/216669/cfe/trunk/lib/Headers/arm_acle.h
+END
+unwind.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/191406/cfe/trunk/lib/Headers/unwind.h
+END
+varargs.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/99026/cfe/trunk/lib/Headers/varargs.h
+END
+stdalign.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/175708/cfe/trunk/lib/Headers/stdalign.h
+END
+tbmintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/192036/cfe/trunk/lib/Headers/tbmintrin.h
+END
+stdbool.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/115028/cfe/trunk/lib/Headers/stdbool.h
+END
+fma4intrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/147372/cfe/trunk/lib/Headers/fma4intrin.h
+END
+bmi2intrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/165325/cfe/trunk/lib/Headers/bmi2intrin.h
+END
+prfchwintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/181513/cfe/trunk/lib/Headers/prfchwintrin.h
+END
+avxintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/209846/cfe/trunk/lib/Headers/avxintrin.h
+END
+stdarg.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/212183/cfe/trunk/lib/Headers/stdarg.h
+END
+tgmath.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/181527/cfe/trunk/lib/Headers/tgmath.h
+END
+rtmintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/186275/cfe/trunk/lib/Headers/rtmintrin.h
+END
+popcntintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/147340/cfe/trunk/lib/Headers/popcntintrin.h
+END
+fmaintrin.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/157913/cfe/trunk/lib/Headers/fmaintrin.h
+END
+altivec.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/214801/cfe/trunk/lib/Headers/altivec.h
+END

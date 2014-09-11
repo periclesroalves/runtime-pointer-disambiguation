@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/200427/polly/trunk/test/IndependentBlocks
+END
+intra_bb_scalar_dep.ll
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/llvm-project/!svn/ver/186418/polly/trunk/test/IndependentBlocks/intra_bb_scalar_dep.ll
+END
+intra_and_inter_bb_scalar_dep.ll
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/llvm-project/!svn/ver/186418/polly/trunk/test/IndependentBlocks/intra_and_inter_bb_scalar_dep.ll
+END
+phi_outside_scop.ll
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/llvm-project/!svn/ver/200427/polly/trunk/test/IndependentBlocks/phi_outside_scop.ll
+END
+inter_bb_scalar_dep.ll
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/llvm-project/!svn/ver/186418/polly/trunk/test/IndependentBlocks/inter_bb_scalar_dep.ll
+END
+scev-invalidated.ll
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/llvm-project/!svn/ver/182310/polly/trunk/test/IndependentBlocks/scev-invalidated.ll
+END
+scalar_to_array.ll
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/llvm-project/!svn/ver/186418/polly/trunk/test/IndependentBlocks/scalar_to_array.ll
+END

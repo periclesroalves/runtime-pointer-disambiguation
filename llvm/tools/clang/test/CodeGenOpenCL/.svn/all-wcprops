@@ -1,0 +1,179 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/llvm-project/!svn/ver/216179/cfe/trunk/test/CodeGenOpenCL
+END
+vector_logops.cl
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/148452/cfe/trunk/test/CodeGenOpenCL/vector_logops.cl
+END
+spir32_target.cl
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/169947/cfe/trunk/test/CodeGenOpenCL/spir32_target.cl
+END
+vector_odd.cl
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/195367/cfe/trunk/test/CodeGenOpenCL/vector_odd.cl
+END
+denorms-are-zero.cl
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/llvm-project/!svn/ver/216179/cfe/trunk/test/CodeGenOpenCL/denorms-are-zero.cl
+END
+local.cl
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/210303/cfe/trunk/test/CodeGenOpenCL/local.cl
+END
+ext-vector-shuffle.cl
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/125590/cfe/trunk/test/CodeGenOpenCL/ext-vector-shuffle.cl
+END
+address-spaces-mangling.cl
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/llvm-project/!svn/ver/199250/cfe/trunk/test/CodeGenOpenCL/address-spaces-mangling.cl
+END
+addr-space-struct-arg.cl
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/llvm-project/!svn/ver/176786/cfe/trunk/test/CodeGenOpenCL/addr-space-struct-arg.cl
+END
+spir64_target.cl
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/169947/cfe/trunk/test/CodeGenOpenCL/spir64_target.cl
+END
+kernel-metadata.cl
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/125475/cfe/trunk/test/CodeGenOpenCL/kernel-metadata.cl
+END
+shifts.cl
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/172053/cfe/trunk/test/CodeGenOpenCL/shifts.cl
+END
+address-spaces.cl
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/127915/cfe/trunk/test/CodeGenOpenCL/address-spaces.cl
+END
+single-precision-constant.cl
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/llvm-project/!svn/ver/165024/cfe/trunk/test/CodeGenOpenCL/single-precision-constant.cl
+END
+vector_literals_nested.cl
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/llvm-project/!svn/ver/147545/cfe/trunk/test/CodeGenOpenCL/vector_literals_nested.cl
+END
+kernel-attributes.cl
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/llvm-project/!svn/ver/189910/cfe/trunk/test/CodeGenOpenCL/kernel-attributes.cl
+END
+event_t.cl
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/172973/cfe/trunk/test/CodeGenOpenCL/event_t.cl
+END
+opencl_types.cl
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/188447/cfe/trunk/test/CodeGenOpenCL/opencl_types.cl
+END
+ptx-calls.cl
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/188447/cfe/trunk/test/CodeGenOpenCL/ptx-calls.cl
+END
+str_literals.cl
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/210303/cfe/trunk/test/CodeGenOpenCL/str_literals.cl
+END
+logical-ops.cl
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/175736/cfe/trunk/test/CodeGenOpenCL/logical-ops.cl
+END
+address-space-constant-initializers.cl
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/llvm-project/!svn/ver/206478/cfe/trunk/test/CodeGenOpenCL/address-space-constant-initializers.cl
+END
+half.cl
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/173254/cfe/trunk/test/CodeGenOpenCL/half.cl
+END
+ptx-kernels.cl
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/188447/cfe/trunk/test/CodeGenOpenCL/ptx-kernels.cl
+END
+builtins-r600.cl
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/215738/cfe/trunk/test/CodeGenOpenCL/builtins-r600.cl
+END
+fpmath.cl
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/154745/cfe/trunk/test/CodeGenOpenCL/fpmath.cl
+END
+2011-04-15-vec-init-from-vec.cl
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/llvm-project/!svn/ver/134570/cfe/trunk/test/CodeGenOpenCL/2011-04-15-vec-init-from-vec.cl
+END
+vectorLoadStore.cl
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/162003/cfe/trunk/test/CodeGenOpenCL/vectorLoadStore.cl
+END
+kernel-arg-info.cl
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/214308/cfe/trunk/test/CodeGenOpenCL/kernel-arg-info.cl
+END
+vector_literals_valid.cl
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/llvm-project/!svn/ver/135322/cfe/trunk/test/CodeGenOpenCL/vector_literals_valid.cl
+END

@@ -1,0 +1,341 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/llvm-project/!svn/ver/217055/cfe/trunk/docs
+END
+DriverArchitecture.png
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/103222/cfe/trunk/docs/DriverArchitecture.png
+END
+AutomaticReferenceCounting.rst
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/176948/cfe/trunk/docs/AutomaticReferenceCounting.rst
+END
+ObjectiveCLiterals.rst
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/200060/cfe/trunk/docs/ObjectiveCLiterals.rst
+END
+AddressSanitizer.rst
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/200529/cfe/trunk/docs/AddressSanitizer.rst
+END
+Makefile.sphinx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/171795/cfe/trunk/docs/Makefile.sphinx
+END
+Block-ABI-Apple.rst
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/171799/cfe/trunk/docs/Block-ABI-Apple.rst
+END
+ExternalClangExamples.rst
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/203219/cfe/trunk/docs/ExternalClangExamples.rst
+END
+CrossCompilation.rst
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/195760/cfe/trunk/docs/CrossCompilation.rst
+END
+LibASTMatchersTutorial.rst
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/207789/cfe/trunk/docs/LibASTMatchersTutorial.rst
+END
+ClangFormatStyleOptions.rst
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/217022/cfe/trunk/docs/ClangFormatStyleOptions.rst
+END
+DataFlowSanitizer.rst
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/188403/cfe/trunk/docs/DataFlowSanitizer.rst
+END
+PCHInternals.rst
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/175109/cfe/trunk/docs/PCHInternals.rst
+END
+InternalsManual.rst
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/216755/cfe/trunk/docs/InternalsManual.rst
+END
+ClangFormat.rst
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/208766/cfe/trunk/docs/ClangFormat.rst
+END
+ThreadSanitizer.rst
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/200529/cfe/trunk/docs/ThreadSanitizer.rst
+END
+MSVCCompatibility.rst
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/212237/cfe/trunk/docs/MSVCCompatibility.rst
+END
+doxygen.footer
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/193495/cfe/trunk/docs/doxygen.footer
+END
+ClangTools.rst
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/204438/cfe/trunk/docs/ClangTools.rst
+END
+LeakSanitizer.rst
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/196957/cfe/trunk/docs/LeakSanitizer.rst
+END
+LibASTMatchers.rst
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/171382/cfe/trunk/docs/LibASTMatchers.rst
+END
+conf.py
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/llvm-project/!svn/ver/214164/cfe/trunk/docs/conf.py
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/llvm-project/!svn/ver/193495/cfe/trunk/docs/Makefile
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/206660/cfe/trunk/docs/CMakeLists.txt
+END
+FAQ.rst
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/llvm-project/!svn/ver/174613/cfe/trunk/docs/FAQ.rst
+END
+index.rst
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/llvm-project/!svn/ver/202559/cfe/trunk/docs/index.rst
+END
+Modules.rst
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/llvm-project/!svn/ver/213838/cfe/trunk/docs/Modules.rst
+END
+BlockLanguageSpec.rst
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/170762/cfe/trunk/docs/BlockLanguageSpec.rst
+END
+doxygen.cfg.in
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/203801/cfe/trunk/docs/doxygen.cfg.in
+END
+DriverInternals.rst
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/170812/cfe/trunk/docs/DriverInternals.rst
+END
+PTHInternals.rst
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/212458/cfe/trunk/docs/PTHInternals.rst
+END
+Tooling.rst
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/llvm-project/!svn/ver/171841/cfe/trunk/docs/Tooling.rst
+END
+make.bat
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/llvm-project/!svn/ver/170042/cfe/trunk/docs/make.bat
+END
+HowToSetupToolingForLLVM.rst
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/172182/cfe/trunk/docs/HowToSetupToolingForLLVM.rst
+END
+LibFormat.rst
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/llvm-project/!svn/ver/172004/cfe/trunk/docs/LibFormat.rst
+END
+LibASTMatchersReference.html
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/216379/cfe/trunk/docs/LibASTMatchersReference.html
+END
+AttributeReference.rst
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/215808/cfe/trunk/docs/AttributeReference.rst
+END
+ClangCheck.rst
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/172004/cfe/trunk/docs/ClangCheck.rst
+END
+DataFlowSanitizerDesign.rst
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/189055/cfe/trunk/docs/DataFlowSanitizerDesign.rst
+END
+PCHLayout.png
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/llvm-project/!svn/ver/103222/cfe/trunk/docs/PCHLayout.png
+END
+ClangPlugins.rst
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/200125/cfe/trunk/docs/ClangPlugins.rst
+END
+RAVFrontendAction.rst
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/170067/cfe/trunk/docs/RAVFrontendAction.rst
+END
+ThreadSafetyAnalysis.rst
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/llvm-project/!svn/ver/201713/cfe/trunk/docs/ThreadSafetyAnalysis.rst
+END
+Block-ABI-Apple.txt
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/171799/cfe/trunk/docs/Block-ABI-Apple.txt
+END
+ReleaseNotes.rst
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/216293/cfe/trunk/docs/ReleaseNotes.rst
+END
+JSONCompilationDatabase.rst
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/173950/cfe/trunk/docs/JSONCompilationDatabase.rst
+END
+doxygen.css
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/llvm-project/!svn/ver/137435/cfe/trunk/docs/doxygen.css
+END
+doxygen.header
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/103222/cfe/trunk/docs/doxygen.header
+END
+UsersManual.rst
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/llvm-project/!svn/ver/215485/cfe/trunk/docs/UsersManual.rst
+END
+doxygen.intro
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/llvm-project/!svn/ver/103222/cfe/trunk/docs/doxygen.intro
+END
+MemorySanitizer.rst
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/204346/cfe/trunk/docs/MemorySanitizer.rst
+END
+SanitizerSpecialCaseList.rst
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/209215/cfe/trunk/docs/SanitizerSpecialCaseList.rst
+END
+LibTooling.rst
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/207789/cfe/trunk/docs/LibTooling.rst
+END
+IntroductionToTheClangAST.rst
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/192222/cfe/trunk/docs/IntroductionToTheClangAST.rst
+END
+LanguageExtensions.rst
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/217055/cfe/trunk/docs/LanguageExtensions.rst
+END
+README.txt
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/llvm-project/!svn/ver/171426/cfe/trunk/docs/README.txt
+END
+PCHLayout.graffle
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/103222/cfe/trunk/docs/PCHLayout.graffle
+END

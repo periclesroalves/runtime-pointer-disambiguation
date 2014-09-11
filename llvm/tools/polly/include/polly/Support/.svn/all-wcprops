@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/213907/polly/trunk/include/polly/Support
+END
+GICHelper.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/213907/polly/trunk/include/polly/Support/GICHelper.h
+END
+ScopHelper.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/179586/polly/trunk/include/polly/Support/ScopHelper.h
+END
+SCEVValidator.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/llvm-project/!svn/ver/184655/polly/trunk/include/polly/Support/SCEVValidator.h
+END

@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/llvm-project/!svn/ver/130478/polly/trunk/utils/pyscop
+END
+pyscop.py
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/130476/polly/trunk/utils/pyscop/pyscop.py
+END
+jscop2iscc.py
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/llvm-project/!svn/ver/130478/polly/trunk/utils/pyscop/jscop2iscc.py
+END
+isl.py
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/130476/polly/trunk/utils/pyscop/isl.py
+END

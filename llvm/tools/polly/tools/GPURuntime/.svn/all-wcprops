@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/llvm-project/!svn/ver/198274/polly/trunk/tools/GPURuntime
+END
+LICENSE.TXT
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/llvm-project/!svn/ver/198274/polly/trunk/tools/GPURuntime/LICENSE.TXT
+END
+GPUJIT.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/177796/polly/trunk/tools/GPURuntime/GPUJIT.c
+END
+GPUJIT.h
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/181294/polly/trunk/tools/GPURuntime/GPUJIT.h
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/llvm-project/!svn/ver/158304/polly/trunk/tools/GPURuntime/CMakeLists.txt
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/llvm-project/!svn/ver/158304/polly/trunk/tools/GPURuntime/Makefile
+END

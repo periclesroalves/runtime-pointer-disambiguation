@@ -1,0 +1,43 @@
+10
+
+dir
+217066
+http://llvm.org/svn/llvm-project/cfe/trunk/test/CXX/dcl.dcl/dcl.attr
+http://llvm.org/svn/llvm-project
+
+
+
+2014-03-27T01:22:48.066201Z
+204887
+rsmith
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+91177308-0d34-0410-b5e6-96231b3b80d8
+
+dcl.attr.grammar
+dir
+
+dcl.attr.noreturn
+dir
+
+dcl.attr.depend
+dir
+
+dcl.attr.deprecated
+dir
+
+dcl.align
+dir
+

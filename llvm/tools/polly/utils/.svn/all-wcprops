@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/llvm-project/!svn/ver/215871/polly/trunk/utils
+END
+checkout_cloog.sh
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/213062/polly/trunk/utils/checkout_cloog.sh
+END
+update_format.sh
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/llvm-project/!svn/ver/195507/polly/trunk/utils/update_format.sh
+END
+argparse.py
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/llvm-project/!svn/ver/187101/polly/trunk/utils/argparse.py
+END
+jscop2cloog.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/llvm-project/!svn/ver/145401/polly/trunk/utils/jscop2cloog.py
+END
+check_format.sh
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/215871/polly/trunk/utils/check_format.sh
+END

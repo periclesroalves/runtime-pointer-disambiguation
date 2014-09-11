@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/llvm-project/!svn/ver/215816/polly/trunk/test/DeadCodeElimination
+END
+chained_iterations.ll
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/llvm-project/!svn/ver/201817/polly/trunk/test/DeadCodeElimination/chained_iterations.ll
+END
+chained_iterations_2.ll
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/llvm-project/!svn/ver/201817/polly/trunk/test/DeadCodeElimination/chained_iterations_2.ll
+END
+non-affine.ll
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/212796/polly/trunk/test/DeadCodeElimination/non-affine.ll
+END
+non-affine-affine-mix.ll
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/llvm-project/!svn/ver/215816/polly/trunk/test/DeadCodeElimination/non-affine-affine-mix.ll
+END
+dead_iteration_elimination.ll
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/llvm-project/!svn/ver/202010/polly/trunk/test/DeadCodeElimination/dead_iteration_elimination.ll
+END
+computeout.ll
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/llvm-project/!svn/ver/201982/polly/trunk/test/DeadCodeElimination/computeout.ll
+END
+null_schedule.ll
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/llvm-project/!svn/ver/201817/polly/trunk/test/DeadCodeElimination/null_schedule.ll
+END

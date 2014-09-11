@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/llvm-project/!svn/ver/204220/cfe/trunk/test/Modules/Inputs/declare-use
+END
+j.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/204220/cfe/trunk/test/Modules/Inputs/declare-use/j.h
+END
+module.map
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/llvm-project/!svn/ver/204220/cfe/trunk/test/Modules/Inputs/declare-use/module.map
+END
+a.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/191283/cfe/trunk/test/Modules/Inputs/declare-use/a.h
+END
+b.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/191283/cfe/trunk/test/Modules/Inputs/declare-use/b.h
+END
+c.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/191283/cfe/trunk/test/Modules/Inputs/declare-use/c.h
+END
+s.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/203929/cfe/trunk/test/Modules/Inputs/declare-use/s.h
+END
+d.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/191283/cfe/trunk/test/Modules/Inputs/declare-use/d.h
+END
+e.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/196311/cfe/trunk/test/Modules/Inputs/declare-use/e.h
+END
+f.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/191283/cfe/trunk/test/Modules/Inputs/declare-use/f.h
+END
+g.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/191283/cfe/trunk/test/Modules/Inputs/declare-use/g.h
+END
+g1.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/191283/cfe/trunk/test/Modules/Inputs/declare-use/g1.h
+END
+h.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/196573/cfe/trunk/test/Modules/Inputs/declare-use/h.h
+END
+h1.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/llvm-project/!svn/ver/191283/cfe/trunk/test/Modules/Inputs/declare-use/h1.h
+END
+i.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/llvm-project/!svn/ver/197035/cfe/trunk/test/Modules/Inputs/declare-use/i.h
+END
