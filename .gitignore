@@ -20,3 +20,6 @@ grosser-polly-thesis.pdf
 # CLooG lib
 cloog_install/
 cloog_src/
+
+# Executable test files
+tests/bad-alias

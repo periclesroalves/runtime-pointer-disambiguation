@@ -44,6 +44,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "polly/AliasInstrumenter.h"
 #include "polly/CodeGen/BlockGenerators.h"
 #include "polly/LinkAllPasses.h"
 #include "polly/Options.h"

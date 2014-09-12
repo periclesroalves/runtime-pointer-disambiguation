@@ -197,15 +197,6 @@ class ScopDetection : public FunctionPass {
   /// @return True if the call instruction is valid, false otherwise.
   static bool isValidCallInst(CallInst &CI);
 
-  /// @brief Check if a value is invariant in the region Reg.
-  ///
-  /// @param Val Value to check for invariance.
-  /// @param Reg The region to consider for the invariance of Val.
-  ///
-  /// @return True if the value represented by Val is invariant in the region
-  ///         identified by Reg.
-  bool isInvariant(const Value &Val, const Region &Reg) const;
-
   /// @brief Check if a memory access can be part of a Scop.
   ///
   /// @param Inst The instruction accessing the memory.
@@ -282,6 +273,15 @@ public:
   ///
   /// @return Return true if R is the maximum Region in a Scop, false otherwise.
   bool isMaxRegionInScop(const Region &R, bool Verify = true) const;
+
+  /// @brief Check if a value is invariant in the region Reg.
+  ///
+  /// @param Val Value to check for invariance.
+  /// @param Reg The region to consider for the invariance of Val.
+  ///
+  /// @return True if the value represented by Val is invariant in the region
+  ///         identified by Reg.
+  bool isInvariant(const Value &Val, const Region &Reg) const;
 
   /// @brief Get a message why a region is invalid
   ///

@@ -15,14 +15,17 @@
 namespace llvm {
 class SCEV;
 class Value;
+class Region;
 }
 
 namespace polly {
-// Returns the maximum value a SCEV can assume.
-llvm::Value *getSCEVUpperBound(const llvm::SCEV *s);
+class ScopDetection;
 
 // Returns the maximum value a SCEV can assume.
-llvm::Value *getSCEVLowerBound(const llvm::SCEV *s);
+llvm::Value *getSCEVUpperBound(const polly::ScopDetection *sd, const llvm::Region *r, const llvm::SCEV *s);
+
+// Returns the maximum value a SCEV can assume.
+llvm::Value *getSCEVLowerBound(const polly::ScopDetection *sd, const llvm::Region *r, const llvm::SCEV *s);
 }
 
 #endif
