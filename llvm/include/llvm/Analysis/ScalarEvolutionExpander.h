@@ -171,6 +171,11 @@ namespace llvm {
 
     void enableLSRMode() { LSRMode = true; }
 
+    // Set the insertion point as the end of the specified block.
+    void setInsertPoint(BasicBlock *bb) {
+      Builder.SetInsertPoint(bb);
+    }
+
     /// clearInsertPoint - Clear the current insertion point. This is useful
     /// if the instruction that had been serving as the insertion point may
     /// have been deleted.

@@ -13,6 +13,7 @@
 #define POLLY_ALIAS_INSTRUMENTER_H
 
 namespace llvm {
+class ScalarEvolution;
 class SCEV;
 class Value;
 class Region;
@@ -22,10 +23,14 @@ namespace polly {
 class ScopDetection;
 
 // Returns the maximum value a SCEV can assume.
-llvm::Value *getSCEVUpperBound(const polly::ScopDetection *sd, const llvm::Region *r, const llvm::SCEV *s);
+llvm::Value *getSCEVUpperBound(llvm::ScalarEvolution *se,
+                               polly::ScopDetection *sd, llvm::Region *r, const
+                               llvm::SCEV *s);
 
 // Returns the maximum value a SCEV can assume.
-llvm::Value *getSCEVLowerBound(const polly::ScopDetection *sd, const llvm::Region *r, const llvm::SCEV *s);
+llvm::Value *getSCEVLowerBound(llvm::ScalarEvolution *se,
+                               polly::ScopDetection *sd, llvm::Region *r, const
+                               llvm::SCEV *s);
 }
 
 #endif
