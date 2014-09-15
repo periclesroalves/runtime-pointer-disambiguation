@@ -23,14 +23,14 @@ namespace polly {
 class ScopDetection;
 
 // Returns the maximum value a SCEV can assume.
-llvm::Value *getSCEVUpperBound(llvm::ScalarEvolution *se,
-                               polly::ScopDetection *sd, llvm::Region *r, const
-                               llvm::SCEV *s);
+llvm::Value *generateSCEVUpperBound(llvm::ScalarEvolution *se,
+                               const polly::ScopDetection *sd, llvm::Region *r,
+                               const llvm::SCEV *s);
 
 // Returns the maximum value a SCEV can assume.
-llvm::Value *getSCEVLowerBound(llvm::ScalarEvolution *se,
-                               polly::ScopDetection *sd, llvm::Region *r, const
-                               llvm::SCEV *s);
+llvm::Value *generateSCEVLowerBound(llvm::ScalarEvolution *se,
+                               const polly::ScopDetection *sd, llvm::Region *r,
+                               const llvm::SCEV *s);
 }
 
 #endif

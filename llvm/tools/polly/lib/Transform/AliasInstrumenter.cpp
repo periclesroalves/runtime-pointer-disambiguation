@@ -13,25 +13,26 @@ using namespace polly;
 
 
 // Utility for computing Value objects corresponding to the lower and upper
-// bounds of a SCEV within a region R. The generated values are inserted into
-// the region entry. The resulting expressions can then be filled with runtime
-// values, in order to dynamically compute the exact bounds. Bounds are only
-// provided if they can be computed right before the region start, i.e., all
-// values in the SCEV are region invariant or vary in a well-behaved way.
+// bounds of a SCEV within a region R. The generated values are inserted right
+// before the region entry. The resulting expressions can then be filled with
+// runtime values, in order to dynamically compute the exact bounds. Bounds are
+// only provided if they can be computed right before the region start, i.e.,
+// all values in the SCEV are region invariant or vary in a well-behaved way.
 struct SCEVRangeAnalyser : private SCEVExpander {
 private:
-  ScopDetection *sd;
+  const ScopDetection *sd;
+  ScalarEvolution *se;
   Region *r;
   const bool upper; // Which bound to extract. Lower if false.
 
-  SCEVRangeAnalyser(ScalarEvolution *se, ScopDetection *sd, Region *r, const
-                    bool upper)
-    : SCEVExpander(*se, "scevrange"), sd(sd), r(r), upper(upper) {
+  SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r,
+                    const bool upper)
+    : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r), upper(upper) {
     setInsertPoint(getInsertionBlock());
   }
 
-  // TODO: test this method.
   // TODO: take care to do not insert duplicated range computations.
+  // TODO: do not create this block if values were not inserted.
   // Creates a block to insert the values needed for bounds computation, if it
   // doesn't already exist. The new block is inserted right before the entry
   // block of the current region, in the hope that it doesn't affect any
@@ -46,7 +47,7 @@ private:
 
     // Create a new block.
     BasicBlock *oldEntry = r->getEntry();
-    BasicBlock *newEntry = SplitBlock(oldEntry, oldEntry->begin(), sd);
+    BasicBlock *newEntry = SplitBlock(oldEntry, oldEntry->begin(), se);
     r->replaceEntryRecursive(newEntry);
 
     return oldEntry;
@@ -114,28 +115,28 @@ private:
 
 public:
   // Returns the maximum value an SCEV can assume.
-  static Value *getUpperBound(ScalarEvolution *se, ScopDetection *sd, Region *r,
-                              const SCEV *s) {
+  static Value *generateUpperBound(ScalarEvolution *se, const ScopDetection *sd,
+                                   Region *r, const SCEV *s) {
     SCEVRangeAnalyser analyser(se, sd, r, true);
     return analyser.visit(s);
   }
 
   // Returns the minimum value an SCEV can assume.
-  static Value *getLowerBound(ScalarEvolution *se, ScopDetection *sd, Region *r,
-                              const SCEV *s) {
+  static Value *generateLowerBound(ScalarEvolution *se, const ScopDetection *sd,
+                                   Region *r, const SCEV *s) {
     SCEVRangeAnalyser analyser(se, sd, r, false);
     return analyser.visit(s);
   }
 };
 
 namespace polly {
-Value *getSCEVUpperBound(ScalarEvolution *se, ScopDetection *sd, Region *r,
-                         const SCEV *s) {
-  return SCEVRangeAnalyser::getUpperBound(se, sd, r, s);
+Value *generateSCEVUpperBound(ScalarEvolution *se, const ScopDetection *sd,
+                              Region *r, const SCEV *s) {
+  return SCEVRangeAnalyser::generateUpperBound(se, sd, r, s);
 }
 
-Value *getSCEVLowerBound(ScalarEvolution *se, ScopDetection *sd, Region *r,
-                         const SCEV *s) {
-  return SCEVRangeAnalyser::getLowerBound(se, sd, r, s);
+Value *generateSCEVLowerBound(ScalarEvolution *se, const ScopDetection *sd,
+                              Region *r, const SCEV *s) {
+  return SCEVRangeAnalyser::generateLowerBound(se, sd, r, s);
 }
 }

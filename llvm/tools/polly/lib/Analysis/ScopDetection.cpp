@@ -481,8 +481,10 @@ bool ScopDetection::isValidMemoryAccess(Instruction &Inst,
   // alias, if -basicaa is not available. They actually do not, but as we can
   // not proof this without -basicaa we would fail. We disable this check to
   // not cause irrelevant verification failures.
-  if (!AS.isMustAlias())
+  if (!AS.isMustAlias()) {
+    generateSCEVUpperBound(SE, this, &Context.CurRegion, BasePointer);
     return invalid<ReportAlias>(Context, /*Assert=*/false, &Inst, AS);
+  }
 
   return true;
 }
