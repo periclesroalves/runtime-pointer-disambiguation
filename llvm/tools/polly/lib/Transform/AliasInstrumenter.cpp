@@ -53,6 +53,23 @@ private:
     return oldEntry;
   }
 
+  // TODO: like in SCEVExpander, here should come best insertion-point
+  // computation.
+  // TODO: check what happens when NULL is returned to a visit() method of
+  // SCEVExpander.
+  Value *expand(const SCEV *s) {
+    // Check to see if we already expanded this expression.
+    Instruction *insertPt = getInsertPoint();
+    Value *v = getSavedExpression(s, insertPt);
+  
+    if (v)
+      return v;
+  
+    v = visit(s);
+    rememberExpression(s, insertPt, v);
+    return v;
+  }
+
   Value *visitConstant(const SCEVConstant *constant) {
     return constant->getValue();
   }
@@ -91,17 +108,39 @@ private:
     // TODO
     return NULL;
   }
-  
-  Value *visitSMaxExpr(const SCEVSMaxExpr *expr) {
-    // TODO
-    return NULL;
-  }
-  
+
   Value *visitUMaxExpr(const SCEVUMaxExpr *expr) {
     // TODO
     return NULL;
   }
 
+  // TODO: test this method's flow (methods of the right class) and generated code.
+  // Simply expand all operands and save them on the expression cache. We then
+  // call the base expander to build the final expression. This is done so we
+  // can check that all operands have computable bounds before we build the
+  // actual instructions.
+  // - upper_bound: max(upper_bound(op_1), upper_bound(op_2))
+  // - lower_bound: max(lower_bound(op_1), lower_bound(op_2))
+  Value *visitSMaxExpr(const SCEVSMaxExpr *expr) {
+    Value *lhs = expand(expr->getOperand(expr->getNumOperands()-1));
+    Type *ty = lhs->getType();
+
+    if (!lhs)
+      return NULL;
+
+    for (int i = expr->getNumOperands()-2; i >= 0; --i) {
+      if (expr->getOperand(i)->getType() != ty) {
+        ty = se->getEffectiveSCEVType(ty);
+      }
+      Value *rhs = expandCodeFor(expr->getOperand(i), ty);
+
+      if (!rhs)
+        return NULL;
+    }
+
+    return SCEVExpander::visitSMaxExpr(expr);
+  }
+ 
   // The bounds of a generic value are the value itself, if it is region
   // invariant, i.e., a region parameter.
   Value *visitUnknown(const SCEVUnknown *expr) {
@@ -118,14 +157,14 @@ public:
   static Value *generateUpperBound(ScalarEvolution *se, const ScopDetection *sd,
                                    Region *r, const SCEV *s) {
     SCEVRangeAnalyser analyser(se, sd, r, true);
-    return analyser.visit(s);
+    return analyser.expand(s);
   }
 
   // Returns the minimum value an SCEV can assume.
   static Value *generateLowerBound(ScalarEvolution *se, const ScopDetection *sd,
                                    Region *r, const SCEV *s) {
     SCEVRangeAnalyser analyser(se, sd, r, false);
-    return analyser.visit(s);
+    return analyser.expand(s);
   }
 };
 

@@ -171,6 +171,10 @@ namespace llvm {
 
     void enableLSRMode() { LSRMode = true; }
 
+    Instruction *getInsertPoint() {
+      return Builder.GetInsertPoint();
+    }
+
     // Set the insertion point as the end of the specified block.
     void setInsertPoint(BasicBlock *bb) {
       Builder.SetInsertPoint(bb);
@@ -191,6 +195,44 @@ namespace llvm {
     }
 
     void setChainedPhi(PHINode *PN) { ChainedPhis.insert(PN); }
+
+  protected:
+    Value* getSavedExpression(const SCEV *S, Instruction *InsertPt);
+
+    void rememberExpression(const SCEV *S, Instruction *InsertPt,
+                                          Value *V);
+
+    /// expandCodeFor - Insert code to directly compute the specified SCEV
+    /// expression into the program.  The inserted code is inserted into the
+    /// SCEVExpander's current insertion point. If a type is specified, the
+    /// result will be expanded to have that type, with a cast if necessary.
+    Value *expandCodeFor(const SCEV *SH, Type *Ty = nullptr);
+
+    Value *visitConstant(const SCEVConstant *S) {
+      return S->getValue();
+    }
+
+    Value *visitTruncateExpr(const SCEVTruncateExpr *S);
+
+    Value *visitZeroExtendExpr(const SCEVZeroExtendExpr *S);
+
+    Value *visitSignExtendExpr(const SCEVSignExtendExpr *S);
+
+    Value *visitAddExpr(const SCEVAddExpr *S);
+
+    Value *visitMulExpr(const SCEVMulExpr *S);
+
+    Value *visitUDivExpr(const SCEVUDivExpr *S);
+
+    Value *visitAddRecExpr(const SCEVAddRecExpr *S);
+
+    Value *visitSMaxExpr(const SCEVSMaxExpr *S);
+
+    Value *visitUMaxExpr(const SCEVUMaxExpr *S);
+
+    Value *visitUnknown(const SCEVUnknown *S) {
+      return S->getValue();
+    }
 
   private:
     LLVMContext &getContext() const { return SE.getContext(); }
@@ -220,40 +262,8 @@ namespace llvm {
 
     Value *expand(const SCEV *S);
 
-    /// expandCodeFor - Insert code to directly compute the specified SCEV
-    /// expression into the program.  The inserted code is inserted into the
-    /// SCEVExpander's current insertion point. If a type is specified, the
-    /// result will be expanded to have that type, with a cast if necessary.
-    Value *expandCodeFor(const SCEV *SH, Type *Ty = nullptr);
-
     /// getRelevantLoop - Determine the most "relevant" loop for the given SCEV.
     const Loop *getRelevantLoop(const SCEV *);
-
-    Value *visitConstant(const SCEVConstant *S) {
-      return S->getValue();
-    }
-
-    Value *visitTruncateExpr(const SCEVTruncateExpr *S);
-
-    Value *visitZeroExtendExpr(const SCEVZeroExtendExpr *S);
-
-    Value *visitSignExtendExpr(const SCEVSignExtendExpr *S);
-
-    Value *visitAddExpr(const SCEVAddExpr *S);
-
-    Value *visitMulExpr(const SCEVMulExpr *S);
-
-    Value *visitUDivExpr(const SCEVUDivExpr *S);
-
-    Value *visitAddRecExpr(const SCEVAddRecExpr *S);
-
-    Value *visitSMaxExpr(const SCEVSMaxExpr *S);
-
-    Value *visitUMaxExpr(const SCEVUMaxExpr *S);
-
-    Value *visitUnknown(const SCEVUnknown *S) {
-      return S->getValue();
-    }
 
     void rememberInstruction(Value *I);
 

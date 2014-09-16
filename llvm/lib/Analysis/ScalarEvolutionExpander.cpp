@@ -1627,16 +1627,16 @@ Value *SCEVExpander::expand(const SCEV *S) {
     }
 
   // Check to see if we already expanded this here.
-  std::map<std::pair<const SCEV *, Instruction *>, TrackingVH<Value> >::iterator
-    I = InsertedExpressions.find(std::make_pair(S, InsertPt));
-  if (I != InsertedExpressions.end())
-    return I->second;
+  Value *V = getSavedExpression(S, InsertPt);
+
+  if (V)
+    return V;
 
   BuilderType::InsertPointGuard Guard(Builder);
   Builder.SetInsertPoint(InsertPt->getParent(), InsertPt);
 
   // Expand the expression into instructions.
-  Value *V = visit(S);
+  V = visit(S);
 
   // Remember the expanded value for this SCEV at this location.
   //
@@ -1644,9 +1644,23 @@ Value *SCEVExpander::expand(const SCEV *S) {
   // the expression at this insertion point. If the mapped value happened to be
   // a postinc expansion, it could be reused by a non-postinc user, but only if
   // its insertion point was already at the head of the loop.
-  InsertedExpressions[std::make_pair(S, InsertPt)] = V;
+  rememberExpression(S, InsertPt, V);
   return V;
 }
+
+Value* SCEVExpander::getSavedExpression(const SCEV *S, Instruction *InsertPt) {
+  std::map<std::pair<const SCEV *, Instruction *>, TrackingVH<Value> >::iterator
+    I = InsertedExpressions.find(std::make_pair(S, InsertPt));
+  if (I != InsertedExpressions.end())
+    return I->second;
+
+  return NULL;
+}
+
+void SCEVExpander::rememberExpression(const SCEV *S, Instruction *InsertPt, Value *V) {
+  InsertedExpressions[std::make_pair(S, InsertPt)] = V;
+}
+
 
 void SCEVExpander::rememberInstruction(Value *I) {
   if (!PostIncLoops.empty())
