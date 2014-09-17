@@ -176,8 +176,8 @@ namespace llvm {
     }
 
     // Set the insertion point as the end of the specified block.
-    void setInsertPoint(BasicBlock *bb) {
-      Builder.SetInsertPoint(bb);
+    void SetInsertPoint(BasicBlock *bb, BasicBlock::iterator ip) {
+      Builder.SetInsertPoint(bb, ip);
     }
 
     /// clearInsertPoint - Clear the current insertion point. This is useful

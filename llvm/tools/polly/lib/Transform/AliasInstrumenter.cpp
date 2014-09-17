@@ -13,11 +13,11 @@ using namespace polly;
 
 
 // Utility for computing Value objects corresponding to the lower and upper
-// bounds of a SCEV within a region R. The generated values are inserted right
-// before the region entry. The resulting expressions can then be filled with
-// runtime values, in order to dynamically compute the exact bounds. Bounds are
-// only provided if they can be computed right before the region start, i.e.,
-// all values in the SCEV are region invariant or vary in a well-behaved way.
+// bounds of a SCEV within a region R. The generated values are inserted into
+// the region entry. The resulting expressions can then be filled with runtime
+// values, in order to dynamically compute the exact bounds. Bounds are only
+// provided if they can be computed right before the region start, i.e., all
+// values in the SCEV are region invariant or vary in a well-behaved way.
 struct SCEVRangeAnalyser : private SCEVExpander {
 private:
   const ScopDetection *sd;
@@ -28,29 +28,20 @@ private:
   SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r,
                     const bool upper)
     : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r), upper(upper) {
-    setInsertPoint(getInsertionBlock());
+    BasicBlock *insertionBlock = getInsertionBlock();
+    SetInsertPoint(insertionBlock, insertionBlock->begin());
   }
 
   // TODO: take care to do not insert duplicated range computations.
-  // TODO: do not create this block if values were not inserted.
-  // Creates a block to insert the values needed for bounds computation, if it
-  // doesn't already exist. The new block is inserted right before the entry
-  // block of the current region, in the hope that it doesn't affect any
-  // region-based analysis that may be going on.
+  // Guarantees that the region entry, a.k.a. the insertion block, has a single
+  // successor. This separates range computation from actual region code.
   BasicBlock *getInsertionBlock() {
-    BasicBlock *insertionBB = NULL;
+    BasicBlock *entry = r->getEntry();
 
-    insertionBB = r->getEnteringBlock();
+    if (entry->getTerminator()->getNumSuccessors() == 1)
+      SplitBlock(entry, entry->begin(), se);
 
-    if (insertionBB)
-      return insertionBB;
-
-    // Create a new block.
-    BasicBlock *oldEntry = r->getEntry();
-    BasicBlock *newEntry = SplitBlock(oldEntry, oldEntry->begin(), se);
-    r->replaceEntryRecursive(newEntry);
-
-    return oldEntry;
+    return entry;
   }
 
   // TODO: like in SCEVExpander, here should come best insertion-point
@@ -70,48 +61,81 @@ private:
     return v;
   }
 
+  // We need to overwrite this method so the most specialized visit methods are
+  // called before the visitors on SCEVExpander.
+  Value *visit(const SCEV *s) {
+    switch (s->getSCEVType()) {
+      case scConstant:
+        return visitConstant((const SCEVConstant*)s);
+      case scTruncate:
+        return visitTruncateExpr((const SCEVTruncateExpr*)s);
+      case scZeroExtend:
+        return visitZeroExtendExpr((const SCEVZeroExtendExpr*)s);
+      case scSignExtend:
+        return visitSignExtendExpr((const SCEVSignExtendExpr*)s);
+      case scAddExpr:
+        return visitAddExpr((const SCEVAddExpr*)s);
+      case scMulExpr:
+        return visitMulExpr((const SCEVMulExpr*)s);
+      case scUDivExpr:
+        return visitUDivExpr((const SCEVUDivExpr*)s);
+      case scAddRecExpr:
+        return visitAddRecExpr((const SCEVAddRecExpr*)s);
+      case scSMaxExpr:
+        return visitSMaxExpr((const SCEVSMaxExpr*)s);
+      case scUMaxExpr:
+        return visitUMaxExpr((const SCEVUMaxExpr*)s);
+      case scUnknown:
+        return visitUnknown((const SCEVUnknown*)s);
+      case scCouldNotCompute:
+        return visitCouldNotCompute((const SCEVCouldNotCompute*)s);
+      default:
+        llvm_unreachable("Unknown SCEV type!");
+    }
+  }
+
   Value *visitConstant(const SCEVConstant *constant) {
     return constant->getValue();
   }
   
   Value *visitTruncateExpr(const SCEVTruncateExpr *expr) {
     // TODO
-    return NULL;
+    return nullptr;
   }
   
   Value *visitZeroExtendExpr(const SCEVZeroExtendExpr *expr) {
     // TODO
-    return NULL;
+    return nullptr;
   }
   
   Value *visitSignExtendExpr(const SCEVSignExtendExpr *expr) {
     // TODO
-    return NULL;
+    return nullptr;
   }
   
   Value *visitAddExpr(const SCEVAddExpr *expr) {
     // TODO
-    return NULL;
+    return nullptr;
   }
   
   Value *visitMulExpr(const SCEVMulExpr *expr) {
     // TODO
-    return NULL;
+    return nullptr;
   }
   
   Value *visitUDivExpr(const SCEVUDivExpr *expr) {
     // TODO
-    return NULL;
+    return nullptr;
   }
   
   Value *visitAddRecExpr(const SCEVAddRecExpr *expr) {
     // TODO
-    return NULL;
+    return nullptr;
   }
 
   Value *visitUMaxExpr(const SCEVUMaxExpr *expr) {
     // TODO
-    return NULL;
+    return nullptr;
   }
 
   // TODO: test this method's flow (methods of the right class) and generated code.
@@ -123,19 +147,20 @@ private:
   // - lower_bound: max(lower_bound(op_1), lower_bound(op_2))
   Value *visitSMaxExpr(const SCEVSMaxExpr *expr) {
     Value *lhs = expand(expr->getOperand(expr->getNumOperands()-1));
-    Type *ty = lhs->getType();
 
     if (!lhs)
-      return NULL;
+      return nullptr;
+
+    Type *ty = lhs->getType();
 
     for (int i = expr->getNumOperands()-2; i >= 0; --i) {
-      if (expr->getOperand(i)->getType() != ty) {
+      if (expr->getOperand(i)->getType() != ty)
         ty = se->getEffectiveSCEVType(ty);
-      }
+
       Value *rhs = expandCodeFor(expr->getOperand(i), ty);
 
       if (!rhs)
-        return NULL;
+        return nullptr;
     }
 
     return SCEVExpander::visitSMaxExpr(expr);
@@ -147,7 +172,7 @@ private:
     Value *val = expr->getValue();
 
     if (!sd->isInvariant(*val, *r))
-      return NULL;
+      return nullptr;
 
     return val;
   }

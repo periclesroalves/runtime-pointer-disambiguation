@@ -1,16 +1,17 @@
 #include <stdio.h>
+#include <algorithm>
 
-void foo (int *A, int *B) {
-  for (int i = 0; i < 100; i++) {
+void foo (int *__restrict__ A, int *__restrict__ B) {
+  for (int i = (int)__builtin_fmax(0, 3); i < 100; i++) {
     A[i] = i;
-    B [i] = A[i];
+    B[i] = A[i];
   }
 }
 
 int main () {
   int A[100], B[100];
 
-  foo (A, B);
+  foo (A, B); 
 
   printf ("%d\n", B[5]);
 }

@@ -23,3 +23,5 @@ cloog_src/
 
 # Executable test files
 tests/bad-alias
+
+llvm/grep
