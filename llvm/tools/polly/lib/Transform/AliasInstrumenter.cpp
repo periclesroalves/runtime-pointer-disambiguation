@@ -28,20 +28,7 @@ private:
   SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r,
                     const bool upper)
     : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r), upper(upper) {
-    BasicBlock *insertionBlock = getInsertionBlock();
-    SetInsertPoint(insertionBlock, insertionBlock->begin());
-  }
-
-  // TODO: take care to do not insert duplicated range computations.
-  // Guarantees that the region entry, a.k.a. the insertion block, has a single
-  // successor. This separates range computation from actual region code.
-  BasicBlock *getInsertionBlock() {
-    BasicBlock *entry = r->getEntry();
-
-    if (entry->getTerminator()->getNumSuccessors() == 1)
-      SplitBlock(entry, entry->begin(), se);
-
-    return entry;
+    SetInsertPoint(r->getEntry(), r->getEntry()->begin());
   }
 
   // TODO: like in SCEVExpander, here should come best insertion-point
@@ -52,7 +39,7 @@ private:
     // Check to see if we already expanded this expression.
     Instruction *insertPt = getInsertPoint();
     Value *v = getSavedExpression(s, insertPt);
-  
+
     if (v)
       return v;
   
@@ -143,8 +130,8 @@ private:
   // call the base expander to build the final expression. This is done so we
   // can check that all operands have computable bounds before we build the
   // actual instructions.
-  // - upper_bound: max(upper_bound(op_1), upper_bound(op_2))
-  // - lower_bound: max(lower_bound(op_1), lower_bound(op_2))
+  // - upper_bound: max(upper_bound(op_1), ... upper_bound(op_N))
+  // - lower_bound: max(lower_bound(op_1), ... lower_bound(op_N))
   Value *visitSMaxExpr(const SCEVSMaxExpr *expr) {
     Value *lhs = expand(expr->getOperand(expr->getNumOperands()-1));
 

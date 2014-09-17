@@ -533,6 +533,13 @@ bool ScopDetection::isValidLoop(Loop *L, DetectionContext &Context) const {
 
   // Is the loop count affine?
   const SCEV *LoopCount = SE->getBackedgeTakenCount(L);
+
+  if (const SCEVUDivExpr *UDiv = dyn_cast<SCEVUDivExpr>(LoopCount))
+    if (const SCEVAddExpr *Add = dyn_cast<SCEVAddExpr>(UDiv->getLHS()))
+      if (Add->getNumOperands() >= 3)
+        if (const SCEVSMaxExpr *SMax = dyn_cast<SCEVSMaxExpr>(Add->getOperand(2)))
+          generateSCEVUpperBound(SE, this, &Context.CurRegion, SMax);
+
   if (!isAffineExpr(&Context.CurRegion, LoopCount, *SE))
     return invalid<ReportLoopBound>(Context, /*Assert=*/true, L, LoopCount);
 
