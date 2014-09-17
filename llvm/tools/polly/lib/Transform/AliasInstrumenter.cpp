@@ -23,7 +23,7 @@ private:
   const ScopDetection *sd;
   ScalarEvolution *se;
   Region *r;
-  const bool upper; // Which bound to extract. Lower if false.
+  const bool upper; // Which bound to extract from the main SCEV. Lower if false.
 
   SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r,
                     const bool upper)
@@ -94,10 +94,19 @@ private:
     // TODO
     return nullptr;
   }
-  
+
+  // Expand operands here first, to check the existence of their bounds, then
+  // call the expander visitor to generate the actual code.
+  // - upper_bound: sext(upper_bound(op))
+  // - lower_bound: sext(lower_bound(op))
   Value *visitSignExtendExpr(const SCEVSignExtendExpr *expr) {
-    // TODO
-    return nullptr;
+    Value *v = expandCodeFor(expr->getOperand(),
+               se->getEffectiveSCEVType(expr->getOperand()->getType()));
+
+    if (!v)
+      return nullptr;
+
+    return SCEVExpander::visitSignExtendExpr(expr);
   }
   
   Value *visitAddExpr(const SCEVAddExpr *expr) {
