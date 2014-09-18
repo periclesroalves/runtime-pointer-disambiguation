@@ -90,9 +90,18 @@ private:
     return nullptr;
   }
   
+  // Expand and save the bound of the operand on the expression cache, then
+  // invloke the expander visitor to generate the actual code.
+  // - upper_bound: zero_extend (upper_bound(op))
+  // - lower_bound: zero_extend (lower_bound(op))
   Value *visitZeroExtendExpr(const SCEVZeroExtendExpr *expr) {
-    // TODO
-    return nullptr;
+     Value *v = expandCodeFor(expr->getOperand(),
+                se->getEffectiveSCEVType(expr->getOperand()->getType()));
+
+     if (!v)
+       return nullptr;
+
+    return SCEVExpander::visitZeroExtendExpr(expr);
   }
 
   // Expand operands here first, to check the existence of their bounds, then
@@ -134,7 +143,6 @@ private:
     return nullptr;
   }
 
-  // TODO: test this method's flow (methods of the right class) and generated code.
   // Simply expand all operands and save them on the expression cache. We then
   // call the base expander to build the final expression. This is done so we
   // can check that all operands have computable bounds before we build the
