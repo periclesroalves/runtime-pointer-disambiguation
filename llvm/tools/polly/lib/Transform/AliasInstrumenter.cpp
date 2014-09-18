@@ -95,10 +95,7 @@ private:
   // - upper_bound: zero_extend (upper_bound(op))
   // - lower_bound: zero_extend (lower_bound(op))
   Value *visitZeroExtendExpr(const SCEVZeroExtendExpr *expr) {
-     Value *v = expandCodeFor(expr->getOperand(),
-                se->getEffectiveSCEVType(expr->getOperand()->getType()));
-
-     if (!v)
+    if (!expand(expr->getOperand()))
        return nullptr;
 
     return SCEVExpander::visitZeroExtendExpr(expr);
@@ -109,18 +106,23 @@ private:
   // - upper_bound: sext(upper_bound(op))
   // - lower_bound: sext(lower_bound(op))
   Value *visitSignExtendExpr(const SCEVSignExtendExpr *expr) {
-    Value *v = expandCodeFor(expr->getOperand(),
-               se->getEffectiveSCEVType(expr->getOperand()->getType()));
-
-    if (!v)
+    if (!expand(expr->getOperand()))
       return nullptr;
 
     return SCEVExpander::visitSignExtendExpr(expr);
   }
-  
+ 
+  // Simply put all operands on the expression cache and let the expander insert
+  // the actual instructions.
+  // - upper_bound: upper_bound(op) + upper_bound(op)
+  // - lower_bound: lower_bound(op) + lower_bound(op)
   Value *visitAddExpr(const SCEVAddExpr *expr) {
-    // TODO
-    return nullptr;
+    for (unsigned i = 0, e = expr->getNumOperands(); i < e; ++i) {
+      if (!expand(expr->getOperand(i)))
+        return nullptr;
+    }
+
+    return SCEVExpander::visitAddExpr(expr);
   }
   
   Value *visitMulExpr(const SCEVMulExpr *expr) {
@@ -150,20 +152,8 @@ private:
   // - upper_bound: max(upper_bound(op_1), ... upper_bound(op_N))
   // - lower_bound: max(lower_bound(op_1), ... lower_bound(op_N))
   Value *visitSMaxExpr(const SCEVSMaxExpr *expr) {
-    Value *lhs = expand(expr->getOperand(expr->getNumOperands()-1));
-
-    if (!lhs)
-      return nullptr;
-
-    Type *ty = lhs->getType();
-
-    for (int i = expr->getNumOperands()-2; i >= 0; --i) {
-      if (expr->getOperand(i)->getType() != ty)
-        ty = se->getEffectiveSCEVType(ty);
-
-      Value *rhs = expandCodeFor(expr->getOperand(i), ty);
-
-      if (!rhs)
+    for (unsigned i = 0, e = expr->getNumOperands(); i < e; ++i) {
+      if (!expand(expr->getOperand(i)))
         return nullptr;
     }
 
