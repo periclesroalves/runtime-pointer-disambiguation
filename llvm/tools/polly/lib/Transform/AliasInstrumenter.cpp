@@ -23,57 +23,79 @@ private:
   const ScopDetection *sd;
   ScalarEvolution *se;
   Region *r;
-  const bool upper; // Which bound to extract from the main SCEV. Lower if false.
+  const bool main_upper; // Which bound to extract from the main SCEV. Lower if
+                         // false.
+  std::map<std::tuple<const SCEV *, Instruction *, bool>, TrackingVH<Value> >
+    InsertedExpressions; // Saved expressions for reuse.
 
   SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r,
-                    const bool upper)
-    : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r), upper(upper) {
+                    const bool main_upper)
+    : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r),
+      main_upper(main_upper) {
     SetInsertPoint(r->getEntry(), r->getEntry()->begin());
   }
 
+  Value* getSavedExpression(const SCEV *S, Instruction *InsertPt,
+                                          bool upper) {
+    std::map<std::tuple<const SCEV *, Instruction *, bool>, TrackingVH<Value> >::iterator
+      I = InsertedExpressions.find(std::make_tuple(S, InsertPt, upper));
+    if (I != InsertedExpressions.end())
+      return I->second;
+  
+    return NULL;
+  }
+  
+  void rememberExpression(const SCEV *S, Instruction *InsertPt, bool upper,
+                                        Value *V) {
+    InsertedExpressions[std::make_tuple(S, InsertPt, upper)] = V;
+  }
+
+  // If the caller doesn't specify which bound to compute, we assume the same of
+  // the main expression. Usually called by methods defined in SCEVExpander.
+  Value *expand(const SCEV *s) {return expand(s, main_upper);}
+  Value *visit(const SCEV *s) {return visit(s, main_upper);}
+
   // TODO: like in SCEVExpander, here should come best insertion-point
   // computation.
-  // TODO: check what happens when NULL is returned to a visit() method of
-  // SCEVExpander.
-  Value *expand(const SCEV *s) {
-    // Check to see if we already expanded this expression.
+  // Check expression cache before expansion.
+  Value *expand(const SCEV *s, bool upper) {
     Instruction *insertPt = getInsertPoint();
-    Value *v = getSavedExpression(s, insertPt);
+    Value *v = getSavedExpression(s, insertPt, upper);
 
     if (v)
       return v;
   
-    v = visit(s);
-    rememberExpression(s, insertPt, v);
+    v = visit(s, upper);
+    rememberExpression(s, insertPt, upper, v);
     return v;
   }
 
   // We need to overwrite this method so the most specialized visit methods are
   // called before the visitors on SCEVExpander.
-  Value *visit(const SCEV *s) {
+  Value *visit(const SCEV *s, bool upper) {
     switch (s->getSCEVType()) {
       case scConstant:
-        return visitConstant((const SCEVConstant*)s);
+        return visitConstant((const SCEVConstant*)s, upper);
       case scTruncate:
-        return visitTruncateExpr((const SCEVTruncateExpr*)s);
+        return visitTruncateExpr((const SCEVTruncateExpr*)s, upper);
       case scZeroExtend:
-        return visitZeroExtendExpr((const SCEVZeroExtendExpr*)s);
+        return visitZeroExtendExpr((const SCEVZeroExtendExpr*)s, upper);
       case scSignExtend:
-        return visitSignExtendExpr((const SCEVSignExtendExpr*)s);
+        return visitSignExtendExpr((const SCEVSignExtendExpr*)s, upper);
       case scAddExpr:
-        return visitAddExpr((const SCEVAddExpr*)s);
+        return visitAddExpr((const SCEVAddExpr*)s, upper);
       case scMulExpr:
-        return visitMulExpr((const SCEVMulExpr*)s);
+        return visitMulExpr((const SCEVMulExpr*)s, upper);
       case scUDivExpr:
-        return visitUDivExpr((const SCEVUDivExpr*)s);
+        return visitUDivExpr((const SCEVUDivExpr*)s, upper);
       case scAddRecExpr:
-        return visitAddRecExpr((const SCEVAddRecExpr*)s);
+        return visitAddRecExpr((const SCEVAddRecExpr*)s, upper);
       case scSMaxExpr:
-        return visitSMaxExpr((const SCEVSMaxExpr*)s);
+        return visitSMaxExpr((const SCEVSMaxExpr*)s, upper);
       case scUMaxExpr:
-        return visitUMaxExpr((const SCEVUMaxExpr*)s);
+        return visitUMaxExpr((const SCEVUMaxExpr*)s, upper);
       case scUnknown:
-        return visitUnknown((const SCEVUnknown*)s);
+        return visitUnknown((const SCEVUnknown*)s, upper);
       case scCouldNotCompute:
         return visitCouldNotCompute((const SCEVCouldNotCompute*)s);
       default:
@@ -81,11 +103,11 @@ private:
     }
   }
 
-  Value *visitConstant(const SCEVConstant *constant) {
+  Value *visitConstant(const SCEVConstant *constant, bool upper) {
     return constant->getValue();
   }
   
-  Value *visitTruncateExpr(const SCEVTruncateExpr *expr) {
+  Value *visitTruncateExpr(const SCEVTruncateExpr *expr, bool upper) {
     // TODO
     return nullptr;
   }
@@ -94,7 +116,7 @@ private:
   // invloke the expander visitor to generate the actual code.
   // - upper_bound: zero_extend (upper_bound(op))
   // - lower_bound: zero_extend (lower_bound(op))
-  Value *visitZeroExtendExpr(const SCEVZeroExtendExpr *expr) {
+  Value *visitZeroExtendExpr(const SCEVZeroExtendExpr *expr, bool upper) {
     if (!expand(expr->getOperand()))
        return nullptr;
 
@@ -105,7 +127,7 @@ private:
   // call the expander visitor to generate the actual code.
   // - upper_bound: sext(upper_bound(op))
   // - lower_bound: sext(lower_bound(op))
-  Value *visitSignExtendExpr(const SCEVSignExtendExpr *expr) {
+  Value *visitSignExtendExpr(const SCEVSignExtendExpr *expr, bool upper) {
     if (!expand(expr->getOperand()))
       return nullptr;
 
@@ -116,7 +138,7 @@ private:
   // the actual instructions.
   // - upper_bound: upper_bound(op) + upper_bound(op)
   // - lower_bound: lower_bound(op) + lower_bound(op)
-  Value *visitAddExpr(const SCEVAddExpr *expr) {
+  Value *visitAddExpr(const SCEVAddExpr *expr, bool upper) {
     for (unsigned i = 0, e = expr->getNumOperands(); i < e; ++i) {
       if (!expand(expr->getOperand(i)))
         return nullptr;
@@ -125,22 +147,25 @@ private:
     return SCEVExpander::visitAddExpr(expr);
   }
   
-  Value *visitMulExpr(const SCEVMulExpr *expr) {
+  Value *visitMulExpr(const SCEVMulExpr *expr, bool upper) {
     // TODO
     return nullptr;
   }
   
-  Value *visitUDivExpr(const SCEVUDivExpr *expr) {
+  Value *visitUDivExpr(const SCEVUDivExpr *expr, bool upper) {
     // TODO
     return nullptr;
   }
   
-  Value *visitAddRecExpr(const SCEVAddRecExpr *expr) {
+  Value *visitAddRecExpr(const SCEVAddRecExpr *expr, bool upper) {
     // TODO
     return nullptr;
   }
 
-  Value *visitUMaxExpr(const SCEVUMaxExpr *expr) {
+  // - upper_bound : umax (lower(op1), upper(op1), ... , lower(opN), upper(opN))
+  // - lower_bound : max(umin(lower(op1), upper(op1)), ...,
+  //                     umin(lower(opN), upper(opN)))
+  Value *visitUMaxExpr(const SCEVUMaxExpr *expr, bool upper) {
     // TODO
     return nullptr;
   }
@@ -151,7 +176,7 @@ private:
   // actual instructions.
   // - upper_bound: max(upper_bound(op_1), ... upper_bound(op_N))
   // - lower_bound: max(lower_bound(op_1), ... lower_bound(op_N))
-  Value *visitSMaxExpr(const SCEVSMaxExpr *expr) {
+  Value *visitSMaxExpr(const SCEVSMaxExpr *expr, bool upper) {
     for (unsigned i = 0, e = expr->getNumOperands(); i < e; ++i) {
       if (!expand(expr->getOperand(i)))
         return nullptr;
@@ -162,7 +187,7 @@ private:
  
   // The bounds of a generic value are the value itself, if it is region
   // invariant, i.e., a region parameter.
-  Value *visitUnknown(const SCEVUnknown *expr) {
+  Value *visitUnknown(const SCEVUnknown *expr, bool upper) {
     Value *val = expr->getValue();
 
     if (!sd->isInvariant(*val, *r))
