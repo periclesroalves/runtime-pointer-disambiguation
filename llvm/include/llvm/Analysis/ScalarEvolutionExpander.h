@@ -80,9 +80,6 @@ namespace llvm {
     /// "expanded" form.
     bool LSRMode;
 
-    typedef IRBuilder<true, TargetFolder> BuilderType;
-    BuilderType Builder;
-
 #ifndef NDEBUG
     const char *DebugType;
 #endif
@@ -197,10 +194,20 @@ namespace llvm {
     void setChainedPhi(PHINode *PN) { ChainedPhis.insert(PN); }
 
   protected:
+    typedef IRBuilder<true, TargetFolder> BuilderType;
+    BuilderType Builder;
+
     Value* getSavedExpression(const SCEV *S, Instruction *InsertPt);
 
     void rememberExpression(const SCEV *S, Instruction *InsertPt,
                                           Value *V);
+
+    void rememberInstruction(Value *I);
+
+    /// InsertNoopCastOfTo - Insert a cast of V to the specified type,
+    /// which must be possible with a noop cast, doing what we can to
+    /// share the casts.
+    Value *InsertNoopCastOfTo(Value *V, Type *Ty);
 
     /// expandCodeFor - Insert code to directly compute the specified SCEV
     /// expression into the program.  The inserted code is inserted into the
@@ -249,11 +256,6 @@ namespace llvm {
                              Instruction::CastOps Op,
                              BasicBlock::iterator IP);
 
-    /// InsertNoopCastOfTo - Insert a cast of V to the specified type,
-    /// which must be possible with a noop cast, doing what we can to
-    /// share the casts.
-    Value *InsertNoopCastOfTo(Value *V, Type *Ty);
-
     /// expandAddToGEP - Expand a SCEVAddExpr with a pointer type into a GEP
     /// instead of using ptrtoint+arithmetic+inttoptr.
     Value *expandAddToGEP(const SCEV *const *op_begin,
@@ -264,8 +266,6 @@ namespace llvm {
 
     /// getRelevantLoop - Determine the most "relevant" loop for the given SCEV.
     const Loop *getRelevantLoop(const SCEV *);
-
-    void rememberInstruction(Value *I);
 
     bool isNormalAddRecExprPHI(PHINode *PN, Instruction *IncV, const Loop *L);
 
