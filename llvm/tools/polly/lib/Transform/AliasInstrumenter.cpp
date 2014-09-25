@@ -44,7 +44,7 @@ private:
   
     return NULL;
   }
-  
+ 
   void rememberExpression(const SCEV *S, Instruction *InsertPt, bool upper,
                                         Value *V) {
     InsertedExpressions[std::make_tuple(S, InsertPt, upper)] = V;
@@ -106,10 +106,44 @@ private:
   Value *visitConstant(const SCEVConstant *constant, bool upper) {
     return constant->getValue();
   }
-  
+
+  // If the original value is within an overflow-free range, we simply return
+  // the truncated bound. If not, we define the bound to be the maximum/minimum
+  // value the destination bitwidth can assume. The overflow-free range is
+  // defined as the greatest lower bound and least upper pound among the types
+  // that the destination bitwidth can represent.
   Value *visitTruncateExpr(const SCEVTruncateExpr *expr, bool upper) {
-    // TODO
-    return nullptr;
+    Type *dstTy = se->getEffectiveSCEVType(expr->getType());
+    Type *srcTy = se->getEffectiveSCEVType(expr->getOperand()->getType());
+    Value *bound = expand(expr->getOperand(), upper);
+
+    if (!bound)
+      return nullptr;
+
+    bound = InsertNoopCastOfTo(bound, srcTy);
+
+    // Maximum/minimum value guaranteed to be overflow-free after trunc and
+    // maximum/minimum value the destination type can assume.
+    unsigned dstBW = dstTy->getIntegerBitWidth();
+    const APInt &APnoOFLimit = (upper ? APInt::getSignedMaxValue(dstBW) :
+                                APInt::getMinValue(dstBW));
+    const APInt &APTyLimit = (upper ? APInt::getMaxValue(dstBW) :
+                              APInt::getSignedMinValue(dstBW));
+
+    // Build actual bound selection.
+    Value *noOFLimit = Builder.CreateSExt(ConstantInt::get(dstTy, APnoOFLimit),
+                                          srcTy);
+    Value *tyLimit = Builder.CreateSExt(ConstantInt::get(dstTy, APTyLimit),
+                                        srcTy);
+    Value *icmp = (upper ? Builder.CreateICmpSGT(bound, noOFLimit) :
+                   Builder.CreateICmpSLT(bound, noOFLimit));
+    rememberInstruction(icmp);
+    Value *sel = Builder.CreateSelect(icmp, tyLimit, bound, "sbound");
+    rememberInstruction(sel);
+    Value *inst = Builder.CreateTrunc(sel, dstTy);
+    rememberInstruction(inst);
+
+    return inst;
   }
   
   // Expand and save the bound of the operand on the expression cache, then
@@ -205,8 +239,6 @@ private:
       }
 
       // Build the actual comparison between the bounds of different operands.
-      assert(se->getTypeSizeInBits(ty) == se->getTypeSizeInBits(expr->getOperand(i)->getType()) &&
-        "non-trivial casts should be done with the SCEVs directly!");
       sel = InsertNoopCastOfTo(sel, ty);
       Value *rhs = sel;
       icmp = Builder.CreateICmpUGT(lhs, rhs);
