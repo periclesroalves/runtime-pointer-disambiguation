@@ -196,64 +196,19 @@ private:
     return nullptr;
   }
 
-  // This is mostly based on the code for SCEVExpander::visitUMaxExpr. We just
-  // changed the operands to be the right bounds.
-  // - upper_bound : umax (lower(op1), upper(op1), ... , lower(opN), upper(opN))
-  // - lower_bound : max(umin(lower(op1), upper(op1)), ...,
-  //                     umin(lower(opN), upper(opN)))
+  // Simply expand all operands and save them on the expression cache. We then
+  // call the base expander to build the final expression. This is done so we
+  // can check that all operands have computable bounds before we build the
+  // actual instructions.
+  // - upper_bound: umax(upper_bound(op_1), ... upper_bound(op_N))
+  // - lower_bound: umax(lower_bound(op_1), ... lower_bound(op_N))
   Value *visitUMaxExpr(const SCEVUMaxExpr *expr, bool upper) {
-    Type *ty = nullptr;
-    Value *lhs = nullptr, *sel = nullptr;
-
-
-    for (int i = expr->getNumOperands()-1; i >= 0; --i) {
-      // In the case of mixed integer and pointer types, do the rest of the
-      // comparisons as integer.
-      if (lhs && expr->getOperand(i)->getType() != ty) {
-        ty = se->getEffectiveSCEVType(ty);
-        lhs = InsertNoopCastOfTo(lhs, ty);
-      }
-
-      Value *upBound = expand(expr->getOperand(i), /*upper*/true);
-      Value *lowBound = expand(expr->getOperand(i), /*upper*/false);
-
-      if (!upBound || !lowBound)
+    for (unsigned i = 0, e = expr->getNumOperands(); i < e; ++i) {
+      if (!expand(expr->getOperand(i)))
         return nullptr;
-
-      // Select which bound should be used for this specific operand.
-      Value *icmp = Builder.CreateICmpUGT(upBound, lowBound);
-      rememberInstruction(icmp);
-
-      if (upper)
-        sel = Builder.CreateSelect(icmp, upBound, lowBound, "umax");
-      else
-        sel = Builder.CreateSelect(icmp, lowBound, upBound, "umin");
-
-      rememberInstruction(sel);
-
-      // In case this is the first operand.
-      if (!lhs) {
-        lhs = sel;
-        ty = upBound->getType();
-        continue;
-      }
-
-      // Build the actual comparison between the bounds of different operands.
-      sel = InsertNoopCastOfTo(sel, ty);
-      Value *rhs = sel;
-      icmp = Builder.CreateICmpUGT(lhs, rhs);
-      rememberInstruction(icmp);
-      sel = Builder.CreateSelect(icmp, lhs, rhs, "umax");
-      rememberInstruction(sel);
-      lhs = sel;
     }
 
-    // In the case of mixed integer and pointer types, cast the final result
-    // back to the pointer type.
-    if (lhs->getType() != expr->getType())
-      lhs = InsertNoopCastOfTo(lhs, expr->getType());
-
-    return lhs;
+    return SCEVExpander::visitUMaxExpr(expr);
   }
 
   // Simply expand all operands and save them on the expression cache. We then
