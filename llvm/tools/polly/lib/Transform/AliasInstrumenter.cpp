@@ -12,6 +12,7 @@ using namespace polly;
 #define DEBUG_TYPE "polly-alias-instrumenter"
 
 
+// TODO: avoid inserting duplicated computation.
 // Utility for computing Value objects corresponding to the lower and upper
 // bounds of a SCEV within a region R. The generated values are inserted into
 // the region entry. The resulting expressions can then be filled with runtime
@@ -97,7 +98,7 @@ private:
       case scUnknown:
         return visitUnknown((const SCEVUnknown*)s, upper);
       case scCouldNotCompute:
-        return visitCouldNotCompute((const SCEVCouldNotCompute*)s);
+        return nullptr;
       default:
         llvm_unreachable("Unknown SCEV type!");
     }
@@ -133,8 +134,10 @@ private:
     // Build actual bound selection.
     Value *noOFLimit = Builder.CreateSExt(ConstantInt::get(dstTy, APnoOFLimit),
                                           srcTy);
+    rememberInstruction(noOFLimit);
     Value *tyLimit = Builder.CreateSExt(ConstantInt::get(dstTy, APTyLimit),
                                         srcTy);
+    rememberInstruction(tyLimit);
     Value *icmp = (upper ? Builder.CreateICmpSGT(bound, noOFLimit) :
                    Builder.CreateICmpSLT(bound, noOFLimit));
     rememberInstruction(icmp);
@@ -190,10 +193,44 @@ private:
     // TODO
     return nullptr;
   }
-  
+
+  // Compute bounds for an expression of the type {%start, +, %step}<%loop>.
+  // - upper: upper(%start) + upper(%step) * (upper(backedge_taken(%loop))+1)
+  // - lower_bound: lower_bound(%start)
   Value *visitAddRecExpr(const SCEVAddRecExpr *expr, bool upper) {
-    // TODO
-    return nullptr;
+    // lower.
+    if (!upper)
+      return expand(expr->getStart(), upper);
+
+    // upper.
+    // Cast all values to the effective start value type.
+    Type *opTy = se->getEffectiveSCEVType(expr->getStart()->getType());
+    const SCEV *startSCEV = se->getTruncateOrSignExtend(expr->getStart(), opTy);
+    const SCEV *stepSCEV = se->getTruncateOrSignExtend(expr->getStepRecurrence(*se),
+                                               opTy);
+    const SCEV *bEdgeCountSCEV =
+      se->getTruncateOrSignExtend(se->getBackedgeTakenCount(expr->getLoop()), opTy);
+
+    Value *start = expand(startSCEV, upper);
+    Value *step = expand(stepSCEV, upper);
+    Value *bEdgeCount = expand(bEdgeCountSCEV, upper);
+
+    if (!start || !step || !bEdgeCount)
+      return nullptr;
+
+    // Build the actual computation.
+    start = InsertNoopCastOfTo(start, opTy);
+    Value *inc = Builder.CreateAdd(bEdgeCount, ConstantInt::get(opTy, 1));
+    rememberInstruction(inc);
+    Value *mul = Builder.CreateMul(step, inc);
+    rememberInstruction(mul);
+    Value *bound = Builder.CreateAdd(start, mul);
+    rememberInstruction(bound);
+
+    // Convert the result back to the original type if needed.
+    Type *ty = se->getEffectiveSCEVType(expr->getType());
+    const SCEV *boundCast = se->getTruncateOrSignExtend(se->getUnknown(bound), ty);
+    return expand(boundCast, upper);
   }
 
   // Simply expand all operands and save them on the expression cache. We then
