@@ -183,10 +183,36 @@ private:
 
     return SCEVExpander::visitAddExpr(expr);
   }
-  
+ 
+  // We only handle the case where one of the operands is a constant (C * %v).
+  // We do so because that's basically the only case for which we can get
+  // useful/precise range information.
+  // - if C >= 0:
+  //   . upper_bound: C * upper_bound(op2)
+  //   . lower_bound: C * lower_bound(op2)
+  // - if C < 0:
+  //   . upper_bound: C * lower_bound(op2)
+  //   . lower_bound: C * upper_bound(op2)
   Value *visitMulExpr(const SCEVMulExpr *expr, bool upper) {
-    // TODO
-    return nullptr;
+    if (expr->getNumOperands() != 2)
+      return nullptr;
+
+    // If there is a constant, it will be the first operand.
+    const SCEVConstant *sc = dyn_cast<SCEVConstant>(expr->getOperand(0));
+
+    if (!sc)
+      return nullptr;
+  
+    bool invertBounds = sc->getValue()->getValue().isNegative();
+    Type *ty = se->getEffectiveSCEVType(expr->getType());
+    Value *rhs = expand(expr->getOperand(1), invertBounds ? !upper : upper);
+
+    if (!rhs)
+      return nullptr;
+
+    rhs = InsertNoopCastOfTo(rhs, ty);
+    Value *scCast = InsertNoopCastOfTo(sc->getValue(), ty);
+    return InsertBinop(Instruction::Mul, scCast, rhs);
   }
 
   // This code is based on the visitUDiv code from SCEVExpander. We only
@@ -196,7 +222,6 @@ private:
   // - lower_bound: lower_bound(lhs) / upper_bound(rhs)
   Value *visitUDivExpr(const SCEVUDivExpr *expr, bool upper) {
     Type *ty = se->getEffectiveSCEVType(expr->getType());
- 
     Value *lhs = expand(expr->getLHS(), upper);
 
     if (!lhs)
