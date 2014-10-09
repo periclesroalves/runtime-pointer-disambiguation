@@ -188,10 +188,37 @@ private:
     // TODO
     return nullptr;
   }
-  
+
+  // This code is based on the visitUDiv code from SCEVExpander. We only
+  // reproduce it here because it involves using mixed bounds to compute a
+  // single bound.
+  // - upper_bound: upper_bound(lhs) / lower_bound(rhs)
+  // - lower_bound: lower_bound(lhs) / upper_bound(rhs)
   Value *visitUDivExpr(const SCEVUDivExpr *expr, bool upper) {
-    // TODO
-    return nullptr;
+    Type *ty = se->getEffectiveSCEVType(expr->getType());
+ 
+    Value *lhs = expand(expr->getLHS(), upper);
+
+    if (!lhs)
+      return nullptr;
+
+    lhs = InsertNoopCastOfTo(lhs, ty);
+
+    if (const SCEVConstant *sc = dyn_cast<SCEVConstant>(expr->getRHS())) {
+      const APInt &rhs = sc->getValue()->getValue();
+      if (rhs.isPowerOf2())
+        return InsertBinop(Instruction::LShr, lhs,
+                           ConstantInt::get(ty, rhs.logBase2()));
+    }
+ 
+    Value *rhs = expand(expr->getRHS(), !upper);
+
+    if (!rhs)
+      return nullptr;
+
+    rhs = InsertNoopCastOfTo(rhs, ty);
+
+    return InsertBinop(Instruction::UDiv, lhs, rhs);
   }
 
   // Compute bounds for an expression of the type {%start, +, %step}<%loop>.

@@ -204,6 +204,10 @@ namespace llvm {
 
     void rememberInstruction(Value *I);
 
+    /// InsertBinop - Insert the specified binary operator, doing a small amount
+    /// of work to avoid inserting an obviously redundant operation.
+    Value *InsertBinop(Instruction::BinaryOps Opcode, Value *LHS, Value *RHS);
+
     /// InsertNoopCastOfTo - Insert a cast of V to the specified type,
     /// which must be possible with a noop cast, doing what we can to
     /// share the casts.
@@ -243,10 +247,6 @@ namespace llvm {
 
   private:
     LLVMContext &getContext() const { return SE.getContext(); }
-
-    /// InsertBinop - Insert the specified binary operator, doing a small amount
-    /// of work to avoid inserting an obviously redundant operation.
-    Value *InsertBinop(Instruction::BinaryOps Opcode, Value *LHS, Value *RHS);
 
     /// ReuseOrCreateCast - Arange for there to be a cast of V to Ty at IP,
     /// reusing an existing cast if a suitable one exists, moving an existing
