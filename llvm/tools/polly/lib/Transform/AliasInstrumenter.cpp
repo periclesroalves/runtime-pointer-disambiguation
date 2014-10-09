@@ -33,7 +33,7 @@ private:
                     const bool main_upper)
     : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r),
       main_upper(main_upper) {
-    SetInsertPoint(r->getEntry(), r->getEntry()->begin());
+    SetInsertPoint(r->getEntry()->getFirstNonPHI());
   }
 
   Value* getSavedExpression(const SCEV *S, Instruction *InsertPt,
