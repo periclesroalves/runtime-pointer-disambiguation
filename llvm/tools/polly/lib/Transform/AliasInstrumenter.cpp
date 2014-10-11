@@ -1,10 +1,8 @@
 #include "polly/AliasInstrumenter.h"
 #include "polly/ScopDetection.h"
 #include "llvm/Analysis/RegionInfo.h"
-#include "llvm/Analysis/ScalarEvolution.h"
 #include "llvm/Analysis/ScalarEvolutionExpander.h"
-#include "llvm/Support/Debug.h"
-#include "llvm/Transforms/Utils/BasicBlockUtils.h"
+#include "llvm/IR/Module.h"
 
 using namespace llvm;
 using namespace polly;
@@ -339,6 +337,38 @@ public:
                                    Region *r, const SCEV *s) {
     SCEVRangeAnalyser analyser(se, sd, r, /*upper*/false);
     return analyser.expand(s);
+  }
+
+  // Insert a printf call to print the specified value in a pointer format.
+  void insertPrintfForVal(Value *val) {
+    Module *module = r->getEntry()->getParent()->getParent();
+    LLVMContext& ctx = module->getContext();
+    Twine formatVarName = Twine("pointer_format.str");
+    GlobalVariable *formatVar = module->getNamedGlobal(formatVarName.str());
+
+    // Declare the format string if it doesn't exist.
+    if (!formatVar) {
+      Twine formatStr = Twine("%p\n");
+      Constant *formatConst = ConstantDataArray::getString(ctx, formatStr.str());
+      ArrayType *varTy = ArrayType::get(IntegerType::getInt8Ty(ctx), formatStr.str().size()+1);
+      formatVar = new GlobalVariable(*module, varTy, true,
+                                     GlobalValue::PrivateLinkage, formatConst,
+                                     formatVarName);
+    }
+
+    std::vector<llvm::Constant*> indices;
+    Constant *zero = Constant::getNullValue(IntegerType::getInt32Ty(ctx));
+    indices.push_back(zero);
+    indices.push_back(zero);
+    Constant *formatVarRef = ConstantExpr::getGetElementPtr(formatVar, indices);
+
+    // Build the actual call.
+    std::vector<Type*> argTypes;
+    argTypes.push_back(Type::getInt8PtrTy(ctx));
+    FunctionType *fTy = FunctionType::get(Type::getInt32Ty(ctx), argTypes, true);
+    Constant *fun = module->getOrInsertFunction("printf", fTy);
+  
+    Builder.CreateCall2(cast<Function>(fun), formatVarRef, val, "printf");
   }
 };
 
