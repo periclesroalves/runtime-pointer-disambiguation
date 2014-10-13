@@ -22,15 +22,16 @@ private:
   const ScopDetection *sd;
   ScalarEvolution *se;
   Region *r;
-  const bool main_upper; // Which bound to extract from the main SCEV. Lower if
-                         // false.
+  bool current_upper; // Which bound is currently being extracted. Used
+                            // mainly by methods of SCEVExpander, which are not
+                            // aware of bounds computation.
   std::map<std::tuple<const SCEV *, Instruction *, bool>, TrackingVH<Value> >
     InsertedExpressions; // Saved expressions for reuse.
 
   SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r,
-                    const bool main_upper)
+                    const bool current_upper)
     : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r),
-      main_upper(main_upper) {
+      current_upper(current_upper) {
     SetInsertPoint(r->getEntry()->getFirstNonPHI());
   }
 
@@ -50,22 +51,28 @@ private:
   }
 
   // If the caller doesn't specify which bound to compute, we assume the same of
-  // the main expression. Usually called by methods defined in SCEVExpander.
-  Value *expand(const SCEV *s) {return expand(s, main_upper);}
-  Value *visit(const SCEV *s) {return visit(s, main_upper);}
+  // the last expanded expression. Usually called by methods defined in
+  // SCEVExpander.
+  Value *expand(const SCEV *s) {return expand(s, current_upper);}
 
-  // TODO: like in SCEVExpander, here should come best insertion-point
-  // computation.
-  // Check expression cache before expansion.
+  // TODO: like in SCEVExpander, here should come insertion-point computation.
+  // Main entry point for expansion.
   Value *expand(const SCEV *s, bool upper) {
+    // Check expression cache before expansion.
     Instruction *insertPt = getInsertPoint();
     Value *v = getSavedExpression(s, insertPt, upper);
 
     if (v)
       return v;
-  
+
+    // Remember which bound was computed for the last expression.
+    bool old_upper = current_upper;
+
+    current_upper = upper;
     v = visit(s, upper);
     rememberExpression(s, insertPt, upper, v);
+    current_upper = old_upper;
+
     return v;
   }
 
@@ -132,17 +139,12 @@ private:
     // Build actual bound selection.
     Value *noOFLimit = Builder.CreateSExt(ConstantInt::get(dstTy, APnoOFLimit),
                                           srcTy);
-    rememberInstruction(noOFLimit);
     Value *tyLimit = Builder.CreateSExt(ConstantInt::get(dstTy, APTyLimit),
                                         srcTy);
-    rememberInstruction(tyLimit);
     Value *icmp = (upper ? Builder.CreateICmpSGT(bound, noOFLimit) :
                    Builder.CreateICmpSLT(bound, noOFLimit));
-    rememberInstruction(icmp);
     Value *sel = Builder.CreateSelect(icmp, tyLimit, bound, "sbound");
-    rememberInstruction(sel);
     Value *inst = Builder.CreateTrunc(sel, dstTy);
-    rememberInstruction(inst);
 
     return inst;
   }
@@ -271,11 +273,8 @@ private:
     // Build the actual computation.
     start = InsertNoopCastOfTo(start, opTy);
     Value *inc = Builder.CreateAdd(bEdgeCount, ConstantInt::get(opTy, 1));
-    rememberInstruction(inc);
     Value *mul = Builder.CreateMul(step, inc);
-    rememberInstruction(mul);
     Value *bound = Builder.CreateAdd(start, mul);
-    rememberInstruction(bound);
 
     // Convert the result back to the original type if needed.
     Type *ty = se->getEffectiveSCEVType(expr->getType());
