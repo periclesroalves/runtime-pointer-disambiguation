@@ -197,6 +197,13 @@ class ScopDetection : public FunctionPass {
   /// @return True if the call instruction is valid, false otherwise.
   static bool isValidCallInst(CallInst &CI);
 
+  /// @brief Finds and tries to solve data dependeces within the current region.
+  ///
+  /// @param Context The context of scop detection.
+  ///
+  /// @return True if all dependencies were solved, false otherwise.
+  bool checkAndSolveDependencies(DetectionContext &context) const;
+
   /// @brief Check if a memory access can be part of a Scop.
   ///
   /// @param Inst The instruction accessing the memory.

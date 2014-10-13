@@ -405,6 +405,37 @@ bool ScopDetection::hasAffineMemoryAccesses(DetectionContext &Context) const {
   return true;
 }
 
+bool ScopDetection::checkAndSolveDependencies(DetectionContext &context) const {
+  if (IgnoreAliasing)
+    return true;
+
+  Region &r = context.CurRegion;
+
+  for (BasicBlock *bb : r.blocks())
+    for (BasicBlock::iterator i = bb->begin(), e = --bb->end(); i != e; ++i) {
+      Instruction &inst = *i;
+
+      if (!isa<LoadInst>(inst) && !isa<StoreInst>(inst))
+        continue;
+
+      Value *ptr = getPointerOperand(inst);
+      Loop *l = LI->getLoopFor(inst.getParent());
+      const SCEV *accessFunction = SE->getSCEVAtScope(ptr, l);
+      const SCEVUnknown *basePointer = dyn_cast<SCEVUnknown>(SE->getPointerBase(accessFunction));
+      Value *baseValue = basePointer->getValue();
+
+      // Check if the base pointer of the memory access does alias with
+      // any other pointer.
+      AliasSet &as =
+        context.AST.getAliasSetForPointer(baseValue, AliasAnalysis::UnknownSize,
+                                            inst.getMetadata(LLVMContext::MD_tbaa));
+      if (!as.isMustAlias())
+        return invalid<ReportAlias>(context, /*Assert=*/false, &inst, as);
+  }
+
+  return true;
+}
+
 bool ScopDetection::isValidMemoryAccess(Instruction &Inst,
                                         DetectionContext &Context) const {
   Value *Ptr = getPointerOperand(Inst);
@@ -464,25 +495,6 @@ bool ScopDetection::isValidMemoryAccess(Instruction &Inst,
   // created by IndependentBlocks Pass.
   if (IntToPtrInst *Inst = dyn_cast<IntToPtrInst>(BaseValue))
     return invalid<ReportIntToPtr>(Context, /*Assert=*/true, Inst);
-
-  if (IgnoreAliasing)
-    return true;
-
-  // Check if the base pointer of the memory access does alias with
-  // any other pointer. This cannot be handled at the moment.
-  AliasSet &AS =
-      Context.AST.getAliasSetForPointer(BaseValue, AliasAnalysis::UnknownSize,
-                                        Inst.getMetadata(LLVMContext::MD_tbaa));
-
-  // INVALID triggers an assertion in verifying mode, if it detects that a
-  // SCoP was detected by SCoP detection and that this SCoP was invalidated by
-  // a pass that stated it would preserve the SCoPs. We disable this check as
-  // the independent blocks pass may create memory references which seem to
-  // alias, if -basicaa is not available. They actually do not, but as we can
-  // not proof this without -basicaa we would fail. We disable this check to
-  // not cause irrelevant verification failures.
-  if (!AS.isMustAlias())
-    return invalid<ReportAlias>(Context, /*Assert=*/false, &Inst, AS);
 
   return true;
 }
@@ -689,6 +701,9 @@ bool ScopDetection::allBlocksValid(DetectionContext &Context) const {
     for (BasicBlock::iterator I = BB->begin(), E = --BB->end(); I != E; ++I)
       if (!isValidInstruction(*I, Context) && !KeepGoing)
         return false;
+
+  if (!checkAndSolveDependencies(Context))
+    return false;
 
   if (!hasAffineMemoryAccesses(Context))
     return false;
