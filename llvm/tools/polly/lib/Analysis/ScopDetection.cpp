@@ -409,31 +409,11 @@ bool ScopDetection::checkAndSolveDependencies(DetectionContext &context) const {
   if (IgnoreAliasing)
     return true;
 
-  Region &r = context.CurRegion;
-
-  for (BasicBlock *bb : r.blocks())
-    for (BasicBlock::iterator i = bb->begin(), e = --bb->end(); i != e; ++i) {
-      Instruction &inst = *i;
-
-      if (!isa<LoadInst>(inst) && !isa<StoreInst>(inst))
-        continue;
-
-      Value *ptr = getPointerOperand(inst);
-      Loop *l = LI->getLoopFor(inst.getParent());
-      const SCEV *accessFunction = SE->getSCEVAtScope(ptr, l);
-      const SCEVUnknown *basePointer = dyn_cast<SCEVUnknown>(SE->getPointerBase(accessFunction));
-      Value *baseValue = basePointer->getValue();
-
-      // Check if the base pointer of the memory access does alias with
-      // any other pointer.
-      AliasSet &as =
-        context.AST.getAliasSetForPointer(baseValue, AliasAnalysis::UnknownSize,
-                                            inst.getMetadata(LLVMContext::MD_tbaa));
-      if (!as.isMustAlias())
-        return invalid<ReportAlias>(context, /*Assert=*/false, &inst, as);
-  }
-
-  return true;
+  // TODO: if instrumentation fails we need be able to return a report like:
+  // return invalid<ReportAlias>(context, /*Assert=*/false, &inst, as);
+  AliasInstrumenter instrumenter = AliasInstrumenter(SE, this, context.AST, LI,
+      &context.CurRegion);
+  return instrumenter.generateAliasChecks();
 }
 
 bool ScopDetection::isValidMemoryAccess(Instruction &Inst,

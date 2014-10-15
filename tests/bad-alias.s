@@ -4,7 +4,7 @@ target triple = "x86_64-apple-macosx10.8.0"
 
 @.str = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
 
-define void @_Z3fooPiS_i(i32* nocapture %A, i32* nocapture %B, i32 %n) nounwind uwtable ssp {
+define void @_Z3fooPiS_Pfi(i32* nocapture %A, i32* nocapture %B, float* nocapture %C, i32 %n) nounwind uwtable ssp {
   %1 = icmp sgt i32 %n, 0
   br i1 %1, label %.lr.ph, label %._crit_edge
 
@@ -13,9 +13,18 @@ define void @_Z3fooPiS_i(i32* nocapture %A, i32* nocapture %B, i32 %n) nounwind 
   %2 = getelementptr inbounds i32* %A, i64 %indvars.iv
   %3 = trunc i64 %indvars.iv to i32
   store i32 %3, i32* %2, align 4, !tbaa !0
-  %4 = getelementptr inbounds i32* %B, i64 %indvars.iv
-  %5 = trunc i64 %indvars.iv to i32
-  store i32 %5, i32* %4, align 4, !tbaa !0
+  %4 = add nsw i64 %indvars.iv, 2
+  %5 = getelementptr inbounds i32* %A, i64 %4
+  %6 = load i32* %5, align 4, !tbaa !0
+  %7 = getelementptr inbounds i32* %B, i64 %indvars.iv
+  store i32 %6, i32* %7, align 4, !tbaa !0
+  %8 = add nsw i64 %indvars.iv, 3
+  %9 = getelementptr inbounds i32* %B, i64 %8
+  %10 = load i32* %9, align 4, !tbaa !0
+  %11 = sitofp i32 %10 to float
+  %12 = add nsw i64 %indvars.iv, 8
+  %13 = getelementptr inbounds float* %C, i64 %12
+  store float %11, float* %13, align 4, !tbaa !3
   %indvars.iv.next = add i64 %indvars.iv, 1
   %lftr.wideiv = trunc i64 %indvars.iv.next to i32
   %exitcond = icmp eq i32 %lftr.wideiv, %n
@@ -28,12 +37,14 @@ define void @_Z3fooPiS_i(i32* nocapture %A, i32* nocapture %B, i32 %n) nounwind 
 define i32 @main() nounwind uwtable ssp {
   %A = alloca [100 x i32], align 16
   %B = alloca [100 x i32], align 16
+  %C = alloca [200 x float], align 16
   %1 = getelementptr inbounds [100 x i32]* %A, i64 0, i64 0
   %2 = getelementptr inbounds [100 x i32]* %B, i64 0, i64 0
-  call void @_Z3fooPiS_i(i32* %1, i32* %2, i32 100)
-  %3 = getelementptr inbounds [100 x i32]* %B, i64 0, i64 5
-  %4 = load i32* %3, align 4, !tbaa !0
-  %5 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str, i64 0, i64 0), i32 %4)
+  %3 = getelementptr inbounds [200 x float]* %C, i64 0, i64 0
+  call void @_Z3fooPiS_Pfi(i32* %1, i32* %2, float* %3, i32 100)
+  %4 = getelementptr inbounds [100 x i32]* %B, i64 0, i64 5
+  %5 = load i32* %4, align 4, !tbaa !0
+  %6 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str, i64 0, i64 0), i32 %5)
   ret i32 0
 }
 
@@ -42,3 +53,4 @@ declare i32 @printf(i8* nocapture, ...) nounwind
 !0 = metadata !{metadata !"int", metadata !1}
 !1 = metadata !{metadata !"omnipotent char", metadata !2}
 !2 = metadata !{metadata !"Simple C/C++ TBAA"}
+!3 = metadata !{metadata !"float", metadata !1}
