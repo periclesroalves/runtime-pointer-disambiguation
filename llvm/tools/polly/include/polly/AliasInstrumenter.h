@@ -41,7 +41,9 @@ class DetectionContext;
 // values, in order to dynamically compute the exact bounds. Bounds are only
 // provided if they can be computed right before the region start, i.e., all
 // values in the SCEV are region invariant or vary in a well-behaved way.
-struct SCEVRangeAnalyser : private SCEVExpander {
+class SCEVRangeAnalyser : private SCEVExpander {
+  friend class AliasInstrumenter;
+
   const ScopDetection *sd;
   ScalarEvolution *se;
   Region *r;
@@ -50,12 +52,6 @@ struct SCEVRangeAnalyser : private SCEVExpander {
                       // bounds computation.
   std::map<std::tuple<const SCEV *, Instruction *, bool>, TrackingVH<Value> >
     InsertedExpressions; // Saved expressions for reuse.
-
-  SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r)
-    : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r),
-      current_upper(true) {
-    SetInsertPoint(r->getEntry()->getFirstNonPHI());
-  }
 
   // If the caller doesn't specify which bound to compute, we assume the same of
   // the last expanded expression. Usually called by methods defined in
@@ -114,27 +110,48 @@ struct SCEVRangeAnalyser : private SCEVExpander {
   Value *visitSMaxExpr(const SCEVSMaxExpr *expr, bool upper);
   Value *visitUnknown(const SCEVUnknown *expr, bool upper);
 
-  void insertPrintfForVal(Value *val);
+  // Generates the lower or upper bound for a set of unsigned expressions.
+  Value *getULowerOrUpperBound(std::set<const SCEV *> &exprList, bool upper);
+
+  void insertPtrPrintf(Value *val);
 
 public:
-  // Returns the maximum value an SCEV can assume.
-  Value *generateUpperBound(const SCEV *s) {
-    return expand(s, /*upper*/true);
+  SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r)
+    : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r),
+      current_upper(true) {
+    SetInsertPoint(r->getEntry()->getFirstNonPHI());
   }
 
   // Returns the minimum value an SCEV can assume.
-  Value *generateLowerBound(const SCEV *s) {
+  Value *getLowerBound(const SCEV *s) {
     return expand(s, /*upper*/false);
   }
+
+  // Returns the maximum value an SCEV can assume.
+  Value *getUpperBound(const SCEV *s) {
+    return expand(s, /*upper*/true);
+  }
+
+  // Generate the smallest lower bound and greatest upper bound for a set of
+  // expressions. All expressions are assumed to be type consistent (all of the
+  // same type) and produce an unsigned result.
+  Value *getULowerBound(std::set<const SCEV *> &exprList);
+  Value *getUUpperBound(std::set<const SCEV *> &exprList);
 };
 
-struct AliasInstrumenter {
+class AliasInstrumenter {
   SCEVRangeAnalyser rangeAnalyser;
   AliasSetTracker &ast;
   ScalarEvolution *se;
   LoopInfo *li;
   Region *r;
 
+  // Inserts a dynamic test to guarantee that accesses to two pointers do not
+  // overlap, given their access ranges.
+  void insertCheck(std::pair<Value *, Value *> boundsA,
+                   std::pair<Value *, Value *> boundsB);
+
+public:
   AliasInstrumenter(ScalarEvolution *se, const ScopDetection *sd,
       AliasSetTracker &ast, LoopInfo *li, Region *r)
     : rangeAnalyser(se, sd, r), ast(ast), se(se), li(li), r(r) {}

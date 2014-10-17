@@ -273,7 +273,7 @@ Value *SCEVRangeAnalyser::visitUnknown(const SCEVUnknown *expr, bool upper) {
 }
 
 // Insert a printf call to print the specified value in a pointer format.
-void SCEVRangeAnalyser::insertPrintfForVal(Value *val) {
+void SCEVRangeAnalyser::insertPtrPrintf(Value *val) {
   Module *module = r->getEntry()->getParent()->getParent();
   LLVMContext& ctx = module->getContext();
   Twine formatVarName = Twine("pointer_format.str");
@@ -303,6 +303,45 @@ void SCEVRangeAnalyser::insertPrintfForVal(Value *val) {
   Constant *fun = module->getOrInsertFunction("printf", fTy);
 
   Builder.CreateCall2(cast<Function>(fun), formatVarRef, val, "printf");
+}
+
+// Generates the final bound by building a chain of either UMin or UMax
+// operations on the bounds of each expression in the list.
+// - lower_bound: umin(exprN, umin(exprN-1, ... umin(expr2, expr1)))
+// - upper_bound: umax(exprN, umax(exprN-1, ... umax(expr2, expr1)))
+Value *SCEVRangeAnalyser::getULowerOrUpperBound(std::set<const SCEV *> &exprList,
+                                                bool upper) {
+  if (exprList.size() < 1)
+    return nullptr;
+
+  std::set<const SCEV *>::iterator it = exprList.begin();
+  const SCEV *expr = *it;
+  Value *bestBound = expand(expr, upper);
+
+  while (it != exprList.end()) {
+    expr = *it;
+    Value *newBound = expand(expr, upper);
+    Value *cmp;
+
+    if (upper)
+      cmp = Builder.CreateICmpUGT(newBound, bestBound);
+    else
+      cmp = Builder.CreateICmpULT(newBound, bestBound);
+
+    bestBound = Builder.CreateSelect(cmp, newBound, bestBound,
+      (upper ? "umax" : "umin"));
+    ++it;
+  }
+
+  return bestBound;
+}
+
+Value *SCEVRangeAnalyser::getULowerBound(std::set<const SCEV *> &exprList) {
+  return getULowerOrUpperBound(exprList, /*upper*/false);
+}
+
+Value *SCEVRangeAnalyser::getUUpperBound(std::set<const SCEV *> &exprList) {
+  return getULowerOrUpperBound(exprList, /*upper*/true);
 }
 
 // Generate dynamic alias checks for all pointers within the region for which
@@ -346,6 +385,10 @@ bool AliasInstrumenter::generateAliasChecks() {
           if (baseValue == aliasValue)
             continue;
 
+          // We only need to check against pointers accessed within the region.
+          if (!memAccesses.count(aliasValue))
+            continue;
+
           // Guarantees ordered pairs (avoids repetition).
           if (baseValue <= aliasValue)
             pairsToCheck.insert(std::make_pair(baseValue, aliasValue));
@@ -354,17 +397,56 @@ bool AliasInstrumenter::generateAliasChecks() {
         }
     }
 
+  std::map<Value *, std::pair<Value *, Value *> > pointerBounds;
 
+  // Insert comparison expressions for every pair of pointers that need to be
+  // checked. Example:
+  // check(A, B) -> upperAddrA < lowerAddrB || upperAddrB < lowerAddrA
+  for (auto& pair : pairsToCheck) {
+    // Extract the access bounds for each pointer.
+    if (!pointerBounds.count(pair.first)) {
+      Value *low = rangeAnalyser.getULowerBound(memAccesses[pair.first]);
+      Value *up = rangeAnalyser.getUUpperBound(memAccesses[pair.first]);
 
+      // If we can't compute the bounds for a pointer, we can't guarantee no
+      // dependencies.
+      if (!low || !up)
+        return false;
 
+      pointerBounds[pair.first] = std::make_pair(low, up);
+    }
 
+    if (!pointerBounds.count(pair.second)) {
+      Value *low = rangeAnalyser.getULowerBound(memAccesses[pair.second]);
+      Value *up = rangeAnalyser.getUUpperBound(memAccesses[pair.second]);
 
+      // If we can't compute the bounds for a pointer, we can't guarantee no
+      // dependencies.
+      if (!low || !up)
+        return false;
 
+      pointerBounds[pair.second] = std::make_pair(low, up);
+    }
 
-
-
-
-
+    insertCheck(pointerBounds[pair.first], pointerBounds[pair.second]);
+  }
 
   return true;
+}
+
+// Inserts a dynamic test to guarantee that accesses to two pointers do not
+// overlap, by doing:
+// no-alias: upper(A) < lower(B) || upper(B) < lower(A)
+void AliasInstrumenter::insertCheck(std::pair<Value *, Value *> boundsA,
+                                    std::pair<Value *, Value *> boundsB) {
+  // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
+  Type *i8PtrTy = rangeAnalyser.Builder.getInt8PtrTy();
+  Value *lowerA = rangeAnalyser.InsertNoopCastOfTo(boundsA.first, i8PtrTy);
+  Value *upperA = rangeAnalyser.InsertNoopCastOfTo(boundsA.second, i8PtrTy);
+  Value *lowerB = rangeAnalyser.InsertNoopCastOfTo(boundsB.first, i8PtrTy);
+  Value *upperB = rangeAnalyser.InsertNoopCastOfTo(boundsB.second, i8PtrTy);
+
+  Value *aIsBeforeB = rangeAnalyser.Builder.CreateICmpULT(upperA, lowerB);
+  Value *bIsBeforeA = rangeAnalyser.Builder.CreateICmpULT(upperB, lowerA);
+  rangeAnalyser.Builder.CreateOr(aIsBeforeB, bIsBeforeA, "no-alias");
 }

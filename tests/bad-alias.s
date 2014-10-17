@@ -37,14 +37,27 @@ define void @_Z3fooPiS_Pfi(i32* nocapture %A, i32* nocapture %B, float* nocaptur
 define i32 @main() nounwind uwtable ssp {
   %A = alloca [100 x i32], align 16
   %B = alloca [100 x i32], align 16
-  %C = alloca [200 x float], align 16
-  %1 = getelementptr inbounds [100 x i32]* %A, i64 0, i64 0
-  %2 = getelementptr inbounds [100 x i32]* %B, i64 0, i64 0
-  %3 = getelementptr inbounds [200 x float]* %C, i64 0, i64 0
-  call void @_Z3fooPiS_Pfi(i32* %1, i32* %2, float* %3, i32 100)
-  %4 = getelementptr inbounds [100 x i32]* %B, i64 0, i64 5
+  br label %.lr.ph.i
+
+.lr.ph.i:                                         ; preds = %.lr.ph.i, %0
+  %indvars.iv.i = phi i64 [ %indvars.iv.next.i, %.lr.ph.i ], [ 0, %0 ]
+  %1 = getelementptr inbounds [100 x i32]* %A, i64 0, i64 %indvars.iv.i
+  %2 = trunc i64 %indvars.iv.i to i32
+  store i32 %2, i32* %1, align 4, !tbaa !0
+  %3 = add nsw i64 %indvars.iv.i, 2
+  %4 = getelementptr inbounds [100 x i32]* %A, i64 0, i64 %3
   %5 = load i32* %4, align 4, !tbaa !0
-  %6 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str, i64 0, i64 0), i32 %5)
+  %6 = getelementptr inbounds [100 x i32]* %B, i64 0, i64 %indvars.iv.i
+  store i32 %5, i32* %6, align 4, !tbaa !0
+  %indvars.iv.next.i = add i64 %indvars.iv.i, 1
+  %lftr.wideiv = trunc i64 %indvars.iv.next.i to i32
+  %exitcond = icmp eq i32 %lftr.wideiv, 100
+  br i1 %exitcond, label %_Z3fooPiS_Pfi.exit, label %.lr.ph.i
+
+_Z3fooPiS_Pfi.exit:                               ; preds = %.lr.ph.i
+  %7 = getelementptr inbounds [100 x i32]* %B, i64 0, i64 5
+  %8 = load i32* %7, align 4, !tbaa !0
+  %9 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str, i64 0, i64 0), i32 %8)
   ret i32 0
 }
 
