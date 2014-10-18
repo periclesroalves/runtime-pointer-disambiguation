@@ -4,7 +4,7 @@
 void foo (int *A, int *B, float *C, int n) {
   for (int i = 0; i < n; i++) {
     A[i] = i;
-    B[i] = A[i + 2];
+    B[i] = A[i+2];
     C[i+8] = B[i+3];
   }
 }

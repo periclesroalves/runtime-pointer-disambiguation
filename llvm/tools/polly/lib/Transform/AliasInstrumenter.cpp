@@ -195,7 +195,7 @@ Value *SCEVRangeAnalyser::visitUDivExpr(const SCEVUDivExpr *expr, bool upper) {
 }
 
 // Compute bounds for an expression of the type {%start, +, %step}<%loop>.
-// - upper: upper(%start) + upper(%step) * (upper(backedge_taken(%loop))+1)
+// - upper: upper(%start) + upper(%step) * upper(backedge_taken(%loop))
 // - lower_bound: lower_bound(%start)
 Value *SCEVRangeAnalyser::visitAddRecExpr(const SCEVAddRecExpr *expr,
                                           bool upper) {
@@ -221,8 +221,7 @@ Value *SCEVRangeAnalyser::visitAddRecExpr(const SCEVAddRecExpr *expr,
 
   // Build the actual computation.
   start = InsertNoopCastOfTo(start, opTy);
-  Value *inc = Builder.CreateAdd(bEdgeCount, ConstantInt::get(opTy, 1));
-  Value *mul = Builder.CreateMul(step, inc);
+  Value *mul = Builder.CreateMul(step, bEdgeCount);
   Value *bound = Builder.CreateAdd(start, mul);
 
   // Convert the result back to the original type if needed.
