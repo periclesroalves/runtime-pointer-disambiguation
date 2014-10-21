@@ -20,13 +20,13 @@ endif()
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	# use a debug version of opt, if possible
-	find_program(OPT "opt-dbg")
+	find_program(OPT "opt-dbg" PATH "${LLVM_TOOLS_BINARY_DIR}")
 
 	if ("${OPT}" EQUAL "${OPT-NOTFOUND}")
-		find_program(OPT "opt")
+		find_program(OPT "opt" PATH "${LLVM_TOOLS_BINARY_DIR}")
 	endif()
 else()
-	find_program(OPT "opt")
+	find_program(OPT "opt" PATH "${LLVM_TOOLS_BINARY_DIR}")
 endif()
 
 find_program(PYTHON3 "python3")
@@ -71,9 +71,9 @@ foreach(cpp_file ${BENCHMARKS})
 		## optimize instrumented .ll
 		COMMAND "${OPT}" "${LL_INSTRUMENTED}"                     -S -O3                                                              > "${LL_INSTRUMENTED_O3}"
 		## link benchmark executables
-		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${CMAKE_CURRENT_SOURCE_DIR}/${cpp_file}"  "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp" -lbenchmark -lpthread "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp"                                             -o "${PLAIN_BENCHMARK}"
-		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_INSTRUMENTED_O3}"                    "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp" -lbenchmark -lpthread "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp" "${CMAKE_BINARY_DIR}/runtime/libmemtrack.a" -o "${INSTRUMENTED_BENCHMARK}"
-		DEPENDS ${cpp_file}
+		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${CMAKE_CURRENT_SOURCE_DIR}/${cpp_file}"  "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp" -lbenchmark -lpthread "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp"                                                                                         -o "${PLAIN_BENCHMARK}"
+		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_INSTRUMENTED_O3}"                    "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp" -lbenchmark -lpthread "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp" "-Wl,-rpath,${CMAKE_BINARY_DIR}/runtime/" "-L${CMAKE_BINARY_DIR}/runtime/" "-lmemtrack" -o "${INSTRUMENTED_BENCHMARK}"
+		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${cpp_file}"
 		        "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp"
 		        "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.hpp"
 		        "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp"
@@ -115,13 +115,13 @@ foreach(cpp_file ${BENCHMARKS})
 		## run speculatively optimized .ll through O3
 		COMMAND "${OPT}" "${LL_SPECULATIVE}"                    -S -O3                                                                         > "${LL_SPECULATIVE_O3}"
 		## link benchmark executables
-		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_SPECULATIVE_O3}" "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp" -lbenchmark -lpthread "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp" "${CMAKE_BINARY_DIR}/runtime/libmemtrack.a" -o "${SPECULATIVE_BENCHMARK}"
+		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_SPECULATIVE_O3}" "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp" -lbenchmark -lpthread "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp" "-Wl,-rpath,${CMAKE_BINARY_DIR}/runtime/" "-L${CMAKE_BINARY_DIR}/runtime/" -lmemtrack -o "${SPECULATIVE_BENCHMARK}"
 
-		DEPENDS "${cpp_file}"
-		        "${LL_INPUT}"
+		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${cpp_file}"
 		        "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp"
 		        "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.hpp"
 		        "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp"
+		        "${LL_INPUT}"
 		        "${ALIAS_YAML}"
 		        ILC
 		        memtrack

@@ -1,4 +1,6 @@
 
+#include "ilc/BasePtrInfo.hpp"
+
 #include <llvm/Pass.h>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/ADT/SetVector.h>
@@ -109,21 +111,12 @@ struct CloneLoopPass : public LoopPass {
 		AU.addRequired<DominanceFrontier>();
 		AU.addRequired<LoopInfo>();
 	}
-
-	Function *getGetBasePtrFn() {
-		assert(getBasePtr_fn);
-
-		return getBasePtr_fn;
-	}
 private:
-	Loop*        cloneLoop(llvm::Loop *OrigL, LPPassManager& LPM);
-	void         addAliasScopeMetadata(LLVMContext& ctx, string loop_name, Loop *loop, set<Value*> inputs);
-	Instruction* getOrInsertMagic(Value *basePtr);
+	Loop*     cloneLoop(llvm::Loop *OrigL, LPPassManager& LPM);
+	void      addAliasScopeMetadata(LLVMContext& ctx, string loop_name, Loop *loop, BasePtrInfo& info);
+	StringRef getNameOrFail(const Value* v);
 
-	Function*   getBasePtr_fn;
-	Loop*       currLoop;
-	set<Loop*>  cloned_loops;
-	map<Value*, Instruction*> basePtr2magic;
+	set<Loop*> cloned_loops;
 };
 
 } // end anonymous namespace
@@ -183,9 +176,12 @@ bool DeclareGetBasePtr::runOnModule(Module &M) {
 
 static bool                            hasPrefix(const std::string& str, const std::string& prefix);
 static bool                            isGlobalOrArgument(const Value *v);
-static pair<Instruction*,Instruction*> orderedPair(Instruction* v1, Instruction* v2);
 static Instruction*                    nextOf(Instruction *i);
+static Value*                          lookupValue(Function *fn, StringRef name);
 static BasicBlock*                     lastOf(BasicBlock *bb1, BasicBlock *bb2);
+
+template<typename T>
+static pair<T*, T*> orderedPair(T* a, T* b);
 
 struct ModuleTrace;
 struct FunctionTrace;
@@ -309,6 +305,72 @@ private:
 	map<string, vector<AliasTrace>> loops;
 };
 
+/// Helper class for looking up values in a functions symbol table.
+/// Provides error messages for missing values.
+struct SymbolTableWrapper
+{
+	SymbolTableWrapper(Function *fn, StringRef region_name)
+	: function_name{fn->getName()}
+	, region_name{region_name}
+	, table{fn->getValueSymbolTable()}
+	{}
+
+	Value* lookup(StringRef name)
+	{
+		Value* val = table.lookup(name);
+
+		if (!val)
+		{
+			errs() << "Could not find value '" << name << "' in function '" << function_name << "'\n";
+			exit(1);
+		}
+
+		return val;
+	}
+private:
+	SymbolTableWrapper(const SymbolTableWrapper&) = delete;
+	SymbolTableWrapper(SymbolTableWrapper&&)      = delete;
+
+	StringRef         function_name;
+	StringRef         region_name;
+	ValueSymbolTable& table;
+};
+
+/// Helper for creating and caching calls to `magic' function
+struct MagicBuilder {
+	MagicBuilder(BasicBlock *function_entry, Function *getBasePtr_fn)
+		: function_entry{function_entry}
+		, getBasePtr_fn{getBasePtr_fn}
+	{}
+
+	Instruction *create(Value *basePtr)
+	{
+	  // look up in map
+	  auto I = basePtr2magic.find(basePtr);
+
+	  if(I != basePtr2magic.end())
+	  	return I->second;
+
+		Instruction *firstInsertPt = (function_entry)->getFirstInsertionPt();
+		Instruction *insertBefore  = isGlobalOrArgument(basePtr) ? firstInsertPt : nextOf((Instruction *)basePtr);
+
+		IRBuilder<> IRB(insertBefore);
+
+		auto operand  = basePtr->getType() == IRB.getInt8PtrTy() ? basePtr : IRB.CreatePointerCast(basePtr, IRB.getInt8PtrTy());
+		auto magicNum = IRB.CreateCall(getBasePtr_fn, operand);
+
+		// update map
+		basePtr2magic[basePtr] = magicNum;
+
+		return magicNum;
+	}
+private:
+	BasicBlock *function_entry;
+	Function *getBasePtr_fn;
+	ValueMap<Value*, Instruction*> basePtr2magic;
+};
+
+
 bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 {
 	// we are interested only in cloneable, non-empty, innermost loops
@@ -328,16 +390,12 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 	Function   *fn     = header->getParent();
 	Module     *module = fn->getParent();
 
-	currLoop = loop;
-
-	assert((!header->getName().empty()) && "You must run the `instnamer' pass before using alias-tracer");
-
-	StringRef fn_name = fn->getName();
+	StringRef fn_name = getNameOrFail(fn);
 
 	if (CloneOnlyPrefix.size() && !hasPrefix(fn_name, CloneOnlyPrefix))
 		return false;
 
-	std::string loop_name = (fn_name + "::" + header->getName()).str();
+	std::string loop_name = (fn_name + "::" + getNameOrFail(header)).str();
 
 	DEBUG(dbgs() << "========================================================\n");
 	DEBUG(dbgs() << "CloneLoopPass::runOnLoop(" << loop_name << ")\n");
@@ -363,85 +421,90 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 	if(alias_trace->empty())
 		return false;
 
-	// ** find worthwile candidates for instrumentation
+	// ** find pairs of bases that are likely to alias (used for filtering)
 
-	std::vector<AliasTrace> probable_noaliases;
+	SymbolTableWrapper symbol_table{fn, loop_name};
+	set<BasePtrPair> probable_aliases;
 
-	std::copy_if(alias_trace->begin(), alias_trace->end(), std::back_inserter(probable_noaliases),
-		[](const AliasTrace& at) {
-			return at.noalias_probability() > .9;
+	unsigned probable_noaliases_count = 0;
+
+	for (auto& at : *alias_trace)
+	{
+		if (at.noalias_probability() > .9)
+		{
+			probable_noaliases_count++;
+			continue;
 		}
-	);
 
-	DEBUG(dbgs() << "found " << probable_noaliases.size() << " probable no-alias-pairs\n");
+		Value* ptr1 = symbol_table.lookup(at.ptr1);
+		Value* ptr2 = symbol_table.lookup(at.ptr2);
 
-	if (probable_noaliases.empty())
+		probable_aliases.insert(orderedPair(ptr1, ptr2));
+	}
+
+	DEBUG(dbgs() << "found " << probable_noaliases_count << " probable noalias pairs\n");
+	DEBUG(dbgs() << "found " << probable_aliases.size()  << " probable alias   pairs\n");
+
+	if (probable_noaliases_count == 0)
 		return false;
+
+	// ** compute base pointers
+
+	AliasAnalysis&     aa      = getAnalysis<AliasAnalysis>();
+	DominatorTree&     domTree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+
+	DEBUG(dbgs() << "recomputing base ptrs\n");
+
+	BasePtrInfo info = BasePtrInfo::compute(loop, domTree, aa);
+
+	DEBUG(dbgs() << "filtering base ptr pairs with profile information\n");
+
+	info.filter(probable_aliases);
+
+	if (info.getBasePtrPairs().empty())
+		return false;
+
+	DEBUG(dbgs() << "cloning loop\n");
 
 	// ** add instrumentation code
 
 	LLVMContext& ctx = module->getContext();
-
-	set<pair<Instruction*, Instruction*>> alias_pairs;
-	set<Value*>                           all_aliases;
 
 	BasicBlock *preheader = loop->getLoopPreheader();
 	BasicBlock *entry     = &fn->getEntryBlock();
 
 	DeclareGetBasePtr& dgbp = getAnalysis<DeclareGetBasePtr>();
 
-	this->getBasePtr_fn = dgbp.getGetBasePtrFn();
-
-	auto& symbol_table = fn->getValueSymbolTable();
-
-	for (auto& alias_pair : probable_noaliases) {
-		Value *val1 = symbol_table.lookup(alias_pair.ptr1);
-		Value *val2 = symbol_table.lookup(alias_pair.ptr2);
-
-		assert(val1);
-		assert(val2);
-
-		auto val1_base = getOrInsertMagic(val1);
-		auto val2_base = getOrInsertMagic(val2);
-
-		alias_pairs.insert(orderedPair(val1_base, val2_base));
-
-//		all_aliases.insert(val1);
-//		all_aliases.insert(val2);
-	}
-
-	DEBUG(dbgs() << "inserted magic\n");
+	MagicBuilder magic{entry, dgbp.getGetBasePtrFn()};
 
 	Loop *cloned_loop = cloneLoop(loop, LPM);
-
-	addAliasScopeMetadata(ctx, loop_name, loop, all_aliases);
-
 	cloned_loops.insert(cloned_loop);
 
 	// ** decide which loop to go into
 
+	DEBUG(dbgs() << "creating runtime checks\n");
+
 	assert(preheader && "Loop was not of simple form");
 	assert(!preheader->empty());
 
-	IRBuilder<> irb{preheader, --preheader->end()};
+	assert(cloned_loop->getHeader());
+	assert(loop->getHeader());
 
 	vector<Instruction*> conditionals;
 
 	// compare the magic numbers for each pair
 	// "and" the list of conditionals on loop preheader
 
-	for (auto aliases : alias_pairs) {
-		auto l = aliases.first;
-		auto r = aliases.second;
-
-		DEBUG(dbgs() << "inserted alias pair trace\n");
+	for (auto aliases : info.getBasePtrPairs()) {
+		auto l = magic.create(aliases.first);
+		auto r = magic.create(aliases.second);
 
 		// TODO: hoist to least dominator
 
 		// add the cmp just before the last instruction of the bb (maybe it is a branch, adding after it would break the control flow)
-		IRBuilder<> IRB_ICmpNE((Instruction *)&(lastOf(l->getParent(), r->getParent())->back()));
+		IRBuilder<> IRB_ICmpNE(cast<Instruction>(&(lastOf(l->getParent(), r->getParent())->back())));
 
-    	Instruction *cmp = cast<Instruction>(IRB_ICmpNE.CreateICmpNE(l, r));
+		Instruction *cmp = cast<Instruction>(IRB_ICmpNE.CreateICmpNE(l, r));
 
 		conditionals.push_back(cmp);
 	}
@@ -464,18 +527,26 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 	}
 
 	assert(conditionals.size() == 1);
-	assert(cloned_loop->getHeader());
-	assert(loop->getHeader());
 
-//	Value *specluated_conditional = irb.
+	// TODO: either add llvm.speculate or branch weights to tell LLVM
+	//       to prefer the loop with noalias metadata
+
+	IRBuilder<> irb{preheader, --preheader->end()};
 
 	irb.CreateCondBr(
 		conditionals.front(),
 		cloned_loop->getHeader(), // true path
+		// loop->getHeader(),        // debug
 		loop->getHeader()         // false path
 	);
 	// remove original branch
-	loop->getLoopPreheader()->back().eraseFromParent();
+	preheader->back().eraseFromParent();
+
+	// ** Insert noalias metadata
+
+	DEBUG(dbgs() << "Inserting no-alias metadata\n");
+
+	addAliasScopeMetadata(ctx, loop_name, loop, info);
 
 	return true;
 }
@@ -618,268 +689,76 @@ Loop *CloneLoopPass::cloneLoop(Loop *OrigL, LPPassManager& LPM)
 }
 
 
-/// Add new alias scopes for each loop input we speculate to have no alias,
+/// Add new alias scopes for each pair of loop inputs we speculate to have no alias,
 /// tag the mapped noalias parameters with noalias metadata specifying the new scope,
 /// and tag all non-derived loads, stores and memory intrinsics with the new alias scopes.
-void CloneLoopPass::addAliasScopeMetadata(LLVMContext& ctx, string loop_name, Loop *loop, set<Value*> inputs) {
-	AliasAnalysis&    AA = getAnalysis<AliasAnalysis>();
-	const DataLayout* DL = AA.getDataLayout();
-	DominatorTree&    DT = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+void CloneLoopPass::addAliasScopeMetadata(LLVMContext& ctx, string loop_name, Loop *loop, BasePtrInfo& info) {
+	MDBuilder builder{ctx};
 
-	DEBUG(dbgs() << "building NoAliasArgs\n");
+	MDNode *domain = builder.createAnonymousAliasScopeDomain(loop_name + ".domain");
+	ValueMap<Value*, MDNode*> newScopes;
 
-	SmallVector<Value *, 4> NoAliasArgs;
-
-
-	for (auto I : inputs) {
-		if (!I->hasNUses(0))
-			NoAliasArgs.push_back(I);
+	for (auto basePtr : info.getAllBasePtrs())
+	{
+		newScopes[basePtr] = builder.createAnonymousAliasScope(domain, getNameOrFail(basePtr));
 	}
 
-	if (NoAliasArgs.empty())
-		return;
+	// for (pair<Instruction*, set<Value*>>& mapping : info)
+	for (auto& mapping : info)
+	{
+		Instruction* memInstr = mapping.first;
+		set<Value*>& basePtrs = mapping.second;
 
-	DEBUG(dbgs() << "building NoAliasArgs.size() == " << NoAliasArgs.size() << "\n");
+		// add alias.scope metadata for each base ptr of mem instr
+		SmallVector<Value*, 4> scopes;
 
-	// To do a good job, if a noalias variable is captured, we need to know if
-	// the capture point dominates the particular use we're considering.
-//	DominatorTree DT;
-//	DT.recalculate(const_cast<Function&>(*CalledFunc));
+		for (auto basePtr : basePtrs)
+		{
+			assert(newScopes.count(basePtr));
 
-	// noalias indicates that pointer values based on the argument do not alias
-	// pointer values which are not based on it. So we add a new "scope" for each
-	// noalias function argument. Accesses using pointers based on that argument
-	// become part of that alias scope, accesses using pointers not based on that
-	// argument are tagged as noalias with that scope.
-
-	DenseMap<const Value *, MDNode *> NewScopes;
-	MDBuilder MDB(ctx);
-
-	// Create a new scope domain for this function.
-	MDNode *NewDomain = MDB.createAnonymousAliasScopeDomain(loop_name);
-
-	for (unsigned i = 0, e = NoAliasArgs.size(); i != e; ++i) {
-		const Value *A = NoAliasArgs[i];
-
-		std::string Name = loop_name;
-		if (A->hasName()) {
-			Name += ": %";
-			Name += A->getName();
-		} else {
-			Name += ": argument ";
-			Name += utostr(i);
+			scopes.push_back(newScopes[basePtr]);
 		}
 
-		// Note: We always create a new anonymous root here. This is true regardless
-		// of the linkage of the callee because the aliasing "scope" is not just a
-		// property of the callee, but also all control dependencies in the caller.
-		MDNode *NewScope = MDB.createAnonymousAliasScope(NewDomain, Name);
-		NewScopes.insert(std::make_pair(A, NewScope));
-	}
+		memInstr->setMetadata(
+			LLVMContext::MD_alias_scope,
+			MDNode::concatenate(
+				memInstr->getMetadata(LLVMContext::MD_alias_scope),
+				MDNode::get(ctx, scopes)
+			)
+		);
 
-	DEBUG(dbgs() << "Created " << NewScopes.size() << " new alias scopes\n");
+		// add noalias metadata for each base ptr that is not a base of mem instr
+		SmallVector<Value*, 4> noAliases;
 
-	DenseMap<const Instruction*, MDNode*> NewMD;
-
-	auto handler = [&](Value *v) {
-		if (Instruction *I = dyn_cast<Instruction>(v)) {
-			bool IsArgMemOnlyCall = false, IsFuncCall = false;
-			SmallVector<const Value *, 2> PtrArgs;
-
-			if (const LoadInst *LI = dyn_cast<LoadInst>(I))
-				PtrArgs.push_back(LI->getPointerOperand());
-			else if (const StoreInst *SI = dyn_cast<StoreInst>(I))
-				PtrArgs.push_back(SI->getPointerOperand());
-			else if (const VAArgInst *VAAI = dyn_cast<VAArgInst>(I))
-				PtrArgs.push_back(VAAI->getPointerOperand());
-			else if (const AtomicCmpXchgInst *CXI = dyn_cast<AtomicCmpXchgInst>(I))
-				PtrArgs.push_back(CXI->getPointerOperand());
-			else if (const AtomicRMWInst *RMWI = dyn_cast<AtomicRMWInst>(I))
-				PtrArgs.push_back(RMWI->getPointerOperand());
-			else if (ImmutableCallSite ICS = ImmutableCallSite(I)) {
-				// If we know that the call does not access memory, then we'll still
-				// know that about the inlined clone of this call site, and we don't
-				// need to add metadata.
-				if (ICS.doesNotAccessMemory())
-					return;
-
-				IsFuncCall = true;
-				AliasAnalysis::ModRefBehavior MRB = AA.getModRefBehavior(ICS);
-
-				if (MRB == AliasAnalysis::OnlyAccessesArgumentPointees
-				    || MRB == AliasAnalysis::OnlyReadsArgumentPointees)
-					IsArgMemOnlyCall = true;
-
-				for (auto AI = ICS.arg_begin(), AE = ICS.arg_end(); AI != AE; ++AI) {
-					// We need to check the underlying objects of all arguments, not just
-					// the pointer arguments, because we might be passing pointers as
-					// integers, etc.
-					// However, if we know that the call only accesses pointer arguments,
-					// then we only need to check the pointer arguments.
-					if (IsArgMemOnlyCall && !(*AI)->getType()->isPointerTy())
-						continue;
-
-					PtrArgs.push_back(*AI);
-				}
-			}
-
-			// If we found no pointers, then this instruction is not suitable for
-			// pairing with an instruction to receive aliasing metadata.
-			// However, if this is a call, this we might just alias with none of the
-			// noalias arguments.
-			if (PtrArgs.empty() && !IsFuncCall)
-				return;
-
-			// It is possible that there is only one underlying object, but you
-			// need to go through several PHIs to see it, and thus could be
-			// repeated in the Objects list.
-			SmallPtrSet<Value *, 4> ObjSet;
-			SmallVector<Value *, 4> Scopes, NoAliases;
-
-			for (unsigned i = 0, ie = PtrArgs.size(); i != ie; ++i) {
-				SmallVector<Value *, 4> Objects;
-				GetUnderlyingObjects(const_cast<Value*>(PtrArgs[i]), Objects, DL, /* MaxLookup = */ 0);
-
-				for (Value *O : Objects)
-					ObjSet.insert(O);
-			}
-
-			// Figure out if we're derived from anything that is not a noalias
-			// argument.
-			bool CanDeriveViaCapture = false, UsesAliasingPtr = false;
-			for (Value *V : ObjSet) {
-				// Is this value a constant that cannot be derived from any pointer
-				// value (we need to exclude constant expressions, for example, that
-				// are formed from arithmetic on global symbols).
-				bool IsNonPtrConst = isa<ConstantInt>(V)         ||
-				                     isa<ConstantFP>(V)          ||
-				                     isa<ConstantPointerNull>(V) ||
-				                     isa<ConstantDataVector>(V)  ||
-				                     isa<UndefValue>(V);
-
-				if (IsNonPtrConst)
-					continue;
-
-				// If this is anything other than a noalias argument, then we cannot
-				// completely describe the aliasing properties using alias.scope
-				// metadata (and, thus, won't add any).
-//				if (const Argument *A = dyn_cast<Argument>(V)) {
-//					if (!A->hasNoAliasAttr())
-//						UsesAliasingPtr = true;
-				// if it's in the set of loop inputs we assume noalias
-				if (inputs.count(V)) {
-				} else {
-					UsesAliasingPtr = true;
-				}
-
-				// If this is not some identified function-local object (which cannot
-				// directly alias a noalias argument), or some other argument (which,
-				// by definition, also cannot alias a noalias argument), then we could
-				// alias a noalias argument that has been captured).
-				if (!isa<Argument>(V) &&
-						!isIdentifiedFunctionLocal(const_cast<Value*>(V)))
-					CanDeriveViaCapture = true;
-			}
-
-			// A function call can always get captured noalias pointers (via other
-			// parameters, globals, etc.).
-			if (IsFuncCall && !IsArgMemOnlyCall)
-				CanDeriveViaCapture = true;
-
-			// First, we want to figure out all of the sets with which we definitely
-			// don't alias. Iterate over all noalias set, and add those for which:
-			//   1. The noalias argument is not in the set of objects from which we
-			//      definitely derive.
-			//   2. The noalias argument has not yet been captured.
-			// An arbitrary function that might load pointers could see captured
-			// noalias arguments via other noalias arguments or globals, and so we
-			// must always check for prior capture.
-			for (Value *A : NoAliasArgs) {
-				if (!ObjSet.count(A) && (!CanDeriveViaCapture ||
-				                         // It might be tempting to skip the
-				                         // PointerMayBeCapturedBefore check if
-				                         // A->hasNoCaptureAttr() is true, but this is
-				                         // incorrect because nocapture only guarantees
-				                         // that no copies outlive the function, not
-				                         // that the value cannot be locally captured.
-				                         !PointerMayBeCapturedBefore(A,
-				                                /* ReturnCaptures */ false,
-				                                 /* StoreCaptures */ false, I, &DT)))
-					NoAliases.push_back(NewScopes[A]);
-			}
-
-			if (!NoAliases.empty()) {
-				I->setMetadata(LLVMContext::MD_noalias, MDNode::concatenate(
-					I->getMetadata(LLVMContext::MD_noalias),
-						MDNode::get(ctx, NoAliases)));
-
-				DEBUG(dbgs() << "BAM! NoAliases " << *I << "\n");
-			}
-
-			// Next, we want to figure out all of the sets to which we might belong.
-			// We might belong to a set if the noalias argument is in the set of
-			// underlying objects. If there is some non-noalias argument in our list
-			// of underlying objects, then we cannot add a scope because the fact
-			// that some access does not alias with any set of our noalias arguments
-			// cannot itself guarantee that it does not alias with this access
-			// (because there is some pointer of unknown origin involved and the
-			// other access might also depend on this pointer). We also cannot add
-			// scopes to arbitrary functions unless we know they don't access any
-			// non-parameter pointer-values.
-			bool CanAddScopes = !UsesAliasingPtr;
-			if (CanAddScopes && IsFuncCall)
-				CanAddScopes = IsArgMemOnlyCall;
-
-			if (CanAddScopes)
-				for (Value *A : NoAliasArgs) {
-					if (ObjSet.count(A))
-						Scopes.push_back(NewScopes[A]);
-				}
-
-			if (!Scopes.empty()) {
-				I->setMetadata(LLVMContext::MD_alias_scope, MDNode::concatenate(
-					I->getMetadata(LLVMContext::MD_alias_scope),
-						MDNode::get(ctx, Scopes)));
-
-				DEBUG(dbgs() << "BAM! Scopes " << *I << "\n");
-			}
+		for (auto basePtr : info.getAllBasePtrs())
+		{
+			if (basePtrs.count(basePtr) == 0)
+				noAliases.push_back(newScopes[basePtr]);
 		}
-	};
 
-	// Iterate over all instructions in the loop; for all memory-access
-	// instructions, add the alias scope metadata.
-	for (auto bb : loop->getBlocks()) {
-		for (BasicBlock::iterator it = bb->begin(), end = bb->end(); it != end; ++it) {
-			Instruction *inst = it;
+		memInstr->setMetadata(
+			LLVMContext::MD_noalias,
+			MDNode::concatenate(
+				memInstr->getMetadata(LLVMContext::MD_noalias),
+				MDNode::get(ctx, noAliases)
+			)
+		);
 
-			handler(inst);
-		}
-	}
-
-	// also add alias scope metadata to the loops `inputs'
-	for (auto input : inputs) {
-		handler(input);
+		DEBUG(dbgs() << *memInstr << "\n");
+		DEBUG(dbgs() << "\t" << *(memInstr->getMetadata(LLVMContext::MD_alias_scope)) << "");
+		DEBUG(dbgs() << "\t" << *(memInstr->getMetadata(LLVMContext::MD_noalias))     << "");
 	}
 }
 
-Instruction *CloneLoopPass::getOrInsertMagic(Value *basePtr)
-{
-  // look up in map
-  auto I = basePtr2magic.find(basePtr);
+StringRef CloneLoopPass::getNameOrFail(const Value* v) {
+	StringRef name = v->getName();
 
-  if(I != basePtr2magic.end()) return I->second;
-    Instruction *firstInsertPt = ((BasicBlock *)currLoop->getHeader()->getParent()->begin())->getFirstInsertionPt();
-    Instruction *insertBefore  = isGlobalOrArgument(basePtr) ? firstInsertPt : nextOf((Instruction *)basePtr);
+	if (name.empty()) {
+		errs() << "You must run the `instnamer' pass before using " << getPassName() << "\n";
+		exit(1);
+	}
 
-  IRBuilder<> IRB(insertBefore);
-
-  auto operand  = basePtr->getType() == IRB.getInt8PtrTy() ? basePtr : IRB.CreatePointerCast(basePtr, IRB.getInt8PtrTy());
-  auto magicNum = IRB.CreateCall(getGetBasePtrFn(), operand);
-
-  // update map
-  basePtr2magic[basePtr] = magicNum;
-
-  return magicNum;
+	return name;
 }
 
 static bool hasPrefix(const std::string& str, const std::string& prefix)
@@ -912,7 +791,8 @@ static BasicBlock *lastOf(BasicBlock *bb1, BasicBlock *bb2)
   return nullptr;
 }
 
-static pair<Instruction*,Instruction*> orderedPair(Instruction* v1, Instruction* v2)
+template<typename T>
+static pair<T*, T*> orderedPair(T* a, T* b)
 {
-	return (v1 < v2 ? make_pair(v1,v2) : make_pair(v2,v1));
+	return (a < b ? make_pair(a, b) : make_pair(b, a));
 }

@@ -9,4 +9,4 @@ include(AddLLVM)
 add_definitions(${LLVM_DEFINITIONS})
 include_directories(${LLVM_INCLUDE_DIRS})
 
-add_library(memtrack STATIC alias_tracing.cpp)
+add_library(memtrack SHARED alias_tracing.cpp)
