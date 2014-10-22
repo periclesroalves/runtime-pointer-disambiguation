@@ -397,6 +397,7 @@ bool AliasInstrumenter::generateAliasChecks() {
     }
 
   std::map<Value *, std::pair<Value *, Value *> > pointerBounds;
+  std::vector<Value *> checks;
 
   // Insert comparison expressions for every pair of pointers that need to be
   // checked. Example:
@@ -427,8 +428,12 @@ bool AliasInstrumenter::generateAliasChecks() {
       pointerBounds[pair.second] = std::make_pair(low, up);
     }
 
-    insertCheck(pointerBounds[pair.first], pointerBounds[pair.second]);
+    Value *check = insertCheck(pointerBounds[pair.first],
+      pointerBounds[pair.second]);
+    checks.push_back(check);
   }
+
+  chainChecks(checks);
 
   return true;
 }
@@ -436,7 +441,7 @@ bool AliasInstrumenter::generateAliasChecks() {
 // Inserts a dynamic test to guarantee that accesses to two pointers do not
 // overlap, by doing:
 // no-alias: upper(A) < lower(B) || upper(B) < lower(A)
-void AliasInstrumenter::insertCheck(std::pair<Value *, Value *> boundsA,
+Value *AliasInstrumenter::insertCheck(std::pair<Value *, Value *> boundsA,
                                     std::pair<Value *, Value *> boundsB) {
   // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
   Type *i8PtrTy = rangeAnalyser.Builder.getInt8PtrTy();
@@ -447,5 +452,18 @@ void AliasInstrumenter::insertCheck(std::pair<Value *, Value *> boundsA,
 
   Value *aIsBeforeB = rangeAnalyser.Builder.CreateICmpULT(upperA, lowerB);
   Value *bIsBeforeA = rangeAnalyser.Builder.CreateICmpULT(upperB, lowerA);
-  rangeAnalyser.Builder.CreateOr(aIsBeforeB, bIsBeforeA, "no-alias");
+  return rangeAnalyser.Builder.CreateOr(aIsBeforeB, bIsBeforeA, "no-dyn-alias");
+}
+
+Value *AliasInstrumenter::chainChecks(std::vector<Value *> checks) {
+  if (checks.size() < 1)
+    return nullptr;
+
+  Value *rhs = checks[0];
+
+  for (std::vector<Value *>::size_type i = 1; i != checks.size(); i++) {
+    rhs = rangeAnalyser.Builder.CreateAnd(checks[i], rhs, "no-dyn-alias");
+  }
+
+  return rhs;
 }

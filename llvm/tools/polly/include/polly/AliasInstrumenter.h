@@ -148,8 +148,11 @@ class AliasInstrumenter {
 
   // Inserts a dynamic test to guarantee that accesses to two pointers do not
   // overlap, given their access ranges.
-  void insertCheck(std::pair<Value *, Value *> boundsA,
+  Value *insertCheck(std::pair<Value *, Value *> boundsA,
                    std::pair<Value *, Value *> boundsB);
+
+  // Chain all checks to a single result value using "and" operations.
+  Value *chainChecks(std::vector<Value *> checks);
 
 public:
   AliasInstrumenter(ScalarEvolution *se, const ScopDetection *sd,
