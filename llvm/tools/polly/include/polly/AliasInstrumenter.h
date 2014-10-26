@@ -47,7 +47,7 @@ class SCEVRangeAnalyser : private SCEVExpander {
   const ScopDetection *sd;
   ScalarEvolution *se;
   Region *r;
-  bool current_upper; // Which bound is currently being extracted. Used mainly
+  bool currentUpper; // Which bound is currently being extracted. Used mainly
                       // by methods of SCEVExpander, which are not aware of
                       // bounds computation.
   std::map<std::tuple<const SCEV *, Instruction *, bool>, TrackingVH<Value> >
@@ -56,7 +56,7 @@ class SCEVRangeAnalyser : private SCEVExpander {
   // If the caller doesn't specify which bound to compute, we assume the same of
   // the last expanded expression. Usually called by methods defined in
   // SCEVExpander.
-  Value *expand(const SCEV *s) {return expand(s, current_upper);}
+  Value *expand(const SCEV *s) {return expand(s, currentUpper);}
 
   // Main entry point for expansion.
   Value *expand(const SCEV *s, bool upper);
@@ -118,7 +118,7 @@ class SCEVRangeAnalyser : private SCEVExpander {
 public:
   SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r)
     : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r),
-      current_upper(true) {
+      currentUpper(true) {
     SetInsertPoint(r->getEntry()->getFirstNonPHI());
   }
 

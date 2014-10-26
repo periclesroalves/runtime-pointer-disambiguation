@@ -43,12 +43,12 @@ Value *SCEVRangeAnalyser::expand(const SCEV *s, bool upper) {
     return v;
 
   // Remember which bound was computed for the last expression.
-  bool old_upper = current_upper;
+  bool oldUpper = currentUpper;
 
-  current_upper = upper;
+  currentUpper = upper;
   v = visit(s, upper);
   rememberExpression(s, insertPt, upper, v);
-  current_upper = old_upper;
+  currentUpper = oldUpper;
 
   return v;
 }
