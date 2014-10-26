@@ -8,8 +8,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/Analysis/AliasAnalysis.h"
+#include "llvm/IR/IRBuilder.h"
 
 #include "polly/AliasInstrumenter.h"
+#include "polly/ScopDetection.h"
 #include "polly/Support/ScopHelper.h"
 
 using namespace llvm;
@@ -345,9 +347,16 @@ Value *SCEVRangeAnalyser::getUUpperBound(std::set<const SCEV *> &exprList) {
 
 // Generate dynamic alias checks for all pointers within the region for which
 // dependencies can't be solved statically.
-bool AliasInstrumenter::generateAliasChecks() {
+bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
   std::map<const Value *, std::set<const SCEV *> > memAccesses;
   std::set<std::pair<Value *, Value *> > pairsToCheck;
+  AliasSetTracker ast(*aa);
+
+  // Set instruction insertion context.
+  Instruction *insertPtr = r->getEntry()->getFirstNonPHI();
+  SCEVRangeAnalyser rangeAnalyser(se, sd, r, insertPtr);
+  BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
+  builder.SetInsertPoint(insertPtr);
 
   // Collect, for all memory accesses, their respective base pointer and access
   // function. For the accesses a[i], a[i+5], and b[i+j], we'd have something
@@ -429,11 +438,12 @@ bool AliasInstrumenter::generateAliasChecks() {
     }
 
     Value *check = insertCheck(pointerBounds[pair.first],
-      pointerBounds[pair.second]);
+      pointerBounds[pair.second], builder, rangeAnalyser);
     checks.push_back(check);
   }
 
-  chainChecks(checks);
+  if (Value *checkResult = chainChecks(checks, builder))
+    insertedChecks.push_back(std::make_pair(checkResult, r));
 
   return true;
 }
@@ -442,27 +452,29 @@ bool AliasInstrumenter::generateAliasChecks() {
 // overlap, by doing:
 // no-alias: upper(A) < lower(B) || upper(B) < lower(A)
 Value *AliasInstrumenter::insertCheck(std::pair<Value *, Value *> boundsA,
-                                    std::pair<Value *, Value *> boundsB) {
+                                      std::pair<Value *, Value *> boundsB,
+                                      BuilderType &builder,
+                                      SCEVRangeAnalyser &rangeAnalyser) {
   // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
-  Type *i8PtrTy = rangeAnalyser.Builder.getInt8PtrTy();
+  Type *i8PtrTy = builder.getInt8PtrTy();
   Value *lowerA = rangeAnalyser.InsertNoopCastOfTo(boundsA.first, i8PtrTy);
   Value *upperA = rangeAnalyser.InsertNoopCastOfTo(boundsA.second, i8PtrTy);
   Value *lowerB = rangeAnalyser.InsertNoopCastOfTo(boundsB.first, i8PtrTy);
   Value *upperB = rangeAnalyser.InsertNoopCastOfTo(boundsB.second, i8PtrTy);
 
-  Value *aIsBeforeB = rangeAnalyser.Builder.CreateICmpULT(upperA, lowerB);
-  Value *bIsBeforeA = rangeAnalyser.Builder.CreateICmpULT(upperB, lowerA);
-  return rangeAnalyser.Builder.CreateOr(aIsBeforeB, bIsBeforeA, "no-dyn-alias");
+  Value *aIsBeforeB = builder.CreateICmpULT(upperA, lowerB);
+  Value *bIsBeforeA = builder.CreateICmpULT(upperB, lowerA);
+  return builder.CreateOr(aIsBeforeB, bIsBeforeA, "no-dyn-alias");
 }
 
-Value *AliasInstrumenter::chainChecks(std::vector<Value *> checks) {
+Value *AliasInstrumenter::chainChecks(std::vector<Value *> checks, BuilderType &builder) {
   if (checks.size() < 1)
     return nullptr;
 
   Value *rhs = checks[0];
 
   for (std::vector<Value *>::size_type i = 1; i != checks.size(); i++) {
-    rhs = rangeAnalyser.Builder.CreateAnd(checks[i], rhs, "no-dyn-alias");
+    rhs = builder.CreateAnd(checks[i], rhs, "no-dyn-alias");
   }
 
   return rhs;

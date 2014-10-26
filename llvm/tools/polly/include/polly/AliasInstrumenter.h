@@ -18,7 +18,7 @@
 #include "llvm/Analysis/ScalarEvolutionExpander.h"
 #include "llvm/IR/Module.h"
 
-#include "polly/ScopDetection.h"
+using namespace llvm;
 
 namespace llvm {
 class ScalarEvolution;
@@ -116,10 +116,11 @@ class SCEVRangeAnalyser : private SCEVExpander {
   void insertPtrPrintf(Value *val);
 
 public:
-  SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r)
+  SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r,
+      Instruction *insertPtr)
     : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r),
       currentUpper(true) {
-    SetInsertPoint(r->getEntry()->getFirstNonPHI());
+    SetInsertPoint(insertPtr);
   }
 
   // Returns the minimum value an SCEV can assume.
@@ -140,30 +141,42 @@ public:
 };
 
 class AliasInstrumenter {
-  SCEVRangeAnalyser rangeAnalyser;
-  AliasSetTracker &ast;
+  typedef IRBuilder<true, TargetFolder> BuilderType;
+
   ScalarEvolution *se;
+  const ScopDetection *sd;
+  AliasAnalysis *aa;
   LoopInfo *li;
-  Region *r;
+  std::vector<std::pair<Value *, Region *> > insertedChecks;
 
   // Inserts a dynamic test to guarantee that accesses to two pointers do not
   // overlap, given their access ranges.
   Value *insertCheck(std::pair<Value *, Value *> boundsA,
-                   std::pair<Value *, Value *> boundsB);
+                     std::pair<Value *, Value *> boundsB,
+                     BuilderType &builder, SCEVRangeAnalyser &rangeAnalyser);
 
   // Chain all checks to a single result value using "and" operations.
-  Value *chainChecks(std::vector<Value *> checks);
+  Value *chainChecks(std::vector<Value *> checks, BuilderType &builder);
 
 public:
-  AliasInstrumenter(ScalarEvolution *se, const ScopDetection *sd,
-      AliasSetTracker &ast, LoopInfo *li, Region *r)
-    : rangeAnalyser(se, sd, r), ast(ast), se(se), li(li), r(r) {}
+  // Updates the context of the analyses needed for the instrumentation.
+  void changeContext(ScalarEvolution *se_, const ScopDetection *sd_,
+                  AliasAnalysis *aa_, LoopInfo *li_) {
+    insertedChecks.clear();
+    se = se_; sd = sd_; aa = aa_; li = li_;
+  }
 
-  /// @brief Generate dynamic alias checks for all pointers within the region
-  /// for which dependencies can't be solved statically.
-  /// 
-  /// @return True if all needed checks were inserted, false otherwise.
-  bool generateAliasChecks();
+  // Check for dependencies within the current region, generating dynamic alias
+  // checks for all pointers that can't be solved statically. Returns true if
+  // all dependecies could be solved.
+  bool checkAndSolveDependencies(Region *r);
+
+  // Return the set of dynamic checks generated while solving dependencies (a
+  // single value per region). Each value indicates, at runtime, if the region
+  // is free of dependencies.
+  std::vector<std::pair<Value *, Region *> > &getInsertedChecks() {
+    return insertedChecks;
+  }
 };
 } // end namespace polly
 

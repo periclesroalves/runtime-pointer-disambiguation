@@ -567,6 +567,7 @@ namespace llvm {
     ScalarEvolution();
 
     LLVMContext &getContext() const { return F->getContext(); }
+    const DataLayout *getDataLayout() { return DL; }
 
     /// isSCEVable - Test if values of the given type are analyzable within
     /// the SCEV framework. This primarily includes integer types, and it

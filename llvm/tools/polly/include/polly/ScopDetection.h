@@ -49,7 +49,9 @@
 
 #include "llvm/Pass.h"
 #include "llvm/Analysis/AliasSetTracker.h"
+#include "llvm/Analysis/DominanceFrontier.h"
 
+#include "polly/AliasInstrumenter.h"
 #include "polly/ScopDetectionDiagnostic.h"
 
 #include <set>
@@ -60,6 +62,9 @@ using namespace llvm;
 namespace llvm {
 class RegionInfo;
 class Region;
+class DominatorTree;
+class DominanceFrontier;
+struct PostDominatorTree;
 class LoopInfo;
 class Loop;
 class ScalarEvolution;
@@ -125,6 +130,9 @@ class ScopDetection : public FunctionPass {
   LoopInfo *LI;
   RegionInfo *RI;
   AliasAnalysis *AA;
+  DominatorTree *DT;
+  PostDominatorTree *PDT;
+  DominanceFrontier *DF;
   //@}
 
   /// @brief Context variables for SCoP detection.
@@ -148,6 +156,8 @@ class ScopDetection : public FunctionPass {
 
   // Remember a list of errors for every region.
   mutable RejectLogsContainer RejectLogs;
+
+  mutable AliasInstrumenter instrumenter;
 
   // Delinearize all non affine memory accesses and return false when there
   // exists a non affine memory access that cannot be delinearized. Return true
@@ -196,13 +206,6 @@ class ScopDetection : public FunctionPass {
   /// @param CI The call instruction to check.
   /// @return True if the call instruction is valid, false otherwise.
   static bool isValidCallInst(CallInst &CI);
-
-  /// @brief Finds and tries to solve data dependeces within the current region.
-  ///
-  /// @param Context The context of scop detection.
-  ///
-  /// @return True if all dependencies were solved, false otherwise.
-  bool checkAndSolveDependencies(DetectionContext &context) const;
 
   /// @brief Check if a memory access can be part of a Scop.
   ///

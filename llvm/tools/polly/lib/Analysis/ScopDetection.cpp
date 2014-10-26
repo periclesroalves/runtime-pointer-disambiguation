@@ -44,7 +44,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "polly/AliasInstrumenter.h"
 #include "polly/CodeGen/BlockGenerators.h"
 #include "polly/LinkAllPasses.h"
 #include "polly/Options.h"
@@ -405,17 +404,6 @@ bool ScopDetection::hasAffineMemoryAccesses(DetectionContext &Context) const {
   return true;
 }
 
-bool ScopDetection::checkAndSolveDependencies(DetectionContext &context) const {
-  if (IgnoreAliasing)
-    return true;
-
-  // TODO: if instrumentation fails we need be able to return a report like:
-  // return invalid<ReportAlias>(context, /*Assert=*/false, &inst, as);
-  AliasInstrumenter instrumenter = AliasInstrumenter(SE, this, context.AST, LI,
-      &context.CurRegion);
-  return instrumenter.generateAliasChecks();
-}
-
 bool ScopDetection::isValidMemoryAccess(Instruction &Inst,
                                         DetectionContext &Context) const {
   Value *Ptr = getPointerOperand(Inst);
@@ -682,7 +670,12 @@ bool ScopDetection::allBlocksValid(DetectionContext &Context) const {
       if (!isValidInstruction(*I, Context) && !KeepGoing)
         return false;
 
-  if (!checkAndSolveDependencies(Context))
+  // TODO: if instrumentation fails we need be able to return a report like:
+  //   return invalid<ReportAlias>(context, /*Assert=*/false, &inst, as);
+  // TODO: do not instrument dependencies when "verifying" mode is set on
+  // context.
+  if (!IgnoreAliasing &&
+      !instrumenter.checkAndSolveDependencies(&Context.CurRegion))
     return false;
 
   if (!hasAffineMemoryAccesses(Context))
@@ -822,8 +815,12 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
 
   AA = &getAnalysis<AliasAnalysis>();
   SE = &getAnalysis<ScalarEvolution>();
+  DT = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+  PDT = &getAnalysis<PostDominatorTree>();
+  DF = &getAnalysis<DominanceFrontier>();
   Region *TopRegion = RI->getTopLevelRegion();
 
+  instrumenter.changeContext(SE, this, AA, LI);
   releaseMemory();
 
   if (OnlyFunction != "" && !F.getName().count(OnlyFunction))
@@ -866,6 +863,7 @@ void polly::ScopDetection::verifyAnalysis() const {
 void ScopDetection::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequired<DominatorTreeWrapperPass>();
   AU.addRequired<PostDominatorTree>();
+  AU.addRequired<DominanceFrontier>();
   AU.addRequired<LoopInfo>();
   AU.addRequired<ScalarEvolution>();
   // We also need AA and RegionInfo when we are verifying analysis.
@@ -899,6 +897,7 @@ INITIALIZE_AG_DEPENDENCY(AliasAnalysis);
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass);
 INITIALIZE_PASS_DEPENDENCY(LoopInfo);
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTree);
+INITIALIZE_PASS_DEPENDENCY(DominanceFrontier);
 INITIALIZE_PASS_DEPENDENCY(RegionInfoPass);
 INITIALIZE_PASS_DEPENDENCY(ScalarEvolution);
 INITIALIZE_PASS_END(ScopDetection, "polly-detect",
