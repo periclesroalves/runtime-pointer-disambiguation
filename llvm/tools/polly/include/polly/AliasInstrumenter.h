@@ -117,7 +117,7 @@ class SCEVRangeAnalyser : private SCEVExpander {
 
 public:
   SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r,
-      Instruction *insertPtr)
+                    Instruction *insertPtr)
     : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r),
       currentUpper(true) {
     SetInsertPoint(insertPtr);
@@ -159,12 +159,11 @@ class AliasInstrumenter {
   Value *chainChecks(std::vector<Value *> checks, BuilderType &builder);
 
 public:
-  // Updates the context of the analyses needed for the instrumentation.
-  void changeContext(ScalarEvolution *se_, const ScopDetection *sd_,
-                  AliasAnalysis *aa_, LoopInfo *li_) {
-    insertedChecks.clear();
-    se = se_; sd = sd_; aa = aa_; li = li_;
-  }
+  AliasInstrumenter() {}
+
+  AliasInstrumenter(ScalarEvolution *se, const ScopDetection *sd,
+                    AliasAnalysis *aa, LoopInfo *li)
+    : se(se), sd(sd), aa(aa), li(li) {}
 
   // Check for dependencies within the current region, generating dynamic alias
   // checks for all pointers that can't be solved statically. Returns true if

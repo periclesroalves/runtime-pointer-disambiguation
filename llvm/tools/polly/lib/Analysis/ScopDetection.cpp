@@ -820,7 +820,7 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
   DF = &getAnalysis<DominanceFrontier>();
   Region *TopRegion = RI->getTopLevelRegion();
 
-  instrumenter.changeContext(SE, this, AA, LI);
+  instrumenter = AliasInstrumenter(SE, this, AA, LI);
   releaseMemory();
 
   if (OnlyFunction != "" && !F.getName().count(OnlyFunction))
