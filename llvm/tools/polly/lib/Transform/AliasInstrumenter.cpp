@@ -9,6 +9,7 @@
 
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
 #include "polly/AliasInstrumenter.h"
 #include "polly/ScopDetection.h"
@@ -450,7 +451,7 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
 
 // Inserts a dynamic test to guarantee that accesses to two pointers do not
 // overlap, by doing:
-// no-alias: upper(A) < lower(B) || upper(B) < lower(A)
+//   no-alias: upper(A) < lower(B) || upper(B) < lower(A)
 Value *AliasInstrumenter::insertCheck(std::pair<Value *, Value *> boundsA,
                                       std::pair<Value *, Value *> boundsB,
                                       BuilderType &builder,
@@ -478,4 +479,26 @@ Value *AliasInstrumenter::chainChecks(std::vector<Value *> checks, BuilderType &
   }
 
   return rhs;
+}
+
+// Make all instrumented regions simple and isolate the dynamic checks.
+void AliasInstrumenter::fixInstrumentedRegions() {
+  for (auto &check : insertedChecks) {
+    Instruction *dyResult = dyn_cast<Instruction>(check.first);
+    BasicBlock *entry = dyResult->getParent();
+    Region *r = check.second;
+
+    assert((dyResult && entry == r->getEntry()) && "Malformed dynamic check.");
+
+    // Create a new entering block.
+    r->replaceEntryRecursive(SplitBlock(entry, dyResult->getNextNode(), li));
+  
+    // Create single exit edge.
+    if (!r->getExitingBlock()) {
+      BasicBlock *newExit = createSingleExitEdge(r, li);
+  
+      for (auto &&subRegion : *r)
+        subRegion->replaceExitRecursive(newExit);
+    }
+  }
 }

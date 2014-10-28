@@ -34,7 +34,6 @@ namespace polly {
 class ScopDetection;
 class DetectionContext;
 
-// TODO: avoid inserting duplicated computation.
 // Utility for computing Value objects corresponding to the lower and upper
 // bounds of a SCEV within a region R. The generated values are inserted into
 // the region entry. The resulting expressions can then be filled with runtime
@@ -176,6 +175,11 @@ public:
   std::vector<std::pair<Value *, Region *> > &getInsertedChecks() {
     return insertedChecks;
   }
+
+  // The structure of a region can't be changed while instrumenting it. This
+  // method fix the structure of the instrumented regions by simplifying them
+  // and isolating the checks in a new entering block.
+  void fixInstrumentedRegions();
 };
 } // end namespace polly
 
