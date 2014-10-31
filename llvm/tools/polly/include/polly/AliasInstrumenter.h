@@ -180,6 +180,11 @@ public:
   // method fix the structure of the instrumented regions by simplifying them
   // and isolating the checks in a new entering block.
   void fixInstrumentedRegions();
+
+  // DEBUG - compute the lower and upper access bounds for the base pointer in
+  // the given region. Also inserts instructions to print the computed bounds at
+  // runtime. Returns true if the bounds can be computed, false otherwise.
+  bool computeAndPrintBounds(Value *pointer, Region *r);
 };
 } // end namespace polly
 

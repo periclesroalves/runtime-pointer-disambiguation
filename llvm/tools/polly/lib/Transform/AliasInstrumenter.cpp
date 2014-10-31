@@ -502,3 +502,47 @@ void AliasInstrumenter::fixInstrumentedRegions() {
     }
   }
 }
+
+// Computes and prints the access bounds for a pointer.
+bool AliasInstrumenter::computeAndPrintBounds(Value *pointer, Region *r) {
+  std::set<const SCEV *>  memAccesses;
+
+  // Set instruction insertion context.
+  Instruction *insertPtr = r->getEntry()->getFirstNonPHI();
+  SCEVRangeAnalyser rangeAnalyser(se, sd, r, insertPtr);
+  BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
+  builder.SetInsertPoint(insertPtr);
+
+  // Collect all access functions to to the pointer in the region.
+  for (BasicBlock *bb : r->blocks())
+    for (BasicBlock::iterator i = bb->begin(), e = --bb->end(); i != e; ++i) {
+      Instruction &inst = *i;
+
+      if (!isa<LoadInst>(inst) && !isa<StoreInst>(inst))
+        continue;
+
+      Value *ptr = getPointerOperand(inst);
+      Loop *l = li->getLoopFor(inst.getParent());
+      const SCEV *accessFunction = se->getSCEVAtScope(ptr, l);
+      const SCEVUnknown *basePointer =
+        dyn_cast<SCEVUnknown>(se->getPointerBase(accessFunction));
+      Value *baseValue = basePointer->getValue();
+
+      if (baseValue != pointer)
+        continue;
+
+      memAccesses.insert(accessFunction);
+    }
+
+  // Compute the lowest lower and greatest upper bounds.
+  Value *low = rangeAnalyser.getULowerBound(memAccesses);
+  Value *up = rangeAnalyser.getUUpperBound(memAccesses);
+
+  if (!low || !up)
+    return false;
+
+  rangeAnalyser.insertPtrPrintf(low);
+  rangeAnalyser.insertPtrPrintf(up);
+
+  return true;
+}
