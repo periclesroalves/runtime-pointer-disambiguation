@@ -672,8 +672,6 @@ bool ScopDetection::allBlocksValid(DetectionContext &Context) const {
 
   // TODO: if instrumentation fails we need be able to return a report like:
   //   return invalid<ReportAlias>(context, /*Assert=*/false, &inst, as);
-  // TODO: do not instrument dependencies when "verifying" mode is set on
-  // context.
   if (!IgnoreAliasing &&
       !instrumenter.checkAndSolveDependencies(&Context.CurRegion))
     return false;
@@ -820,7 +818,7 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
   DF = &getAnalysis<DominanceFrontier>();
   Region *TopRegion = RI->getTopLevelRegion();
 
-  instrumenter = AliasInstrumenter(SE, this, AA, LI);
+  instrumenter = AliasInstrumenter(SE, this, AA, LI, /*verifyingOnly*/ false);
   releaseMemory();
 
   if (OnlyFunction != "" && !F.getName().count(OnlyFunction))
@@ -855,6 +853,8 @@ void polly::ScopDetection::verifyRegion(const Region &R) const {
 void polly::ScopDetection::verifyAnalysis() const {
   if (!VerifyScops)
     return;
+
+  instrumenter = AliasInstrumenter(SE, this, AA, LI, /*verifyingOnly*/ true);
 
   for (const Region *R : ValidRegions)
     verifyRegion(*R);

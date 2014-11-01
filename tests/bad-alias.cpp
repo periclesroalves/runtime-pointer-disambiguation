@@ -5,10 +5,6 @@ void foo (int *A, int *B, int *C, int n) {
   for (int i = 0; i < n; i++) {
     A[i] = i;
     B[i] = A[i+2];
-  }
-
-  for (int i = 0; i < n; i++) {
-    B[i] = i;
     C[i+8] = B[i+3];
   }
 }

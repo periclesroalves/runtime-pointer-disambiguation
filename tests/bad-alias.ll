@@ -10,52 +10,36 @@ define void @_Z3fooPiS_S_i(i32* nocapture %A, i32* nocapture %B, i32* nocapture 
 
 .split:                                           ; preds = %0
   %1 = icmp sgt i32 %n, 0
-  br i1 %1, label %.lr.ph5.preheader, label %._crit_edge
-
-.lr.ph5.preheader:                                ; preds = %.split
-  %2 = zext i32 %n to i64
-  br label %.lr.ph5
-
-.preheader:                                       ; preds = %.lr.ph5
   br i1 %1, label %.lr.ph.preheader, label %._crit_edge
 
-.lr.ph.preheader:                                 ; preds = %.preheader
-  %3 = zext i32 %n to i64
+.lr.ph.preheader:                                 ; preds = %.split
+  %2 = zext i32 %n to i64
   br label %.lr.ph
-
-.lr.ph5:                                          ; preds = %.lr.ph5.preheader, %.lr.ph5
-  %indvars.iv7 = phi i64 [ %indvars.iv.next8, %.lr.ph5 ], [ 0, %.lr.ph5.preheader ]
-  %4 = trunc i64 %indvars.iv7 to i32
-  %scevgep9 = getelementptr i32* %B, i64 %indvars.iv7
-  %5 = add i64 %indvars.iv7, 2
-  %scevgep10 = getelementptr i32* %A, i64 %5
-  %scevgep11 = getelementptr i32* %A, i64 %indvars.iv7
-  store i32 %4, i32* %scevgep11, align 4, !tbaa !0
-  %6 = load i32* %scevgep10, align 4, !tbaa !0
-  store i32 %6, i32* %scevgep9, align 4, !tbaa !0
-  %indvars.iv.next8 = add i64 %indvars.iv7, 1
-  %exitcond8 = icmp eq i64 %indvars.iv.next8, %2
-  br i1 %exitcond8, label %.preheader, label %.lr.ph5
 
 .lr.ph:                                           ; preds = %.lr.ph.preheader, %.lr.ph
   %indvars.iv = phi i64 [ %indvars.iv.next, %.lr.ph ], [ 0, %.lr.ph.preheader ]
-  %7 = trunc i64 %indvars.iv to i32
-  %8 = add i64 %indvars.iv, 8
-  %scevgep = getelementptr i32* %C, i64 %8
-  %9 = add i64 %indvars.iv, 3
-  %scevgep6 = getelementptr i32* %B, i64 %9
-  %scevgep7 = getelementptr i32* %B, i64 %indvars.iv
-  store i32 %7, i32* %scevgep7, align 4, !tbaa !0
-  %10 = load i32* %scevgep6, align 4, !tbaa !0
-  store i32 %10, i32* %scevgep, align 4, !tbaa !0
+  %3 = trunc i64 %indvars.iv to i32
+  %4 = add i64 %indvars.iv, 8
+  %scevgep = getelementptr i32* %C, i64 %4
+  %5 = add i64 %indvars.iv, 3
+  %scevgep5 = getelementptr i32* %B, i64 %5
+  %scevgep6 = getelementptr i32* %B, i64 %indvars.iv
+  %6 = add i64 %indvars.iv, 2
+  %scevgep7 = getelementptr i32* %A, i64 %6
+  %scevgep8 = getelementptr i32* %A, i64 %indvars.iv
+  store i32 %3, i32* %scevgep8, align 4, !tbaa !0
+  %7 = load i32* %scevgep7, align 4, !tbaa !0
+  store i32 %7, i32* %scevgep6, align 4, !tbaa !0
+  %8 = load i32* %scevgep5, align 4, !tbaa !0
+  store i32 %8, i32* %scevgep, align 4, !tbaa !0
   %indvars.iv.next = add i64 %indvars.iv, 1
-  %exitcond5 = icmp eq i64 %indvars.iv.next, %3
-  br i1 %exitcond5, label %._crit_edge.loopexit, label %.lr.ph
+  %exitcond = icmp eq i64 %indvars.iv.next, %2
+  br i1 %exitcond, label %._crit_edge.loopexit, label %.lr.ph
 
 ._crit_edge.loopexit:                             ; preds = %.lr.ph
   br label %._crit_edge
 
-._crit_edge:                                      ; preds = %._crit_edge.loopexit, %.preheader, %.split
+._crit_edge:                                      ; preds = %._crit_edge.loopexit, %.split
   ret void
 }
 

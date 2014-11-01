@@ -146,6 +146,12 @@ class AliasInstrumenter {
   const ScopDetection *sd;
   AliasAnalysis *aa;
   LoopInfo *li;
+
+  // If set, halt on dependencies, without instrumenting.
+  bool verifyingOnly;
+
+  // List of dynamic checks generated while solving dependencies. Each value
+  // indicates, at runtime, if the corresponding region is free of dependencies.
   std::vector<std::pair<Value *, Region *> > insertedChecks;
 
   // Inserts a dynamic test to guarantee that accesses to two pointers do not
@@ -161,24 +167,34 @@ public:
   AliasInstrumenter() {}
 
   AliasInstrumenter(ScalarEvolution *se, const ScopDetection *sd,
-                    AliasAnalysis *aa, LoopInfo *li)
-    : se(se), sd(sd), aa(aa), li(li) {}
+                    AliasAnalysis *aa, LoopInfo *li, bool verifying)
+    : se(se), sd(sd), aa(aa), li(li), verifyingOnly(verifying) {}
 
   // Check for dependencies within the current region, generating dynamic alias
   // checks for all pointers that can't be solved statically. Returns true if
-  // all dependecies could be solved.
+  // all dependecies could be solved. For every pair (A,B) of pointers that may
+  // alias, generates:
+  // - check(A, B) -> upperAddrA < lowerAddrB || upperAddrB < lowerAddrA
   bool checkAndSolveDependencies(Region *r);
 
-  // Return the set of dynamic checks generated while solving dependencies (a
-  // single value per region). Each value indicates, at runtime, if the region
-  // is free of dependencies.
   std::vector<std::pair<Value *, Region *> > &getInsertedChecks() {
     return insertedChecks;
   }
 
+  void setVerifyingOnly() { verifyingOnly = true; }
+  void releaseMemory() { insertedChecks.clear(); }
+
   // The structure of a region can't be changed while instrumenting it. This
   // method fix the structure of the instrumented regions by simplifying them
   // and isolating the checks in a new entering block.
+  //       |    |              ____\|/___
+  //     _\|/__\|/_           | dy_check |
+  //    | Region:  |          '-----.----'
+  //    | dy_check |           ____\|/___
+  //    |   ...    |    =>    | Region:  |
+  //    '---|---|--'          |    ...   |
+  //       \|/ \|/            '-----.----'
+  //                               \|/
   void fixInstrumentedRegions();
 
   // DEBUG - compute the lower and upper access bounds for the base pointer in

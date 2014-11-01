@@ -388,6 +388,9 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
                                           inst.getMetadata(LLVMContext::MD_tbaa));
 
       if (!as.isMustAlias())
+        if (verifyingOnly)
+          return false;
+
         for (const auto &aliasPointer : as) {
           Value *aliasValue = aliasPointer.getValue();
 
@@ -410,8 +413,7 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
   std::vector<Value *> checks;
 
   // Insert comparison expressions for every pair of pointers that need to be
-  // checked. Example:
-  // check(A, B) -> upperAddrA < lowerAddrB || upperAddrB < lowerAddrA
+  // checked.
   for (auto& pair : pairsToCheck) {
     // Extract the access bounds for each pointer.
     if (!pointerBounds.count(pair.first)) {
@@ -490,7 +492,7 @@ void AliasInstrumenter::fixInstrumentedRegions() {
 
     assert((dyResult && entry == r->getEntry()) && "Malformed dynamic check.");
 
-    // Create a new entering block.
+    // Create a new entering block for the dynamic checks.
     r->replaceEntryRecursive(SplitBlock(entry, dyResult->getNextNode(), li));
   
     // Create single exit edge.
@@ -508,7 +510,7 @@ bool AliasInstrumenter::computeAndPrintBounds(Value *pointer, Region *r) {
   std::set<const SCEV *>  memAccesses;
 
   // Set instruction insertion context.
-  Instruction *insertPtr = r->getEntry()->getFirstNonPHI();
+  Instruction *insertPtr = r->getEntry()->begin();
   SCEVRangeAnalyser rangeAnalyser(se, sd, r, insertPtr);
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(insertPtr);

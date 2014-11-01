@@ -6,44 +6,30 @@ target triple = "x86_64-apple-macosx10.8.0"
 
 define void @_Z3fooPiS_S_i(i32* nocapture %A, i32* nocapture %B, i32* nocapture %C, i32 %n) nounwind uwtable ssp {
   %1 = icmp sgt i32 %n, 0
-  br i1 %1, label %.lr.ph5, label %._crit_edge
+  br i1 %1, label %.lr.ph, label %._crit_edge
 
-.preheader:                                       ; preds = %.lr.ph5
-  %2 = icmp sgt i32 %n, 0
-  br i1 %2, label %.lr.ph, label %._crit_edge
-
-.lr.ph5:                                          ; preds = %0, %.lr.ph5
-  %indvars.iv7 = phi i64 [ %indvars.iv.next8, %.lr.ph5 ], [ 0, %0 ]
-  %3 = getelementptr inbounds i32* %A, i64 %indvars.iv7
-  %4 = trunc i64 %indvars.iv7 to i32
-  store i32 %4, i32* %3, align 4, !tbaa !0
-  %5 = add nsw i64 %indvars.iv7, 2
-  %6 = getelementptr inbounds i32* %A, i64 %5
-  %7 = load i32* %6, align 4, !tbaa !0
-  %8 = getelementptr inbounds i32* %B, i64 %indvars.iv7
-  store i32 %7, i32* %8, align 4, !tbaa !0
-  %indvars.iv.next8 = add i64 %indvars.iv7, 1
-  %lftr.wideiv9 = trunc i64 %indvars.iv.next8 to i32
-  %exitcond10 = icmp eq i32 %lftr.wideiv9, %n
-  br i1 %exitcond10, label %.preheader, label %.lr.ph5
-
-.lr.ph:                                           ; preds = %.preheader, %.lr.ph
-  %indvars.iv = phi i64 [ %indvars.iv.next, %.lr.ph ], [ 0, %.preheader ]
-  %9 = getelementptr inbounds i32* %B, i64 %indvars.iv
-  %10 = trunc i64 %indvars.iv to i32
-  store i32 %10, i32* %9, align 4, !tbaa !0
-  %11 = add nsw i64 %indvars.iv, 3
-  %12 = getelementptr inbounds i32* %B, i64 %11
-  %13 = load i32* %12, align 4, !tbaa !0
-  %14 = add nsw i64 %indvars.iv, 8
-  %15 = getelementptr inbounds i32* %C, i64 %14
-  store i32 %13, i32* %15, align 4, !tbaa !0
+.lr.ph:                                           ; preds = %0, %.lr.ph
+  %indvars.iv = phi i64 [ %indvars.iv.next, %.lr.ph ], [ 0, %0 ]
+  %2 = getelementptr inbounds i32* %A, i64 %indvars.iv
+  %3 = trunc i64 %indvars.iv to i32
+  store i32 %3, i32* %2, align 4, !tbaa !0
+  %4 = add nsw i64 %indvars.iv, 2
+  %5 = getelementptr inbounds i32* %A, i64 %4
+  %6 = load i32* %5, align 4, !tbaa !0
+  %7 = getelementptr inbounds i32* %B, i64 %indvars.iv
+  store i32 %6, i32* %7, align 4, !tbaa !0
+  %8 = add nsw i64 %indvars.iv, 3
+  %9 = getelementptr inbounds i32* %B, i64 %8
+  %10 = load i32* %9, align 4, !tbaa !0
+  %11 = add nsw i64 %indvars.iv, 8
+  %12 = getelementptr inbounds i32* %C, i64 %11
+  store i32 %10, i32* %12, align 4, !tbaa !0
   %indvars.iv.next = add i64 %indvars.iv, 1
   %lftr.wideiv = trunc i64 %indvars.iv.next to i32
   %exitcond = icmp eq i32 %lftr.wideiv, %n
   br i1 %exitcond, label %._crit_edge, label %.lr.ph
 
-._crit_edge:                                      ; preds = %0, %.lr.ph, %.preheader
+._crit_edge:                                      ; preds = %.lr.ph, %0
   ret void
 }
 
