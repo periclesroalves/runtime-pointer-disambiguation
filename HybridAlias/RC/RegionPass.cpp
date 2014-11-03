@@ -33,7 +33,7 @@ namespace
     const char *getPassName()                              const override { return "CloneRegion"; }
     void        getAnalysisUsage(AnalysisUsage &AU)        const override 
     { 
-      AU.addRequired<RegionInfo>(); 
+      AU.addRequired<RegionInfoPass>(); 
       AU.addRequired<DominatorTreeWrapperPass>();
       //AU.addRequired<PostDominatorTree>();
       AU.addRequired<DominanceFrontier>();
@@ -77,7 +77,7 @@ bool CloneRegion::runOnRegion(Region *R, RGPassManager &RGM)
 
   //set instance variables
   currReg = R;
-  RI      = &getAnalysis<RegionInfo>();
+  RI      = &getAnalysis<RegionInfoPass>().getRegionInfo();
   DT      = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
   //PDT     = &getAnalysis<PostDominatorTree>(); 
   DF      = &getAnalysis<DominanceFrontier>();

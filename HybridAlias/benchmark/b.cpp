@@ -6,7 +6,7 @@
 
 #include "bench_util.hpp"
 
-extern "C" void* AA_memset(void *p, const char *c, int n) {
+extern "C" __attribute__((noinline)) void* AA_memset(void *p, const char *c, int n) {
 	char *it = (char*) p, *end = it + n;
 
 	for (; it != end; ++it)
@@ -16,7 +16,7 @@ extern "C" void* AA_memset(void *p, const char *c, int n) {
 }
 
 static void BM_bar(benchmark::State& state) {
-	char buf[512];
+	char *buf = bench_malloc<char>(512);
 
 	while (state.KeepRunning()) {
 		AA_memset((void*) buf, "x", 512);

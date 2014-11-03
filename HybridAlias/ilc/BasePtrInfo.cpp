@@ -1,292 +1,84 @@
-
-#include "ilc/BasePtrInfo.hpp"
-
 #include <llvm/Analysis/AliasAnalysis.h>
+#include <llvm/Analysis/RegionInfo.h>
 #include <llvm/IR/Dominators.h>
+#include "BasePtrInfo.h"
+#include "Common.h"
+#include <list>
 
+//#define DEBUG(x) x
 #define DEBUG_TYPE "base-ptrs"
 
 using namespace llvm;
 using namespace std;
+using namespace ilc;
 
-using InstrPair = pair<Instruction*, Instruction*>;
+/************************* PRIVATE API ************************/
 
-struct BasePtrBuilder {
-	BasePtrBuilder(Loop* loop, DominatorTree& tree, AliasAnalysis& aa)
-	 : loop{loop}
-	 , entry{loop->getLoopPreheader()}
-	 , domTree{tree}
-	 , aliasAnalysis{aa}
-	{}
-
-	BasePtrInfo build();
-private:
-	void getBasePtrs(Value *ptr, set<Value*>& basePtrs);
-	void getBasePtrs(Value *ptr, set<Value*>& basePtrs, set<Value*>& visited);
-
-	AliasAnalysis::Location getLocation(Instruction *inst);
-	static Value* getPointerOperand(Instruction *instr);
-
-	const Loop* const       loop;
-	const BasicBlock* const entry;
-	const DominatorTree&    domTree;
-	AliasAnalysis&          aliasAnalysis;
-};
-
-BasePtrInfo::BasePtrInfo() : dirty{true} {}
-
-BasePtrInfo BasePtrInfo::compute(llvm::Loop*          loop,
-	                             llvm::DominatorTree& tree,
-	                             llvm::AliasAnalysis& aa)
+bool BasePtrInfo::mayReadOrWriteMemory(Instruction *i)
 {
-	BasePtrBuilder builder{loop, tree, aa};
-
-	return builder.build();
-}
-
-static set<Value*> collectBasePtrs(const set<BasePtrPair>& pairs);
-static bool        isGlobalOrArgument(const Value *v);
-
-template<typename T>
-static pair<T*, T*> orderedPair(T* a, T* b);
-
-const std::set<llvm::Value*>& BasePtrInfo::getAllBasePtrs()
-{
-	if (dirty)
-	{
-		allBasePtrs = collectBasePtrs(basePtrPairs);
-		dirty = false;
-	}
-
-	return allBasePtrs;
-}
-
-const std::set<BasePtrPair>&  BasePtrInfo::getBasePtrPairs()
-{
-	return basePtrPairs;
-}
-
-const std::set<llvm::Value*>& BasePtrInfo::getBasePtrsForInstruction(const llvm::Instruction *i)
-{
-	auto i2 = const_cast<Instruction*>(i);
-
-	assert(basePtrs_for_instruction.count(i2));
-
-	return basePtrs_for_instruction[i2];
-}
-
-/// remove all data for the given set of base ptr pairs
-void BasePtrInfo::filter(const std::set<BasePtrPair>& badPairs)
-{
-	set<Value*> badPtrs = collectBasePtrs(badPairs);
-
-	// remove unwanted pairs
-	for (auto badPair : badPairs)
-	{
-		auto it = basePtrPairs.find(badPair);
-
-		if (it != basePtrPairs.end())
-			basePtrPairs.erase(it);
-	}
-
-	// make sure allBasePtrs is recomputed when needed
-	dirty = true;
-
-	// remove unwanted base ptrs for instructions
-	for (auto& mapping : basePtrs_for_instruction)
-	{
-		auto& basePtrs = mapping.second;
-
-		for (Value *badPtr : badPtrs)
-		{
-			auto it = basePtrs.find(badPtr);
-
-			if (it != basePtrs.end())
-				basePtrs.erase(it);
-		}
-	}
-}
-
-AliasAnalysis::Location BasePtrBuilder::getLocation(Instruction *instr)
-{
-	/* TODO: check the above cases
-	  - MemTransfer    --
-	  - MemIntrinsic    |
-	  - Fence           | May Read/Write
-	  - GetElementPtr   | memory operations
-	  - Invoke          |
-	  - Call           --
-	*/
-	switch(instr->getOpcode())
-	{
-		case Instruction::Load:
-		  	return aliasAnalysis.getLocation(cast<LoadInst>(instr));
-		case Instruction::Store:
-	  		return aliasAnalysis.getLocation(cast<StoreInst>(instr));
-		case Instruction::VAArg:
-	  		return aliasAnalysis.getLocation(cast<VAArgInst>(instr));
-		case Instruction::AtomicCmpXchg:
-	  		return aliasAnalysis.getLocation(cast<AtomicCmpXchgInst>(instr));
-		case Instruction::AtomicRMW:
-	  		return aliasAnalysis.getLocation(cast<AtomicRMWInst>(instr));
-		default:
-			llvm_unreachable("Unhandled type of memory instruction");
-	}
-}
-
-Value* BasePtrBuilder::getPointerOperand(Instruction *instr)
-{
-	/* TODO: check the above cases
-	  - MemTransfer    --
-	  - MemIntrinsic    |
-	  - Fence           | May Read/Write
-	  - GetElementPtr   | memory operations
-	  - Invoke          |
-	  - Call           --
-	*/
-	switch(instr->getOpcode())
-	{
-		case Instruction::Load:
-	  		return cast<LoadInst>(instr)->getPointerOperand();
-		case Instruction::Store:
-	  		return cast<StoreInst>(instr)->getPointerOperand();
-		case Instruction::VAArg:
-	  		return cast<VAArgInst>(instr)->getPointerOperand();
-		case Instruction::AtomicCmpXchg:
-	  		return cast<AtomicCmpXchgInst>(instr)->getPointerOperand();
-		case Instruction::AtomicRMW:
-	  		return cast<AtomicRMWInst>(instr)->getPointerOperand();
-		default:
-			llvm_unreachable("Unhandled type of memory instruction");
-	}
-}
-
-BasePtrInfo BasePtrBuilder::build()
-{
-	set<Value*> allBasePtrs;
-	set<pair<Value*,Value*>> basePtrPairs;
-	BasePtrInfo::InstructionMap basePtrs_for_instruction;
-
-	// memory accessing instructions
-	vector<Instruction*> mem_instrs;
-	// list of may-alias location pairs
-	set<InstrPair> MayAliasPairs;
-
-  // find all memory accesses in the loop body
-  for(BasicBlock *BB : loop->getBlocks())
+  /* TODO: check the above cases
+    - MemTransfer    --
+    - MemIntrinsic    |
+    - Fence           | May Read/Write
+    - GetElementPtr   | memory operations
+    - Invoke          |
+    - Call           --
+  */
+  switch(i->getOpcode())
   {
-    for(BasicBlock::iterator I = BB->begin(), IE = BB->end(); I != IE; ++I)
-    {
-      Instruction *instr = I;
+    case Instruction::Load:
+    case Instruction::Store:
+    case Instruction::VAArg:
+    case Instruction::AtomicCmpXchg:
+    case Instruction::AtomicRMW:
+      return true;
+    default:
+      return false;
+   }
+}
 
-    	if (instr->mayReadOrWriteMemory())
-    		mem_instrs.push_back(instr);
-		}
-	}
-
-  // check each possible pair of memory accesses that may alias
-	for (auto it1 = mem_instrs.begin(), end1 = mem_instrs.end(); it1 != end1; ++it1)
-	{
-		Instruction             *instr1 = *it1;
-		AliasAnalysis::Location  loc1   = getLocation(instr1);
-
-		for (auto it2 = mem_instrs.begin(); it2 != it1; ++it2)
-		{
-			Instruction             *instr2 = *it2;
-			AliasAnalysis::Location  loc2   = getLocation(instr2);
-
-			if(aliasAnalysis.alias(loc1, loc2) == AliasAnalysis::MayAlias)
-      	MayAliasPairs.insert(orderedPair(instr1, instr2));
-		}
-	}
-
-  // find the base pointers of each pair of may-alias instructions
-  for(auto I : MayAliasPairs)
+AliasAnalysis::Location BasePtrInfo::getLocation(Instruction *i)
+{
+  /* TODO: check the above cases
+    - MemTransfer    --
+    - MemIntrinsic    |
+    - Fence           | May Read/Write
+    - GetElementPtr   | memory operations
+    - Invoke          |
+    - Call           --
+  */
+  switch(i->getOpcode())
   {
-		// debug print
-		DEBUG(dbgs() << "-----------------------------------------------------------\n");
-		DEBUG(dbgs() << "may-alias locations\n");
-		DEBUG(dbgs() << "-----------------------------------------------------------\n");
-		DEBUG(dbgs() << *(I.first)  << "\n");
-		DEBUG(dbgs() << *(I.second) << "\n");
-
-		set<Value*> basePtrs1;
-		getBasePtrs(getPointerOperand(I.first), basePtrs1);
-
-		set<Value*> basePtrs2;
-		getBasePtrs(getPointerOperand(I.second), basePtrs2);
-
-		// it seems we reached a load instruction, thus we cannot decide for aliasing
-		if ((basePtrs1.count(nullptr) != 0) || (basePtrs2.count(nullptr) != 0))
-			continue;
-
-		if (basePtrs_for_instruction.count(I.first) == 0)
-		 	basePtrs_for_instruction[I.first]  = basePtrs1;
-
-		if (basePtrs_for_instruction.count(I.second) == 0)
-			basePtrs_for_instruction[I.second] = basePtrs2;
-
-		// debug print
-		DEBUG(dbgs() << "-----------------------------------------------------------\n");
-		DEBUG(dbgs() << "base ptrs loc1\n");
-		DEBUG(dbgs() << "-----------------------------------------------------------\n");
-		for(set<Value*>::iterator I1 = basePtrs1.begin(), IE1 = basePtrs1.end(); I1 != IE1; ++I1) { DEBUG(dbgs() << *I1 << "\n"); }
-		DEBUG(dbgs() << "-----------------------------------------------------------\n");
-		DEBUG(dbgs() << "base ptrs loc2\n");
-		DEBUG(dbgs() << "-----------------------------------------------------------\n");
-		for(set<Value*>::iterator I2 = basePtrs2.begin(), IE2 = basePtrs2.end(); I2 != IE2; ++I2) { DEBUG(dbgs() << *I2 << "\n"); }
-
-		// create pairs of base pointers
-		for(set<Value*>::iterator I1 = basePtrs1.begin(), IE1 = basePtrs1.end(); I1 != IE1; ++I1)
-		{
-		  for(set<Value*>::iterator I2 = basePtrs2.begin(), IE2 = basePtrs2.end(); I2 != IE2; ++I2)
-		  {
-		  	Value *ptr1 = *I1;
-		  	Value *ptr2 = *I2;
-
-		    if(ptr1 == ptr2)
-		    	continue;
-
-		    auto pair = orderedPair(ptr1, ptr2);
-
-			allBasePtrs.insert(ptr1);
-			allBasePtrs.insert(ptr2);
-
-			basePtrPairs.insert(pair);
-		  }
-		}
-	}
-
-	BasePtrInfo info;
-
-	info.basePtrPairs             = std::move(basePtrPairs);
-	info.basePtrs_for_instruction = std::move(basePtrs_for_instruction);
-
-	return info;
+    case Instruction::Load:
+      return aliasAnalysis.getLocation(cast<LoadInst>(i));
+    case Instruction::Store:
+      return aliasAnalysis.getLocation(cast<StoreInst>(i));
+    case Instruction::VAArg:
+      return aliasAnalysis.getLocation(cast<VAArgInst>(i));
+    case Instruction::AtomicCmpXchg:
+      return aliasAnalysis.getLocation(cast<AtomicCmpXchgInst>(i));
+    case Instruction::AtomicRMW:
+      return aliasAnalysis.getLocation(cast<AtomicRMWInst>(i));
+    default:
+      DEBUG(dbgs() << *i << "\n");
+      llvm_unreachable("Unhandled type of memory instruction");
+   }
 }
 
-void BasePtrBuilder::getBasePtrs(Value *pointerVal, set<Value*>& basePtrs)
+void BasePtrInfo::getBasePtrs(Value *ModRefVal, ValueSet& basePtrs, ValueSet& visited)
 {
-	set<Value*> visited;
+  if(visited.count(ModRefVal)) return;
+  else visited.insert(ModRefVal);
 
-	getBasePtrs(pointerVal, basePtrs, visited);
-}
+  Instruction *ModRefInstr = dyn_cast<Instruction>(ModRefVal);
 
-void BasePtrBuilder::getBasePtrs(Value *ModRefVal, set<Value*>& basePtrs, set<Value*>& visited)
-{
-  if (visited.count(ModRefVal))
-  	return;
-  visited.insert(ModRefVal);
+  assert(isa<Instruction>(ModRefVal) || isGlobalOrArgument(ModRefVal));
 
-	Instruction *ModRefInstr = dyn_cast<Instruction>(ModRefVal);
-
-	assert(isa<Instruction>(ModRefVal) || isGlobalOrArgument(ModRefVal));
-
-	if(isGlobalOrArgument(ModRefVal) || domTree.dominates(ModRefInstr->getParent(), entry))
-	{
+  if(isGlobalOrArgument(ModRefVal) || domTree.dominates(ModRefInstr->getParent(), entry))
+  {
     basePtrs.insert(ModRefVal);
     return;
-	}
+  }
 
   // TODO: think if we need to check more cases
   switch(ModRefInstr->getOpcode())
@@ -328,38 +120,199 @@ void BasePtrBuilder::getBasePtrs(Value *ModRefVal, set<Value*>& basePtrs, set<Va
       }
       return;
     default:
-      ModRefInstr->print(errs());
+      DEBUG(dbgs() << *ModRefInstr << "\n");
       llvm_unreachable("Unhandled type of instruction");
       assert(false);
   }
 
-	getBasePtrs(ModRefVal, basePtrs, visited);
+  getBasePtrs(ModRefVal, basePtrs, visited);
 }
 
-static set<Value*> collectBasePtrs(const set<BasePtrPair>& pairs)
+ValueSet& BasePtrInfo::getOrInsertBasePtrs(Instruction *i)
 {
-	set<Value*> bases;
+  // look up in map
+  InstructionMap::iterator I = basePtrs_for_instruction.find(i);
+  
+  if(I != basePtrs_for_instruction.end()) return *(I->second);
 
-	for (auto pair : pairs)
-	{
-		assert(pair.first);
-		assert(pair.second);
+  Value    *ptr      = const_cast<Value*>((getLocation(i)).Ptr);
+  ValueSet *basePtrs = new ValueSet();
+  ValueSet  visited;
 
-		bases.insert(pair.first);
-		bases.insert(pair.second);
-	}
+  // update map
+  basePtrs_for_instruction[i] = basePtrs;
 
-	return bases;
+  getBasePtrs(ptr, *basePtrs, visited);
+
+  return *basePtrs;
 }
 
-
-static bool isGlobalOrArgument(const Value *v)
+void BasePtrInfo::rebuildAllBasePtrs()
 {
-	return isa<GlobalValue>(v) || isa<Argument>(v);
+  allBasePtrs.clear();
+
+  for (auto pair : basePtrPairs)
+  {
+    assert(pair.first);
+    assert(pair.second);
+
+    allBasePtrs.insert(pair.first);
+    allBasePtrs.insert(pair.second);
+  }
 }
 
-template<typename T>
-static pair<T*, T*> orderedPair(T* a, T* b)
+void BasePtrInfo::buildInfo(list<Instruction*>& ModRefInstructions)
 {
-	return (a < b ? make_pair(a, b) : make_pair(b, a));
+  // list of may-alias instruction pairs
+  set<InstrPair> MayAliasPairs;
+
+  // check each possible pair of memory accesses that may alias
+  while(!ModRefInstructions.empty())
+  {
+    for(list<Instruction*>::iterator I = ModRefInstructions.begin(), IE = ModRefInstructions.end(); ++I != IE;)
+    {
+      Instruction *i1 = ModRefInstructions.front();
+      Instruction *i2 = *I;
+
+      if(aliasAnalysis.alias(getLocation(i1), getLocation(i2)) == AliasAnalysis::MayAlias)
+        MayAliasPairs.insert(orderedPair(i1, i2));
+    }
+    ModRefInstructions.pop_front();
+  }
+
+  // find the base pointers of each pair of may-alias instructions
+  for(set<InstrPair>::iterator I = MayAliasPairs.begin(), IE = MayAliasPairs.end(); I != IE; ++I)
+  {
+    // debug print
+    DEBUG(dbgs() << "-----------------------------------------------------------\n");
+    DEBUG(dbgs() << "may-alias instructions\n");
+    DEBUG(dbgs() << "-----------------------------------------------------------\n");
+    DEBUG(dbgs() << *(I->first) << "\n");
+    DEBUG(dbgs() << *(I->second) << "\n");
+
+    ValueSet& basePtrs1 = getOrInsertBasePtrs(I->first);
+    ValueSet& basePtrs2 = getOrInsertBasePtrs(I->second);
+
+    // it seems we reached a load instruction, thus we cannot decide for aliasing
+    if(basePtrs1.count(nullptr) || basePtrs2.count(nullptr)) continue;
+
+    // debug print
+    DEBUG(dbgs() << "-----------------------------------------------------------\n");
+    DEBUG(dbgs() << "base ptrs of instr1\n");
+    DEBUG(dbgs() << "-----------------------------------------------------------\n");
+    for(ValueSet::iterator I1 = basePtrs1.begin(), IE1 = basePtrs1.end(); I1 != IE1; ++I1) { DEBUG(dbgs() << *(cast<Value>(*I1)) << "\n"); }
+    DEBUG(dbgs() << "-----------------------------------------------------------\n");
+    DEBUG(dbgs() << "base ptrs of instr2\n");
+    DEBUG(dbgs() << "-----------------------------------------------------------\n");
+    for(ValueSet::iterator I2 = basePtrs2.begin(), IE2 = basePtrs2.end(); I2 != IE2; ++I2) { DEBUG(dbgs() << *(cast<Value>(*I2)) << "\n"); }
+
+    // create pairs of base pointers
+    for(ValueSet::iterator I1 = basePtrs1.begin(), IE1 = basePtrs1.end(); I1 != IE1; ++I1)
+    {
+      for(ValueSet::iterator I2 = basePtrs2.begin(), IE2 = basePtrs2.end(); I2 != IE2; ++I2)
+      {
+        if(*I1 == *I2) continue;
+
+	basePtrPairs.insert(orderedPair(*I1, *I2));
+      }
+    }
+  }
+
+  rebuildAllBasePtrs();
 }
+
+
+/**************************** PUBLIC API ***************************/
+
+BasePtrInfo::BasePtrInfo(llvm::Loop* loop, llvm::DominatorTree& tree, llvm::AliasAnalysis& aa)
+ : entry{loop->getLoopPreheader()}
+ , domTree{tree}
+ , aliasAnalysis{aa}
+{
+  list<Instruction*> ModRefInstructions;
+
+  // find all memory accesses in the loop body
+  for(Loop::block_iterator B = loop->block_begin(), BE = loop->block_end(); B != BE; ++B)
+  {
+    BasicBlock *bb = *B;
+
+    for(BasicBlock::iterator I = bb->begin(), IE = bb->end(); I != IE; ++I)
+    {
+      Instruction *i = I;
+
+      //if(i->mayReadOrWriteMemory())
+      if(mayReadOrWriteMemory(i))
+        ModRefInstructions.push_back(i);
+    }
+  }
+
+  buildInfo(ModRefInstructions);
+}
+
+BasePtrInfo::BasePtrInfo(llvm::Region* region, llvm::DominatorTree& tree, llvm::AliasAnalysis& aa)
+ : entry{region->getEnteringBlock()}
+ , domTree{tree}
+ , aliasAnalysis{aa}
+{
+  list<Instruction*> ModRefInstructions;
+
+  // find all memory accesses in the loop body
+  for(auto bb : region->blocks())
+  {
+    for(BasicBlock::iterator I = bb->begin(), IE = bb->end(); I != IE; ++I)
+    {
+      Instruction *i = I;
+
+      //if(i->mayReadOrWriteMemory())
+      if(mayReadOrWriteMemory(i))
+        ModRefInstructions.push_back(i);
+    }
+  }
+
+  buildInfo(ModRefInstructions);
+}
+
+BasePtrInfo::~BasePtrInfo()
+{
+  for(InstructionMap::iterator I = basePtrs_for_instruction.begin(), IE = basePtrs_for_instruction.end(); I != IE; ++I)
+    delete I->second;
+}
+
+set<ValuePair>& BasePtrInfo::getBasePtrPairs()
+{
+  return basePtrPairs;
+}
+
+InstructionMap& BasePtrInfo::getInstructionMap()
+{
+  return basePtrs_for_instruction;
+}
+
+
+ValueSet& BasePtrInfo::getBasePtrs(Instruction *i)
+{
+  assert(basePtrs_for_instruction.count(i));
+
+  return *basePtrs_for_instruction[i];
+}
+
+const ValueSet& BasePtrInfo::getAllBasePtrs() const
+{
+  return allBasePtrs;
+}
+
+/// remove all data for the given set of base ptr pairs
+void BasePtrInfo::filter(const std::set<ValuePair>& badPairs)
+{
+  // remove unwanted pairs
+  for (auto badPair : badPairs)
+  {
+    auto it = basePtrPairs.find(badPair);
+
+    if (it != basePtrPairs.end())
+      basePtrPairs.erase(it);
+  }
+
+  rebuildAllBasePtrs();
+}
+

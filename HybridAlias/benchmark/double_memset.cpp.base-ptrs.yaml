@@ -1,0 +1,17 @@
+- "AA_double_memset::bb1":
+    base_pointers: !!set {
+        "dstA",
+        "dstB",
+        "src",
+    }
+    base_pointer_pairs: !!set {
+        !!set {"dstA", "dstB"},
+        !!set {"dstA", "src"},
+        !!set {"dstB", "src"},
+    }
+    instructions:
+        "void3": !!set { "dstA", }
+        "tmp2": !!set { "src", }
+        "tmp4": !!set { "src", }
+        "void4": !!set { "dstB", }
+

@@ -1,6 +1,4 @@
 
-#include "ilc/BasePtrInfo.hpp"
-
 #include <llvm/Pass.h>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/ADT/SetVector.h>
@@ -38,6 +36,9 @@
 #include <llvm/IR/Dominators.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/ADT/DenseMap.h>
+#include "Common.h"
+#include "BasePtrInfo.h"
+#include "FullInstNamer.h"
 
 #include <cstring>
 #include <string>
@@ -59,25 +60,24 @@
 
 #define DEBUG_TYPE "clone-loop"
 
-//#define STATS
-
 using namespace llvm;
 using namespace llvm::yaml;
 using namespace std;
+using namespace ilc;
 
-typedef SetVector<Value *> ValueSet;
+typedef set<Instruction*>    InstrSet;
 
 // Make sure this matches the name of the getBasePtr function in libmemtrack.a
 static const char *const gcg_getBasePtr_name = "gcg_getBasePtr";
 
 namespace {
 
-struct DeclareGetBasePtr : public ModulePass {
+struct DeclareFunctions : public ModulePass {
 	static char ID;
 
-	DeclareGetBasePtr() : ModulePass(ID), getBasePtr_fn(nullptr) {}
+	DeclareFunctions() : ModulePass(ID), getBasePtr_fn(nullptr) {}
 
-	const char *getPassName() const override { return "DeclareGetBasePtr"; }
+	const char *getPassName() const override { return "DeclareFunctions"; }
 
 	bool runOnModule(Module &M) override;
 
@@ -86,7 +86,14 @@ struct DeclareGetBasePtr : public ModulePass {
 
 		return getBasePtr_fn;
 	}
+
+	Function *get_llvm_expect() {
+		assert(llvm_expect);
+
+		return llvm_expect;
+	}
 private:
+	Function *llvm_expect;
 	Function *getBasePtr_fn;
 };
 
@@ -104,25 +111,25 @@ struct CloneLoopPass : public LoopPass {
 		// TODO: LLVM doc states that transformation passes should
 		//       not be chained with addRequire but with a custom
 		//       PassManager
-		AU.addRequired<DeclareGetBasePtr>();
-
+		AU.addRequired<FullInstNamer>();
+		AU.addRequired<DeclareFunctions>();
 		AU.addRequired<AliasAnalysis>();
 		AU.addRequired<DominatorTreeWrapperPass>();
 		AU.addRequired<DominanceFrontier>();
 		AU.addRequired<LoopInfo>();
 	}
 private:
-	Loop*     cloneLoop(llvm::Loop *OrigL, LPPassManager& LPM);
-	void      addAliasScopeMetadata(LLVMContext& ctx, string loop_name, Loop *loop, BasePtrInfo& info);
-	StringRef getNameOrFail(const Value* v);
+	Loop* cloneLoop(llvm::Loop *OrigL, LPPassManager& LPM);
+	void  addAliasScopeMetadata(LLVMContext& ctx, string loop_name, BasePtrInfo& info);
 
-	set<Loop*> cloned_loops;
+	set<Loop*>     cloned_loops;
+	FullInstNamer* FIN;
 };
 
 } // end anonymous namespace
 
-char DeclareGetBasePtr::ID = 0;
-static RegisterPass<DeclareGetBasePtr> X(
+char DeclareFunctions::ID = 0;
+static RegisterPass<DeclareFunctions> X(
 	"declare-getBasePtr",
 	"Declare external refernce to getBasePtr function"
 );
@@ -145,12 +152,27 @@ cl::opt<string> TraceFile(
 	cl::init("alias.yaml")
 );
 
-bool DeclareGetBasePtr::runOnModule(Module &M) {
-	DEBUG(dbgs() << "DeclareGetBasePtr::runOnModule\n");
-
-	// ** declare getBasePtr function
+bool DeclareFunctions::runOnModule(Module &M) {
+	DEBUG(dbgs() << "DeclareFunctions::runOnModule\n");
 
 	LLVMContext& ctx = M.getContext();
+
+	// ** declare i1 llvm.expect.i1(i1,i1)
+
+	std::vector<Type*> llvm_expect_params{
+		Type::getInt1Ty(ctx),
+		Type::getInt1Ty(ctx),
+	};
+
+	llvm_expect = Function::Create(
+		FunctionType::get(Type::getInt1Ty(ctx), llvm_expect_params, false),
+		GlobalValue::ExternalLinkage,
+		"llvm.expect.i1",
+		&M
+	);
+	assert(llvm_expect);
+
+	// ** declare getBasePtr function
 
 	Type *void_ptr_type = Type::getInt8PtrTy(ctx);
 
@@ -168,20 +190,14 @@ bool DeclareGetBasePtr::runOnModule(Module &M) {
 	);
 
 	getBasePtr_fn->addAttribute(1, Attribute::ReadOnly);
+	getBasePtr_fn->addAttribute(1, Attribute::NoCapture);
 
 	return true;
 }
 
 /// prototypes for helper functions
 
-static bool                            hasPrefix(const std::string& str, const std::string& prefix);
-static bool                            isGlobalOrArgument(const Value *v);
-static Instruction*                    nextOf(Instruction *i);
-static Value*                          lookupValue(Function *fn, StringRef name);
-static BasicBlock*                     lastOf(BasicBlock *bb1, BasicBlock *bb2);
-
-template<typename T>
-static pair<T*, T*> orderedPair(T* a, T* b);
+static Value* lookupValue(Function *fn, StringRef name);
 
 struct ModuleTrace;
 struct FunctionTrace;
@@ -232,6 +248,9 @@ namespace std {
 	};
 } // end namespace std
 
+namespace llvm {
+namespace yaml {
+
 template<typename T>
 struct SequenceTraits<std::vector<T>> {
 	static size_t size(IO& io, std::vector<T>& seq) {
@@ -262,6 +281,9 @@ struct MappingTraits<AliasTrace> {
   }
 };
 
+} // end namespace yaml
+} // end namespace llvm
+
 struct AliasInfo {
 	AliasInfo() {
 		// ** read YAML trace data
@@ -289,7 +311,7 @@ struct AliasInfo {
 		for (auto& loop : trace) {
 			assert(loops.count(loop.name) == 0);
 
-			loops.emplace(std::move(loop.name), std::move(loop.alias_pairs));
+			loops[loop.name] = loop.alias_pairs;
 		}
 	}
 
@@ -373,13 +395,21 @@ private:
 
 bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 {
-	// we are interested only in cloneable, non-empty, innermost loops
-	if (!loop->isSafeToClone() || (loop->getNumBlocks() == 0) || (loop->getSubLoops().size() > 0))
+	// we are interested only in single entry, single preheader, single exiting, non-empty, innermost loops
+	if (!(loop->isSafeToClone()      &&
+	      loop->getLoopPreheader()   &&
+	      loop->getHeader()          &&
+	      loop->hasDedicatedExits()  &&
+	      loop->getUniqueExitBlock() &&
+	      (loop->getNumBlocks() > 0) &&
+	      (loop->getSubLoops().size() == 0)))
 		return false;
 
 	// don't clone twice
 	if (cloned_loops.count(loop))
 		return false;
+
+	FIN = &getAnalysis<FullInstNamer>();
 
 	// ** get fully qualified name of loop
 
@@ -390,12 +420,12 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 	Function   *fn     = header->getParent();
 	Module     *module = fn->getParent();
 
-	StringRef fn_name = getNameOrFail(fn);
+	StringRef fn_name = FIN->getName(fn);
 
 	if (CloneOnlyPrefix.size() && !hasPrefix(fn_name, CloneOnlyPrefix))
 		return false;
 
-	std::string loop_name = (fn_name + "::" + getNameOrFail(header)).str();
+	std::string loop_name = (fn_name + "::" + FIN->getName(header)).str();
 
 	DEBUG(dbgs() << "========================================================\n");
 	DEBUG(dbgs() << "CloneLoopPass::runOnLoop(" << loop_name << ")\n");
@@ -424,7 +454,7 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 	// ** find pairs of bases that are likely to alias (used for filtering)
 
 	SymbolTableWrapper symbol_table{fn, loop_name};
-	set<BasePtrPair> probable_aliases;
+	set<ValuePair> probable_aliases;
 
 	unsigned probable_noaliases_count = 0;
 
@@ -455,7 +485,7 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 
 	DEBUG(dbgs() << "recomputing base ptrs\n");
 
-	BasePtrInfo info = BasePtrInfo::compute(loop, domTree, aa);
+	BasePtrInfo info = BasePtrInfo(loop, domTree, aa);
 
 	DEBUG(dbgs() << "filtering base ptr pairs with profile information\n");
 
@@ -473,9 +503,9 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 	BasicBlock *preheader = loop->getLoopPreheader();
 	BasicBlock *entry     = &fn->getEntryBlock();
 
-	DeclareGetBasePtr& dgbp = getAnalysis<DeclareGetBasePtr>();
+	DeclareFunctions& fns = getAnalysis<DeclareFunctions>();
 
-	MagicBuilder magic{entry, dgbp.getGetBasePtrFn()};
+	MagicBuilder magic{entry, fns.getGetBasePtrFn()};
 
 	Loop *cloned_loop = cloneLoop(loop, LPM);
 	cloned_loops.insert(cloned_loop);
@@ -528,16 +558,15 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 
 	assert(conditionals.size() == 1);
 
-	// TODO: either add llvm.speculate or branch weights to tell LLVM
-	//       to prefer the loop with noalias metadata
-
 	IRBuilder<> irb{preheader, --preheader->end()};
 
+	// tell llvm to prefer the `true' path
+	Value *conditional = irb.CreateCall2(fns.get_llvm_expect(), conditionals.front(), irb.getTrue());
+
 	irb.CreateCondBr(
-		conditionals.front(),
-		cloned_loop->getHeader(), // true path
-		// loop->getHeader(),        // debug
-		loop->getHeader()         // false path
+		conditional,
+		loop->getHeader(),       // true path
+		cloned_loop->getHeader() // false path
 	);
 	// remove original branch
 	preheader->back().eraseFromParent();
@@ -546,7 +575,9 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 
 	DEBUG(dbgs() << "Inserting no-alias metadata\n");
 
-	addAliasScopeMetadata(ctx, loop_name, loop, info);
+	addAliasScopeMetadata(ctx, loop_name, info);
+
+	DEBUG(dbgs() << "done with loop '" << loop_name << "'\n");
 
 	return true;
 }
@@ -605,6 +636,22 @@ static void CloneDominatorInfo(BasicBlock *BB,
   }
 }
 
+/// Find values created in loop used outside of it
+void findOutputs(Loop *l, ValueSet& outputs) {
+	for (auto BB : l->getBlocks()) {
+		// If an instruction is used outside the region, it's an output.
+		for (BasicBlock::iterator II = BB->begin(), IE = BB->end(); II != IE; ++II) {
+			for (User *user : II->users()) {
+				// an instruction can only be used by instructions, right?
+				auto *using_instr = cast<Instruction>(user);
+
+				if (!l->contains(using_instr))
+					outputs.insert(II);
+			}
+		}
+	}
+}
+
 /// CloneLoop - Clone Loop. Clone dominator info. Populate VMap
 /// using old blocks to new blocks mapping.
 Loop *CloneLoopPass::cloneLoop(Loop *OrigL, LPPassManager& LPM)
@@ -615,12 +662,22 @@ Loop *CloneLoopPass::cloneLoop(Loop *OrigL, LPPassManager& LPM)
   DominatorTree&     DT = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
   DominanceFrontier& DF = getAnalysis<DominanceFrontier>();
 
+  assert(OrigL->hasDedicatedExits());
+  BasicBlock *exit = OrigL->getUniqueExitBlock();
+  assert(exit);
+
+  // compute outputs produced by loop
+  ValueSet outputs;
+  findOutputs(OrigL, outputs);
+  /*for (Value *v : outputs) {
+  	errs() << "> " << *v << "\n";
+  }*/
+
   SmallVector<BasicBlock *, 16> NewBlocks;
 
   // Populate loop nest.
   SmallVector<Loop *, 8> LoopNest;
   LoopNest.push_back(OrigL);
-
 
   Loop *NewParentLoop = NULL;
   while (!LoopNest.empty()) {
@@ -644,11 +701,10 @@ Loop *CloneLoopPass::cloneLoop(Loop *OrigL, LPPassManager& LPM)
     }
 
     // Clone dominator info.
-//    if (DT)
-//      for (Loop::block_iterator I = L->block_begin(), E = L->block_end(); I != E; ++I) {
-//        BasicBlock *BB = *I;
-//        CloneDominatorInfo(BB, VMap, DT, DF);
-//      }
+    for (Loop::block_iterator I = L->block_begin(), E = L->block_end(); I != E; ++I) {
+       BasicBlock *BB = *I;
+       CloneDominatorInfo(BB, VMap, &DT, &DF);
+     }
 
     // Process sub loops
     for (Loop::iterator I = L->begin(), E = L->end(); I != E; ++I)
@@ -685,6 +741,61 @@ Loop *CloneLoopPass::cloneLoop(Loop *OrigL, LPPassManager& LPM)
   F->getBasicBlockList().insert(OrigL->getHeader(),
                                 NewBlocks.begin(), NewBlocks.end());
 
+  // create PHI instructions for outputs of loop in successor block
+  assert(NewParentLoop->getExitBlock() == exit);
+
+  SmallVector<Loop::Edge, 4> exit_edges;
+  OrigL->getExitEdges(exit_edges);
+
+	for (auto exit_edge : exit_edges)
+	{
+		BasicBlock *inside  = const_cast<BasicBlock*>(exit_edge.first);
+		BasicBlock *outside = const_cast<BasicBlock*>(exit_edge.second);
+
+		BasicBlock *cloned_inside = [&]() {
+			auto it = VMap.find(inside);
+
+			assert(it != VMap.end());
+
+			return cast<BasicBlock>(it->second);
+		}();
+
+		assert(outside == exit);
+		assert(!NewParentLoop->contains(outside));
+
+		IRBuilder<> irb{outside->begin()};
+
+		for (Value *output : outputs)
+		{
+			DEBUG(dbgs() << "Updating uses of " << *output << "\n");
+
+			assert(VMap.count(output));
+
+			PHINode *phi = irb.CreatePHI(output->getType(), 2);
+
+			// replace all uses of output OUTSIDE of loop with phi
+
+			for (User *user : output->users()) {
+				// an instruction can only be used by instructions, right?
+				auto *using_instr = cast<Instruction>(user);
+
+				if (OrigL->contains(using_instr))
+					continue;
+
+				DEBUG(dbgs() << "Updating use:\n");
+				DEBUG(dbgs() << "  user:        " << *using_instr << "\n");
+				DEBUG(dbgs() << "  old operand: " << *output      << "\n");
+				DEBUG(dbgs() << "  new operand: " << *phi         << "\n");
+
+				using_instr->replaceUsesOfWith(output, phi);
+			}
+
+			// can't add these before, otherwise use in new phi would be replaced
+			phi->addIncoming(output,       inside);
+			phi->addIncoming(VMap[output], cloned_inside);
+		}
+	}
+
   return NewParentLoop;
 }
 
@@ -692,107 +803,77 @@ Loop *CloneLoopPass::cloneLoop(Loop *OrigL, LPPassManager& LPM)
 /// Add new alias scopes for each pair of loop inputs we speculate to have no alias,
 /// tag the mapped noalias parameters with noalias metadata specifying the new scope,
 /// and tag all non-derived loads, stores and memory intrinsics with the new alias scopes.
-void CloneLoopPass::addAliasScopeMetadata(LLVMContext& ctx, string loop_name, Loop *loop, BasePtrInfo& info) {
-	MDBuilder builder{ctx};
-
-	MDNode *domain = builder.createAnonymousAliasScopeDomain(loop_name + ".domain");
-	ValueMap<Value*, MDNode*> newScopes;
-
-	for (auto basePtr : info.getAllBasePtrs())
-	{
-		newScopes[basePtr] = builder.createAnonymousAliasScope(domain, getNameOrFail(basePtr));
-	}
-
-	// for (pair<Instruction*, set<Value*>>& mapping : info)
-	for (auto& mapping : info)
-	{
-		Instruction* memInstr = mapping.first;
-		set<Value*>& basePtrs = mapping.second;
-
-		// add alias.scope metadata for each base ptr of mem instr
-		SmallVector<Value*, 4> scopes;
-
-		for (auto basePtr : basePtrs)
-		{
-			assert(newScopes.count(basePtr));
-
-			scopes.push_back(newScopes[basePtr]);
-		}
-
-		memInstr->setMetadata(
-			LLVMContext::MD_alias_scope,
-			MDNode::concatenate(
-				memInstr->getMetadata(LLVMContext::MD_alias_scope),
-				MDNode::get(ctx, scopes)
-			)
-		);
-
-		// add noalias metadata for each base ptr that is not a base of mem instr
-		SmallVector<Value*, 4> noAliases;
-
-		for (auto basePtr : info.getAllBasePtrs())
-		{
-			if (basePtrs.count(basePtr) == 0)
-				noAliases.push_back(newScopes[basePtr]);
-		}
-
-		memInstr->setMetadata(
-			LLVMContext::MD_noalias,
-			MDNode::concatenate(
-				memInstr->getMetadata(LLVMContext::MD_noalias),
-				MDNode::get(ctx, noAliases)
-			)
-		);
-
-		DEBUG(dbgs() << *memInstr << "\n");
-		DEBUG(dbgs() << "\t" << *(memInstr->getMetadata(LLVMContext::MD_alias_scope)) << "");
-		DEBUG(dbgs() << "\t" << *(memInstr->getMetadata(LLVMContext::MD_noalias))     << "");
-	}
-}
-
-StringRef CloneLoopPass::getNameOrFail(const Value* v) {
-	StringRef name = v->getName();
-
-	if (name.empty()) {
-		errs() << "You must run the `instnamer' pass before using " << getPassName() << "\n";
-		exit(1);
-	}
-
-	return name;
-}
-
-static bool hasPrefix(const std::string& str, const std::string& prefix)
+void CloneLoopPass::addAliasScopeMetadata(LLVMContext& ctx, string loop_name, BasePtrInfo& info) 
 {
-	return str.compare(0, prefix.size(), prefix) == 0;
-}
+  map<Value*, MDNode*> basePtr2Metadata;
+  MDBuilder            builder{ctx};
 
-static bool isGlobalOrArgument(const Value *v)
+  MDNode *domain = builder.createAnonymousAliasScopeDomain(loop_name + ".domain");
 
-{
-	return isa<GlobalValue>(v) || isa<Argument>(v);
-}
-
-static Instruction *nextOf(Instruction *i)
-{
-	return (Instruction *)++((BasicBlock::iterator)i);
-}
-
-static BasicBlock *lastOf(BasicBlock *bb1, BasicBlock *bb2)
-{
-  assert(bb1->getParent() == bb2->getParent());
-
-  Function::BasicBlockListType &bbs = bb1->getParent()->getBasicBlockList();
-  for(Function::iterator B = bbs.begin(), BE = bbs.end(); B != BE; ++B)
+  // create basrPtr to Metadata mappings
+  for(auto basePtr : info.getAllBasePtrs())
   {
-    if((BasicBlock *)B == bb1) return bb2;
-    if((BasicBlock *)B == bb2) return bb1;
+    basePtr2Metadata[basePtr] = builder.createAnonymousAliasScope(domain, FIN->getName(basePtr));
   }
-  assert(false);
-  return nullptr;
+
+  // attach aliasing info to all instrumented memory instructions
+  for(auto &InstMapping : info.getInstructionMap())
+  {
+    map<Value*, int>       occurenceMap;
+    SmallVector<Value*, 4> aliases;
+    SmallVector<Value*, 4> noAliases;
+
+    Instruction *memInstr =  InstMapping.first;
+    ValueSet    &basePtrs = *InstMapping.second;
+
+    // add each base pointer of the instruction to the alias set
+    // count all noalias candidate base pointers
+    for(auto basePtr : basePtrs)
+    {
+      aliases.push_back(basePtr2Metadata[basePtr]);
+     
+      for(auto basePtrPair : info.getBasePtrPairs())
+      {
+        Value *candidate = getComplement(basePtr, basePtrPair);
+
+        if(candidate == nullptr) continue;
+       
+        auto I = occurenceMap.find(candidate);
+
+        if(I == occurenceMap.end())
+          occurenceMap[candidate] = 1;
+        else 
+          occurenceMap.insert(I, make_pair(I->first,I->second+1));
+      }
+    }
+
+    // add those noalias candidates that exists in all basePtrPairs of the instruction
+    for(auto &OccMapping : occurenceMap)
+    {
+      Value *candidate     = OccMapping.first;
+      int    numOccurences = OccMapping.second;
+
+      if(numOccurences == basePtrs.size())
+        noAliases.push_back(basePtr2Metadata[candidate]);
+    }
+
+    // attach !alias info
+    memInstr->setMetadata(
+      LLVMContext::MD_alias_scope,
+      MDNode::concatenate(
+        memInstr->getMetadata(LLVMContext::MD_alias_scope),
+	MDNode::get(ctx, aliases)
+      )
+    );
+
+    // attach !noalias info
+    memInstr->setMetadata(
+      LLVMContext::MD_noalias,
+      MDNode::concatenate(
+        memInstr->getMetadata(LLVMContext::MD_noalias),
+        MDNode::get(ctx, noAliases)
+      )
+    );
+  }
 }
 
-template<typename T>
-static pair<T*, T*> orderedPair(T* a, T* b)
-{
-	return (a < b ? make_pair(a, b) : make_pair(b, a));
-}

@@ -6,12 +6,12 @@
 
 extern "C" {
 
-/// Checks if two pointers alias
-/// @return 0 if there is no alias, non-zero otherwise
-/// TODO: pass all alias pairs for a loop in at once
+// Checks if two pointers alias
+// @return 0 if there is no alias, non-zero otherwise
 int32_t gcg_trace_alias_pair(const char *loop, const char *name1, void *ptr1, const char *name2, void *ptr2);
 
-void *gcg_getBasePtr(void *);
+// returns the start of the malloc block for the given address
+void *gcg_getBasePtr(void *address);
 
 } // end extern "C"
 

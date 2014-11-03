@@ -1,0 +1,12 @@
+- "AA_memset::bb2":
+    base_pointers: !!set {
+        "p",
+        "c",
+    }
+    base_pointer_pairs: !!set {
+        !!set {"p", "c"},
+    }
+    instructions:
+        "void3": !!set { "p", }
+        "tmp4": !!set { "c", }
+

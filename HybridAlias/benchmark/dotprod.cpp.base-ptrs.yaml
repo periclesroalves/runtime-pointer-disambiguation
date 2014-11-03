@@ -1,0 +1,12 @@
+- "AA_dotprod::bb1":
+    base_pointers: !!set {
+        "a",
+        "b",
+    }
+    base_pointer_pairs: !!set {
+        !!set {"a", "b"},
+    }
+    instructions:
+        "tmp5": !!set { "a", }
+        "tmp9": !!set { "b", }
+
