@@ -15,7 +15,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/CommandLine.h"
 #include <llvm/Support/Debug.h>
-#include "FullInstNamer.h"
+#include "llvm/Transforms/Utils/FullInstNamer.h"
 #include "Common.h"
 #include "BasePtrInfo.h"
 

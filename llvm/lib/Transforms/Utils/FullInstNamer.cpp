@@ -5,7 +5,7 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Pass.h>
 #include <llvm/Support/Debug.h>
-#include "FullInstNamer.h"
+#include "llvm/Transforms/Utils/FullInstNamer.h"
 
 #include <string>
 #include <cassert>

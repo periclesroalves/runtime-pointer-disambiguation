@@ -13,10 +13,12 @@
 #ifndef POLLY_ALIAS_INSTRUMENTER_H
 #define POLLY_ALIAS_INSTRUMENTER_H
 
+#include "llvm/Transforms/Utils/FullInstNamer.h"
 #include "llvm/Analysis/AliasSetTracker.h"
 #include "llvm/Analysis/RegionInfo.h"
 #include "llvm/Analysis/ScalarEvolutionExpander.h"
 #include "llvm/IR/Module.h"
+#include <map>
 
 using namespace llvm;
 
@@ -33,6 +35,20 @@ class LoopInfo;
 namespace polly {
 class ScopDetection;
 class DetectionContext;
+
+class DeclareTraceFunction : public ModulePass
+{
+  Function *trace_fn;
+
+  public:
+  static char ID;
+
+  DeclareTraceFunction() : ModulePass(ID), trace_fn(nullptr) {}
+
+  virtual bool  runOnModule(Module& m) override;
+  const char   *getPassName()    const override { return "DeclareTraceFunction"; }
+  Function     *getTraceFn()                    { assert(trace_fn); return trace_fn; }
+};
 
 // Utility for computing Value objects corresponding to the lower and upper
 // bounds of a SCEV within a region R. The generated values are inserted into
@@ -146,6 +162,11 @@ class AliasInstrumenter {
   const ScopDetection *sd;
   AliasAnalysis *aa;
   LoopInfo *li;
+  FullInstNamer *fin;
+  DeclareTraceFunction *dtf;
+
+  // a map of strings to global string values
+  std::map<StringRef, Value*> string2Value;
 
   // If set, halt on dependencies, without instrumenting.
   bool verifyingOnly;
@@ -163,12 +184,18 @@ class AliasInstrumenter {
   // Chain all checks to a single result value using "and" operations.
   Value *chainChecks(std::vector<Value *> checks, BuilderType &builder);
 
+  // calls runtime to print the expected and the real array bounds of a value
+  void printArrayBounds(Value *v, Value *l, Value *u, Region *r, BuilderType &builder);
+
+  // creates and/or returns a reference to a global string value
+  Value *getOrInsertGlobalString(StringRef str, BuilderType &builder);
+
 public:
   AliasInstrumenter() {}
 
-  AliasInstrumenter(ScalarEvolution *se, const ScopDetection *sd,
-                    AliasAnalysis *aa, LoopInfo *li, bool verifying)
-    : se(se), sd(sd), aa(aa), li(li), verifyingOnly(verifying) {}
+  AliasInstrumenter(ScalarEvolution *se, const ScopDetection *sd, AliasAnalysis *aa, 
+                    LoopInfo *li, FullInstNamer *fin, DeclareTraceFunction *dtf, bool verifying)
+    : se(se), sd(sd), aa(aa), li(li), fin(fin), dtf(dtf), verifyingOnly(verifying) {}
 
   // Check for dependencies within the current region, generating dynamic alias
   // checks for all pointers that can't be solved statically. Returns true if

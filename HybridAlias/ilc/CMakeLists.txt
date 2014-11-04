@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-add_library(ILC MODULE ILC.cpp Common.cpp TraceLoopAlias.cpp FullInstNamer.cpp BasePtrInfo.cpp)
+add_library(ILC MODULE ILC.cpp Common.cpp TraceLoopAlias.cpp BasePtrInfo.cpp)
 
 if("${LLVM_BUILD_LIBRARY_DIR}" STREQUAL "")
 	message(FATAL_ERROR "\${LLVM_BUILD_LIBRARY_DIR} not set, configure with proper CMAKE_PREFIX_PATH")
@@ -15,9 +15,7 @@ target_link_libraries (ILC
 	"${LLVM_BUILD_LIBRARY_DIR}/Support/CMakeFiles/LLVMSupport.dir/YAMLTraits.cpp.o"
 )
 
-add_library(FullInstNamer MODULE FullInstNamer.cpp)
-
-add_executable(print-base-ptrs PrintBasePtrs.cpp FullInstNamer.cpp BasePtrInfo.cpp Common.cpp)
+add_executable(print-base-ptrs PrintBasePtrs.cpp BasePtrInfo.cpp Common.cpp)
 
 target_link_libraries(print-base-ptrs
 	# LLVM

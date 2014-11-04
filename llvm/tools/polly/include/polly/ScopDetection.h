@@ -50,6 +50,7 @@
 #include "llvm/Pass.h"
 #include "llvm/Analysis/AliasSetTracker.h"
 #include "llvm/Analysis/DominanceFrontier.h"
+#include "llvm/Transforms/Utils/FullInstNamer.h"
 
 #include "polly/AliasInstrumenter.h"
 #include "polly/ScopDetectionDiagnostic.h"
@@ -133,6 +134,8 @@ class ScopDetection : public FunctionPass {
   DominatorTree *DT;
   PostDominatorTree *PDT;
   DominanceFrontier *DF;
+  FullInstNamer *FIN;
+  DeclareTraceFunction *DTF;
   //@}
 
   /// @brief Context variables for SCoP detection.

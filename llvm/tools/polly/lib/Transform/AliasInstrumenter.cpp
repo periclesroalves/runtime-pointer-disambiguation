@@ -20,6 +20,46 @@ using namespace polly;
 
 #define DEBUG_TYPE "polly-alias-instrumenter"
 
+static const char *const traceFuncName = "memtrack_dumpArrayBounds";
+
+char DeclareTraceFunction::ID = 0;
+static RegisterPass<DeclareTraceFunction> X(
+       "declare-trace-function",
+       "Declare external refernce to alias tracing function"
+); 
+
+bool DeclareTraceFunction::runOnModule(Module &M)
+{
+  LLVMContext  &ctx           = M.getContext();
+  Type         *char_ptr_type = Type::getInt8PtrTy(ctx);
+  Type         *return_type   = Type::getInt32Ty(ctx);
+
+  std::vector<Type*> parameter_types
+  {
+    char_ptr_type, // const char *regionName
+    char_ptr_type, // const char *valueName
+    char_ptr_type, // void       *value
+    char_ptr_type, // void       *lowGuess
+    char_ptr_type  // void       *upGuess
+  };
+
+  trace_fn = Function::Create(
+    FunctionType::get(return_type, parameter_types, false),
+    GlobalValue::ExternalLinkage,
+    traceFuncName,
+    &M);
+
+  trace_fn->addAttribute(1, Attribute::ReadOnly);
+  trace_fn->addAttribute(2, Attribute::ReadOnly);
+  trace_fn->addAttribute(3, Attribute::ReadOnly);
+  trace_fn->addAttribute(4, Attribute::ReadOnly);
+  trace_fn->addAttribute(5, Attribute::ReadOnly);
+
+  return true;
+
+  //void memtrack_dumpArrayBounds(const char *region, const char *valueName, void *value, void *lowGuess, void *upGuess)
+}
+
 Value* SCEVRangeAnalyser::getSavedExpression(const SCEV *S,
                                              Instruction *InsertPt, bool upper) {
   std::map<std::tuple<const SCEV *, Instruction *, bool>, TrackingVH<Value> >::iterator
@@ -426,6 +466,9 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
         return false;
 
       pointerBounds[pair.first] = std::make_pair(low, up);
+
+      //profiling
+      printArrayBounds(pair.first, low, up, r, builder);
     }
 
     if (!pointerBounds.count(pair.second)) {
@@ -438,6 +481,9 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
         return false;
 
       pointerBounds[pair.second] = std::make_pair(low, up);
+
+      //profiling
+      printArrayBounds(pair.second, low, up, r, builder);
     }
 
     Value *check = insertCheck(pointerBounds[pair.first],
@@ -451,6 +497,40 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
   return true;
 }
 
+
+// Creates a global string constant and returns a pointer to it
+Value *AliasInstrumenter::getOrInsertGlobalString(StringRef str, BuilderType &builder)
+{
+  assert(!str.empty() && "Tried to create empty string constant");
+ 
+  // look up in map
+  std::map<StringRef, Value*>::iterator I = string2Value.find(str);
+ 
+  if(I != string2Value.end()) return I->second;
+ 
+  Value *globalStr = builder.CreateGlobalStringPtr(str);
+ 
+  //update map
+  string2Value[str] = globalStr;
+
+  return globalStr;
+}
+
+// Prints the array bounds of a value
+void AliasInstrumenter::printArrayBounds(Value *v, Value *l, Value *u, Region *r, BuilderType &builder)
+{
+  errs() << "Tracing value " << fin->getName(v) << " in region " << fin->getName(r->getEntry()) << "\n";
+
+  Value *regName = getOrInsertGlobalString(fin->getName(r->getEntry()), builder);
+  Value *valName = getOrInsertGlobalString(fin->getName(v), builder);
+
+  Value *val = v->getType() == builder.getInt8PtrTy() ? v : builder.CreatePointerCast(v, builder.getInt8PtrTy());
+  Value *low = l->getType() == builder.getInt8PtrTy() ? l : builder.CreatePointerCast(l, builder.getInt8PtrTy());
+  Value *up  = u->getType() == builder.getInt8PtrTy() ? u : builder.CreatePointerCast(u, builder.getInt8PtrTy());
+
+  builder.CreateCall5(dtf->getTraceFn(), regName, valName, val, low, up);
+}
+
 // Inserts a dynamic test to guarantee that accesses to two pointers do not
 // overlap, by doing:
 //   no-alias: upper(A) < lower(B) || upper(B) < lower(A)
@@ -458,6 +538,7 @@ Value *AliasInstrumenter::insertCheck(std::pair<Value *, Value *> boundsA,
                                       std::pair<Value *, Value *> boundsB,
                                       BuilderType &builder,
                                       SCEVRangeAnalyser &rangeAnalyser) {
+
   // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
   Type *i8PtrTy = builder.getInt8PtrTy();
   Value *lowerA = rangeAnalyser.InsertNoopCastOfTo(boundsA.first, i8PtrTy);

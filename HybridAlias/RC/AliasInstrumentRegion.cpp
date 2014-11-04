@@ -41,7 +41,7 @@
 #include "llvm/Support/Casting.h"       // for isa, dyn_cast
 #include "llvm/Support/CommandLine.h"   // for desc, initializer, opt, etc
 #include "llvm/Support/raw_ostream.h"   // for errs, raw_ostream
-#include "../ilc/FullInstNamer.h"       // for FullInstNamer
+#include "llvm/Transforms/Utils/FullInstNamer.h"       // for FullInstNamer
 #include "../ilc/BasePtrInfo.h"
 #include "../ilc/Common.h"
 

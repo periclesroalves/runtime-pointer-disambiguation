@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-add_library(RC MODULE RegionPass.cpp AliasInstrumentRegion.cpp ../ilc/FullInstNamer.cpp)
+add_library(RC MODULE RegionPass.cpp AliasInstrumentRegion.cpp )
 
 add_library(perf MODULE perflib.cpp)
 

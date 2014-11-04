@@ -18,9 +18,9 @@
 #include <cstdlib>
 #include <cstring>
 
-#ifdef HAVE_SVN_VERSION_INC
+/*#ifdef HAVE_SVN_VERSION_INC
 #  include "SVNVersion.inc"
-#endif
+#endif*/
 
 namespace clang {
 

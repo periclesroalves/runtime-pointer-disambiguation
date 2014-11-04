@@ -38,7 +38,7 @@
 #include <llvm/ADT/DenseMap.h>
 #include "Common.h"
 #include "BasePtrInfo.h"
-#include "FullInstNamer.h"
+#include "llvm/Transforms/Utils/FullInstNamer.h"
 
 #include <cstring>
 #include <string>

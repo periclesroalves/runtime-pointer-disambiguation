@@ -63,6 +63,7 @@
 #include "llvm/IR/DiagnosticPrinter.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/Support/Debug.h"
+#include "llvm/Transforms/Utils/FullInstNamer.h"
 #include <set>
 
 using namespace llvm;
@@ -816,9 +817,12 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
   DT = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
   PDT = &getAnalysis<PostDominatorTree>();
   DF = &getAnalysis<DominanceFrontier>();
+  FIN = &getAnalysis<FullInstNamer>();
+  DTF = &getAnalysis<DeclareTraceFunction>();
+
   Region *TopRegion = RI->getTopLevelRegion();
 
-  instrumenter = AliasInstrumenter(SE, this, AA, LI, /*verifyingOnly*/ false);
+  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, DTF, /*verifyingOnly*/ false);
   releaseMemory();
 
   if (OnlyFunction != "" && !F.getName().count(OnlyFunction))
@@ -854,7 +858,7 @@ void polly::ScopDetection::verifyAnalysis() const {
   if (!VerifyScops)
     return;
 
-  instrumenter = AliasInstrumenter(SE, this, AA, LI, /*verifyingOnly*/ true);
+  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, DTF, /*verifyingOnly*/ true);
 
   for (const Region *R : ValidRegions)
     verifyRegion(*R);
@@ -869,6 +873,9 @@ void ScopDetection::getAnalysisUsage(AnalysisUsage &AU) const {
   // We also need AA and RegionInfo when we are verifying analysis.
   AU.addRequiredTransitive<AliasAnalysis>();
   AU.addRequiredTransitive<RegionInfoPass>();
+  // gcg
+  AU.addRequired<FullInstNamer>();
+  AU.addRequired<DeclareTraceFunction>();
   AU.setPreservesAll();
 }
 

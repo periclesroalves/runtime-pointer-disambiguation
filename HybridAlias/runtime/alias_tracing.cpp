@@ -1,6 +1,7 @@
 #include "alias_tracing.hpp"
 #include "alloc.h"
 
+#include <stdio.h>
 #include <cassert>
 #include <cerrno>
 #include <cstdio>
@@ -27,6 +28,17 @@ int32_t gcg_trace_alias_pair(const char *loop, const char *name1, void *ptr1, co
   // 0 means no-alias
   // 1 means alias
   return alias;
+}
+
+void memtrack_dumpArrayBounds(const char *region, const char *valueName, void *value, void *lowGuess, void *upGuess)
+{
+  auto it = lut->lower_bound(value);
+
+  if(it->first == nullptr)
+    error(1, errno, "Could not track value '%s'\n", valueName);
+
+  fprintf(stdout, "Region '%s' - Value '%s' :\n- value = %p\n- guess = [ %p , %p ]\n- real  = [ %p , %p ]\n", 
+                       region,   valueName,           value,        lowGuess, upGuess,    it->first, it->second);
 }
 
 void *gcg_getBasePtr(void *address)
