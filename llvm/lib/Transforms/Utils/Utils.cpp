@@ -24,6 +24,7 @@ void llvm::initializeTransformUtils(PassRegistry &Registry) {
   initializeAddDiscriminatorsPass(Registry);
   initializeBreakCriticalEdgesPass(Registry);
   initializeInstNamerPass(Registry);
+  initializeFullInstNamerPass(Registry);
   initializeLCSSAPass(Registry);
   initializeLoopSimplifyPass(Registry);
   initializeLowerInvokePass(Registry);

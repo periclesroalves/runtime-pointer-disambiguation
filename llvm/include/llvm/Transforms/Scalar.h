@@ -325,6 +325,8 @@ FunctionPass *createConstantHoistingPass();
 // InstructionNamer - Give any unnamed non-void instructions "tmp" names.
 //
 FunctionPass *createInstructionNamerPass();
+FunctionPass *createFullInstructionNamerPass();
+
 extern char &InstructionNamerID;
 
 //===----------------------------------------------------------------------===//
