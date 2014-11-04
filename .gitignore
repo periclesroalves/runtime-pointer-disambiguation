@@ -4,6 +4,7 @@
 
 #Project files
 build/
+build-*/
 
 #Subversion files
 .svn

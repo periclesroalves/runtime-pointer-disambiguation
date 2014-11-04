@@ -71,7 +71,7 @@ foreach(cpp_file ${BENCHMARKS})
 	add_custom_command(
 		OUTPUT  "${PLAIN_BENCHMARK}" "${INSTRUMENTED_BENCHMARK}" "${LL_UNOPTIMIZED}" "${LL_INPUT}" "${LL_INPUT_O3}" "${LL_INSTRUMENTED}" "${LL_INSTRUMENTED_O3}"
 		## compile .cpp to unoptimized .ll
-		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -S -emit-llvm -I${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/${cpp_file}" -o "${LL_UNOPTIMIZED}"
+		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -S -emit-llvm -I${CMAKE_CURRENT_SOURCE_DIR} "-I${PROJECT_SOURCE_DIR}/google-benchmark/include" "${CMAKE_CURRENT_SOURCE_DIR}/${cpp_file}" -o "${LL_UNOPTIMIZED}"
 		## mem2reg makes IR more readable
 		COMMAND "${OPT}" "${LL_UNOPTIMIZED}" -S -mem2reg -instnamer > "${LL_INPUT}"
 		## created instrumented .ll
