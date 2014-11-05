@@ -20,8 +20,6 @@
 #include "llvm/IR/Module.h"
 #include <map>
 
-using namespace llvm;
-
 namespace llvm {
 class ScalarEvolution;
 class AliasAnalysis;
@@ -33,22 +31,13 @@ class LoopInfo;
 }
 
 namespace polly {
+
+using namespace llvm;
+
 class ScopDetection;
 class DetectionContext;
 
-class DeclareTraceFunction : public ModulePass
-{
-  Function *trace_fn;
-
-  public:
-  static char ID;
-
-  DeclareTraceFunction() : ModulePass(ID), trace_fn(nullptr) {}
-
-  virtual bool  runOnModule(Module& m) override;
-  const char   *getPassName()    const override { return "DeclareTraceFunction"; }
-  Function     *getTraceFn()                    { assert(trace_fn); return trace_fn; }
-};
+Function* declareTraceFunction(Module *m);
 
 // Utility for computing Value objects corresponding to the lower and upper
 // bounds of a SCEV within a region R. The generated values are inserted into
@@ -163,7 +152,7 @@ class AliasInstrumenter {
   AliasAnalysis *aa;
   LoopInfo *li;
   FullInstNamer *fin;
-  DeclareTraceFunction *dtf;
+  Function *trace_fn;
 
   // a map of strings to global string values
   std::map<StringRef, Value*> string2Value;
@@ -193,9 +182,9 @@ class AliasInstrumenter {
 public:
   AliasInstrumenter() {}
 
-  AliasInstrumenter(ScalarEvolution *se, const ScopDetection *sd, AliasAnalysis *aa, 
-                    LoopInfo *li, FullInstNamer *fin, DeclareTraceFunction *dtf, bool verifying)
-    : se(se), sd(sd), aa(aa), li(li), fin(fin), dtf(dtf), verifyingOnly(verifying) {}
+  AliasInstrumenter(ScalarEvolution *se, const ScopDetection *sd, AliasAnalysis *aa,
+                    LoopInfo *li, FullInstNamer *fin, Function *trace_fn, bool verifying)
+    : se(se), sd(sd), aa(aa), li(li), fin(fin), trace_fn(trace_fn), verifyingOnly(verifying) {}
 
   // Check for dependencies within the current region, generating dynamic alias
   // checks for all pointers that can't be solved statically. Returns true if

@@ -818,11 +818,12 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
   PDT = &getAnalysis<PostDominatorTree>();
   DF = &getAnalysis<DominanceFrontier>();
   FIN = &getAnalysis<FullInstNamer>();
-  DTF = &getAnalysis<DeclareTraceFunction>();
+
+  auto trace_fn = declareTraceFunction(F.getParent());
 
   Region *TopRegion = RI->getTopLevelRegion();
 
-  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, DTF, /*verifyingOnly*/ false);
+  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, trace_fn, /*verifyingOnly*/ false);
   releaseMemory();
 
   if (OnlyFunction != "" && !F.getName().count(OnlyFunction))
@@ -858,7 +859,7 @@ void polly::ScopDetection::verifyAnalysis() const {
   if (!VerifyScops)
     return;
 
-  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, DTF, /*verifyingOnly*/ true);
+  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, nullptr, /*verifyingOnly*/ true);
 
   for (const Region *R : ValidRegions)
     verifyRegion(*R);
@@ -875,7 +876,6 @@ void ScopDetection::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequiredTransitive<RegionInfoPass>();
   // gcg
   AU.addRequired<FullInstNamer>();
-  AU.addRequired<DeclareTraceFunction>();
   AU.setPreservesAll();
 }
 
