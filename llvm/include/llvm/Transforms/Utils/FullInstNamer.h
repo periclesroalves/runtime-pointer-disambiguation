@@ -29,9 +29,12 @@ class FullInstNamer : public llvm::FunctionPass
 	llvm::StringRef getName(const llvm::Value *v) const;
 	/// Return name or abort
 	llvm::StringRef getNameOrFail(const llvm::Pass *caller, const llvm::Value *v) const;
+	llvm::StringRef getNameOrFail(llvm::StringRef   caller, const llvm::Value *v) const;
 
 	void setName(llvm::LLVMContext& ctx, llvm::Value *v, llvm::StringRef name) const;
 	void setNameIfAbsent(llvm::LLVMContext& ctx, llvm::Value *v, llvm::StringRef name) const;
+
+	static llvm::Value* lookup(llvm::Function *fn, llvm::StringRef name);
 };
 
 #endif //_FULL_INST_NAMER_H_

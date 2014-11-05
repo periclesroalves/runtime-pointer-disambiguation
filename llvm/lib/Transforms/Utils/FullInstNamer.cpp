@@ -2,9 +2,11 @@
 #include "llvm/Transforms/Scalar.h"
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Value.h>
+#include <llvm/IR/InstrTypes.h>
 #include <llvm/IR/Metadata.h>
 #include <llvm/IR/MDBuilder.h>
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/ValueSymbolTable.h>
 #include <llvm/Pass.h>
 #include <llvm/Support/Debug.h>
 
@@ -32,7 +34,7 @@ FullInstNamer::FullInstNamer() : FunctionPass(ID) {
 }
 
 
-bool FullInstNamer::runOnFunction(Function &F) 
+bool FullInstNamer::runOnFunction(Function &F)
 {
   size_t void_type_counter = 1;
 
@@ -42,19 +44,27 @@ bool FullInstNamer::runOnFunction(Function &F)
 
   MDBuilder md{ctx};
 
-  for(Function::arg_iterator AI = F.arg_begin(), AE = F.arg_end(); AI != AE; ++AI) 
+  for(Function::arg_iterator AI = F.arg_begin(), AE = F.arg_end(); AI != AE; ++AI)
   {
-    if(!AI->hasName() && !AI->getType()->isVoidTy()) AI->setName("arg");
+    if(!AI->hasName() && !AI->getType()->isVoidTy())
+    	AI->setName("arg");
   }
 
-  for(Function::iterator BB = F.begin(), E = F.end(); BB != E; ++BB) 
+  for(Function::iterator BB = F.begin(), E = F.end(); BB != E; ++BB)
   {
     if(!BB->hasName()) BB->setName("bb");
 
-    for (BasicBlock::iterator I = BB->begin(), E = BB->end(); I != E; ++I) 
+    for (BasicBlock::iterator I = BB->begin(), E = BB->end(); I != E; ++I)
     {
-      if(I->getType()->isVoidTy()) I->setMetadata(kindId, MDNode::get(ctx, md.createString("void" + std::to_string(void_type_counter++))));
-      else I->setName("tmp");
+      if(I->getType()->isVoidTy()) {
+      	if (!I->getMetadata(kindId))
+		I->setMetadata(
+			kindId,
+			MDNode::get(ctx, md.createString("void" + std::to_string(void_type_counter++)))
+		);
+	} else {
+		I->setName("tmp");
+	}
     }
   }
 
@@ -122,6 +132,18 @@ StringRef FullInstNamer::getNameOrFail(const Pass *pass, const Value* v) const {
 	return name;
 }
 
+StringRef FullInstNamer::getNameOrFail(StringRef caller, const Value* v) const {
+	StringRef name = getName(v);
+
+	if (name.empty()) {
+		errs() << "You must run the `-full-instnamer' pass before using the " << caller << "\n";
+		exit(1);
+	}
+
+	return name;
+}
+
+
 void FullInstNamer::setName(llvm::LLVMContext& ctx, llvm::Value *v, llvm::StringRef name) const
 {
 	if (v->getType()->isVoidTy()) {
@@ -147,4 +169,25 @@ void FullInstNamer::setNameIfAbsent(llvm::LLVMContext& ctx, llvm::Value *v, llvm
 		return;
 
 	setName(ctx, v, name);
+}
+
+llvm::Value* FullInstNamer::lookup(llvm::Function *fn, StringRef name)
+{
+	FullInstNamer fin;
+
+	auto value = fn->getValueSymbolTable().lookup(name);
+
+	if (value)
+		return value;
+
+	for (auto& bb : fn->getBasicBlockList())
+	{
+		for (auto it = bb.begin(), end = bb.end(); it != end; ++it)
+		{
+			if (fin.getName(it) == name)
+				return it;
+		}
+	}
+
+	return nullptr;
 }
