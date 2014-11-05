@@ -37,6 +37,7 @@ add_llvm_library(LLVMTransformUtils
   Utils.cpp
   ValueMapper.cpp
   FullInstNamer.cpp
+  RegionCloningYaml.cpp
   )
 
 add_dependencies(LLVMTransformUtils intrinsics_gen)
