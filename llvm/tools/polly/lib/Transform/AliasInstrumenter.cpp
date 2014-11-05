@@ -365,6 +365,10 @@ Value *SCEVRangeAnalyser::getULowerOrUpperBound(std::set<const SCEV *> &exprList
     Value *newBound = expand(expr, upper);
     Value *cmp;
 
+    // The old bound is promoted on type conflicts.
+    if (bestBound->getType() != newBound->getType())
+      bestBound = InsertNoopCastOfTo(bestBound, newBound->getType());
+
     if (upper)
       cmp = Builder.CreateICmpUGT(newBound, bestBound);
     else
