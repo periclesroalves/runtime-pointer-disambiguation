@@ -38,7 +38,15 @@ endif()
 
 ### DEFINE INDIVIDUAL BENCHMARKS
 
+add_library(bench_util benchmark.cpp bench_util.cpp)
+
 set(IR_files) # contains names of instrumented .ll files
+
+## build include directory flags for clang
+get_property(include_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(include_dir ${include_dirs})
+	list(APPEND INCLUDE_FLAG "-I${include_dir}")
+endforeach()
 
 ### add benchmarks to main benchmark executable
 ## the individual benchmarks will be processed by alias-tracer etc.
@@ -71,7 +79,7 @@ foreach(cpp_file ${BENCHMARKS})
 	add_custom_command(
 		OUTPUT  "${PLAIN_BENCHMARK}" "${INSTRUMENTED_BENCHMARK}" "${LL_UNOPTIMIZED}" "${LL_INPUT}" "${LL_INPUT_O3}" "${LL_INSTRUMENTED}" "${LL_INSTRUMENTED_O3}"
 		## compile .cpp to unoptimized .ll
-		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -S -emit-llvm -I${CMAKE_CURRENT_SOURCE_DIR} "-I${PROJECT_SOURCE_DIR}/google-benchmark/include" "${CMAKE_CURRENT_SOURCE_DIR}/${cpp_file}" -o "${LL_UNOPTIMIZED}"
+		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -S -emit-llvm ${INCLUDE_FLAG} "${CMAKE_CURRENT_SOURCE_DIR}/${cpp_file}" -o "${LL_UNOPTIMIZED}"
 		## mem2reg makes IR more readable
 		COMMAND "${OPT}" "${LL_UNOPTIMIZED}" -S -mem2reg -instnamer > "${LL_INPUT}"
 		## created instrumented .ll
@@ -82,13 +90,10 @@ foreach(cpp_file ${BENCHMARKS})
 		## .ll -> .s
 		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_INPUT_O3}" -S -o "${S_INPUT_O3}"
 		## link benchmark executables
-		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_INPUT_O3}"        "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp" -lbenchmark -lpthread "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp"                                                                                         -o "${PLAIN_BENCHMARK}"
-		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_INPUT_O3}"        "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp" -lbenchmark -lpthread "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp"                                                                                         -o "${PLAIN_BENCHMARK}"
-		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_INSTRUMENTED_O3}" "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp" -lbenchmark -lpthread "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp" "-Wl,-rpath,${CMAKE_BINARY_DIR}/runtime/" "-L${CMAKE_BINARY_DIR}/runtime/" "-lmemtrack" -o "${INSTRUMENTED_BENCHMARK}"
+		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_INPUT_O3}"        "$<TARGET_LINKER_FILE:benchmark>" "$<TARGET_LINKER_FILE:bench_util>" -lpthread                                                                                         -o "${PLAIN_BENCHMARK}"
+		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_INPUT_O3}"        "$<TARGET_LINKER_FILE:benchmark>" "$<TARGET_LINKER_FILE:bench_util>" -lpthread                                                                                         -o "${PLAIN_BENCHMARK}"
+		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_INSTRUMENTED_O3}" "$<TARGET_LINKER_FILE:benchmark>" "$<TARGET_LINKER_FILE:bench_util>" -lpthread "-Wl,-rpath,${CMAKE_BINARY_DIR}/runtime/" "-L${CMAKE_BINARY_DIR}/runtime/" "-lmemtrack" -o "${INSTRUMENTED_BENCHMARK}"
 		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${cpp_file}"
-		        "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp"
-		        "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.hpp"
-		        "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp"
 		        ILC
 		        memtrack
 		VERBATIM
@@ -133,7 +138,7 @@ foreach(cpp_file ${BENCHMARKS})
 		## .ll -> .s
 		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_SPECULATIVE_O3}" -S -o "${S_SPECULATIVE_O3}"
 		## link benchmark executables
-		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_SPECULATIVE_O3}" "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp" -lbenchmark -lpthread "${CMAKE_CURRENT_SOURCE_DIR}/bench_util.cpp" "-Wl,-rpath,${CMAKE_BINARY_DIR}/runtime/" "-L${CMAKE_BINARY_DIR}/runtime/" -lmemtrack -o "${SPECULATIVE_BENCHMARK}"
+		COMMAND ${CMAKE_CXX_COMPILER} ${cxx_flags} -O3 "${LL_SPECULATIVE_O3}" "$<TARGET_LINKER_FILE:benchmark>" "$<TARGET_LINKER_FILE:bench_util>" -lpthread "-Wl,-rpath,${CMAKE_BINARY_DIR}/runtime/" "-L${CMAKE_BINARY_DIR}/runtime/" -lmemtrack -o "${SPECULATIVE_BENCHMARK}"
 
 		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${cpp_file}"
 		        "${CMAKE_CURRENT_SOURCE_DIR}/benchmark.cpp"
