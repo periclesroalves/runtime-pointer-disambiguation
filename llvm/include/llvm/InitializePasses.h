@@ -145,6 +145,7 @@ void initializeInlineCostAnalysisPass(PassRegistry&);
 void initializeInstCombinerPass(PassRegistry&);
 void initializeInstCountPass(PassRegistry&);
 void initializeInstNamerPass(PassRegistry&);
+void initializeFullInstNamerPass(PassRegistry&);
 void initializeInternalizePassPass(PassRegistry&);
 void initializeIntervalPartitionPass(PassRegistry&);
 void initializeJumpInstrTableInfoPass(PassRegistry&);

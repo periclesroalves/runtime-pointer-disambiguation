@@ -1,3 +1,5 @@
+#include "llvm/Transforms/Utils/FullInstNamer.h"
+#include "llvm/Transforms/Scalar.h"
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Value.h>
 #include <llvm/IR/Metadata.h>
@@ -5,7 +7,6 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Pass.h>
 #include <llvm/Support/Debug.h>
-#include "llvm/Transforms/Utils/FullInstNamer.h"
 
 #include <string>
 #include <cassert>
@@ -14,10 +15,22 @@ using namespace llvm;
 using namespace std;
 
 char FullInstNamer::ID = 0;
-static RegisterPass<FullInstNamer> X(
+
+INITIALIZE_PASS(FullInstNamer,
 	"full-instnamer",
-	"Assign names to anonymous instructions (including void instructions)"
-);
+	"Assign names to anonymous instructions (including void instructions)",
+	false,
+	false
+)
+
+FunctionPass *llvm::createFullInstructionNamerPass() {
+  return new FullInstNamer();
+}
+
+FullInstNamer::FullInstNamer() : FunctionPass(ID) {
+	initializeFullInstNamerPass(*PassRegistry::getPassRegistry());
+}
+
 
 bool FullInstNamer::runOnFunction(Function &F) 
 {

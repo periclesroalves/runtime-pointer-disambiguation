@@ -5,6 +5,7 @@
 #Project files
 build/
 HybridAlias-build/
+build-*/
 
 #Subversion files
 .svn

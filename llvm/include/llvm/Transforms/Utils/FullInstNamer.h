@@ -16,7 +16,7 @@ class FullInstNamer : public llvm::FunctionPass
     public:
     static char ID;
 
-    FullInstNamer() : FunctionPass(ID) {}
+    FullInstNamer();
 
     virtual const char *getPassName()                               const override { return "FullInstNamer"; }
     virtual void        getAnalysisUsage(llvm::AnalysisUsage &Info) const          { Info.setPreservesAll(); }

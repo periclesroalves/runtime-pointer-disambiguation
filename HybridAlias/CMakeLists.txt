@@ -12,6 +12,7 @@ add_definitions(${LLVM_DEFINITIONS})
 include_directories(${LLVM_INCLUDE_DIRS})
 
 ## add google benchmark library
+include_directories(google-benchmark/include)
 add_subdirectory(google-benchmark)
 
 ### set compilers
