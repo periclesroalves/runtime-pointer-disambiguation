@@ -9,6 +9,7 @@
 
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/TypeBuilder.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
 #include "polly/AliasInstrumenter.h"
@@ -22,42 +23,46 @@ using namespace polly;
 
 static const char *const traceFuncName = "memtrack_dumpArrayBounds";
 
-char DeclareTraceFunction::ID = 0;
-static RegisterPass<DeclareTraceFunction> X(
-       "declare-trace-function",
-       "Declare external refernce to alias tracing function"
-); 
-
-bool DeclareTraceFunction::runOnModule(Module &M)
+Function* polly::declareTraceFunction(Module *M)
 {
-  LLVMContext  &ctx           = M.getContext();
-  Type         *char_ptr_type = Type::getInt8PtrTy(ctx);
-  Type         *return_type   = Type::getInt32Ty(ctx);
+  LLVMContext  &ctx                 = M->getContext();
+  Type         *const_char_ptr_type = TypeBuilder<const char*, false>::get(ctx);
+  Type         *void_type           = TypeBuilder<void,        false>::get(ctx);
+  Type         *void_ptr_type       = TypeBuilder<void*,       false>::get(ctx);
 
   std::vector<Type*> parameter_types
   {
-    char_ptr_type, // const char *regionName
-    char_ptr_type, // const char *valueName
-    char_ptr_type, // void       *value
-    char_ptr_type, // void       *lowGuess
-    char_ptr_type  // void       *upGuess
+    const_char_ptr_type, // const char *regionName
+    const_char_ptr_type, // const char *valueName
+    void_ptr_type,       // void       *value
+    void_ptr_type,       // void       *lowGuess
+    void_ptr_type        // void       *upGuess
   };
 
-  trace_fn = Function::Create(
-    FunctionType::get(return_type, parameter_types, false),
-    GlobalValue::ExternalLinkage,
-    traceFuncName,
-    &M);
+  auto fn_type  = FunctionType::get(void_type, parameter_types, false);
+  auto trace_fn = M->getFunction(traceFuncName);
 
-  trace_fn->addAttribute(1, Attribute::ReadOnly);
-  trace_fn->addAttribute(2, Attribute::ReadOnly);
-  trace_fn->addAttribute(3, Attribute::ReadOnly);
-  trace_fn->addAttribute(4, Attribute::ReadOnly);
-  trace_fn->addAttribute(5, Attribute::ReadOnly);
+  if (!trace_fn) {
+	  trace_fn = Function::Create(
+	    FunctionType::get(void_type, parameter_types, false),
+	    GlobalValue::ExternalLinkage,
+	    traceFuncName,
+	    M);
 
-  return true;
+	  trace_fn->addAttribute(1, Attribute::ReadOnly);
+	  trace_fn->addAttribute(2, Attribute::ReadOnly);
+	  trace_fn->addAttribute(3, Attribute::ReadOnly);
+	  trace_fn->addAttribute(4, Attribute::ReadOnly);
+	  trace_fn->addAttribute(5, Attribute::ReadOnly);
+  }
 
-  //void memtrack_dumpArrayBounds(const char *region, const char *valueName, void *value, void *lowGuess, void *upGuess)
+	if (trace_fn->getType() != fn_type->getPointerTo()) {
+		errs() << "Trace function was already declared and has wrong type\n";
+		exit(1);
+		return nullptr;
+	}
+
+  return trace_fn;
 }
 
 Value* SCEVRangeAnalyser::getSavedExpression(const SCEV *S,
@@ -532,7 +537,8 @@ void AliasInstrumenter::printArrayBounds(Value *v, Value *l, Value *u, Region *r
   Value *low = l->getType() == builder.getInt8PtrTy() ? l : builder.CreatePointerCast(l, builder.getInt8PtrTy());
   Value *up  = u->getType() == builder.getInt8PtrTy() ? u : builder.CreatePointerCast(u, builder.getInt8PtrTy());
 
-  builder.CreateCall5(dtf->getTraceFn(), regName, valName, val, low, up);
+  assert(trace_fn);
+  builder.CreateCall5(trace_fn, regName, valName, val, low, up);
 }
 
 // Inserts a dynamic test to guarantee that accesses to two pointers do not

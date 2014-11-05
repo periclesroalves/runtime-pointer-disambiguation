@@ -135,7 +135,6 @@ class ScopDetection : public FunctionPass {
   PostDominatorTree *PDT;
   DominanceFrontier *DF;
   FullInstNamer *FIN;
-  DeclareTraceFunction *DTF;
   //@}
 
   /// @brief Context variables for SCoP detection.
