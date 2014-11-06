@@ -15,6 +15,7 @@
 #include "polly/AliasInstrumenter.h"
 #include "polly/ScopDetection.h"
 #include "polly/Support/ScopHelper.h"
+#include "polly/CloneRegion.h"
 
 using namespace llvm;
 using namespace polly;
@@ -603,10 +604,25 @@ void AliasInstrumenter::fixInstrumentedRegions() {
   }
 }
 
-void AliasInstrumenter::cloneInstrumentedRegions() {
+void AliasInstrumenter::cloneInstrumentedRegions(RegionInfo *ri,
+                                                 DominatorTree *dt,
+                                                 DominanceFrontier *df) {
   fixInstrumentedRegions();
 
-  // CLONE REGIONS.
+  // The regions in "insertedChecks" are supposed to be ordered such that
+  // sub-regions always come first.
+  for (auto &check : insertedChecks) {
+    Instruction *dyResult = dyn_cast<Instruction>(check.first);
+    Region *r = check.second;
+    Region *clonedRegion = cloneRegion(r, nullptr, ri, dt, df);
+
+    // Build the conditional brach based on the test result.
+    Instruction *br = &r->getEnteringBlock()->back();
+    BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
+    builder.SetInsertPoint(br);
+    builder.CreateCondBr(dyResult, clonedRegion->getEntry(), r->getEntry());
+    br->eraseFromParent();
+  }
 }
 
 // Computes and prints the access bounds for a pointer.

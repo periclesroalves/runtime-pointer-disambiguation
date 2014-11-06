@@ -823,7 +823,8 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
 
   Region *TopRegion = RI->getTopLevelRegion();
 
-  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, trace_fn, /*verifyingOnly*/ false);
+  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, trace_fn,
+      /*verifyingOnly*/ false);
   releaseMemory();
 
   if (OnlyFunction != "" && !F.getName().count(OnlyFunction))
@@ -836,7 +837,7 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
 
   // Fix instrumented regions.
   if (instrumenter.getInsertedChecks().size() > 0) {
-    instrumenter.cloneInstrumentedRegions();
+    instrumenter.cloneInstrumentedRegions(RI, DT, DF);
 
     // Recompute regions and SCoPs.
     // TODO: at this point, alias info needs to be correct for cloned regions.

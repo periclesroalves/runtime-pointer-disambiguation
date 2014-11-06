@@ -226,7 +226,8 @@ public:
   //         \|/            '-----.---'  '------.-----'
   //                              '------.------'
   //                                    \|/
-  void cloneInstrumentedRegions();
+  void cloneInstrumentedRegions(RegionInfo *ri, DominatorTree *dt,
+                                DominanceFrontier *df);
 
   // DEBUG - compute the lower and upper access bounds for the base pointer in
   // the given region. Also inserts instructions to print the computed bounds at
