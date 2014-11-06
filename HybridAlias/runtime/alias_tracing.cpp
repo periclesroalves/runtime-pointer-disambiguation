@@ -11,6 +11,9 @@
 
 using namespace std;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 typedef std::map< void *, void *, std::greater<void *>, BootstrapAllocator< std::pair<void *, void *> > > Map;
 
 static Map  *lut;
@@ -30,7 +33,7 @@ int32_t gcg_trace_alias_pair(const char *loop, const char *name1, void *ptr1, co
   return alias;
 }
 
-void memtrack_dumpArrayBounds(const char *region, const char *valueName, void *value, void *lowGuess, void *upGuess)
+extern "C" void memtrack_dumpArrayBounds(const char *region, const char *valueName, void *value, void *lowGuess, void *upGuess)
 {
   auto it = lut->lower_bound(value);
 
@@ -70,15 +73,34 @@ static inline FILE *init_tracer()
 // Prototypes for our hooks.
 static void  my_init_hook  (void);
 static void *my_malloc_hook(size_t, const void *);
+static void *my_memalign_hook(size_t, size_t, const void *);
 static void  my_free_hook  (void*, const void *);
 
 // Override initializing hook from the C library.
 void   (* volatile __malloc_initialize_hook) (void) = my_init_hook;
 void * (*          old_malloc_hook)          (size_t, const void *);
+void * (* volatile old_memalign_hook)        (size_t, size_t, const void *);
 void   (*          old_free_hook)            (void*, const void *);
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+static inline void save_old_hooks()
+{
+	old_malloc_hook   = __malloc_hook;
+	old_memalign_hook = __memalign_hook;
+	old_free_hook     = __free_hook;
+}
+static inline void restore_old_hooks()
+{
+	__malloc_hook   = old_malloc_hook;
+	__memalign_hook = old_memalign_hook;
+	__free_hook     = old_free_hook;
+}
+static inline void restore_our_own_hooks()
+{
+	__malloc_hook   = my_malloc_hook;
+	__memalign_hook = my_memalign_hook;
+	__free_hook     = my_free_hook;
+}
+
 static void __attribute__((deprecated)) my_init_hook (void)
 {
   // allocate map
@@ -87,67 +109,63 @@ static void __attribute__((deprecated)) my_init_hook (void)
   // set file
   file = init_tracer();
 
-  // save old hooks
-  old_malloc_hook = __malloc_hook;
-  old_free_hook = __free_hook;
-
-  // set new hooks
-  __malloc_hook = my_malloc_hook;
-  __free_hook = my_free_hook;
+  save_old_hooks();
+  restore_our_own_hooks();
 }
-#pragma GCC diagnostic pop
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 static void * __attribute__((deprecated)) my_malloc_hook(size_t size, const void *caller)
 {
   void *ptr;
 
-  /* Restore all old hooks */
-  __malloc_hook = old_malloc_hook;
-  __free_hook   = old_free_hook;
+  restore_old_hooks();
 
   /* Call recursively */
   ptr = malloc(size);
 
-  /* Save underlying hooks */
-  old_malloc_hook = __malloc_hook;
-  old_free_hook   = __free_hook;
+  save_old_hooks();
 
   /* Save address mapping for allocated region */
   lut->insert(pair<void*,void*>(ptr, reinterpret_cast<void *>(reinterpret_cast<char *>(ptr) + size-1)));
 
-  /* Restore our own hooks */
-  __malloc_hook = my_malloc_hook;
-  __free_hook   = my_free_hook;
+  restore_our_own_hooks();
 
   return ptr;
 }
-#pragma GCC diagnostic pop
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+static void * __attribute__((deprecated)) my_memalign_hook(size_t alignment, size_t size, const void *caller)
+{
+  void *ptr;
+
+  restore_old_hooks();
+
+  /* Call recursively */
+  ptr = memalign(alignment, size);
+
+  save_old_hooks();
+
+  /* Save address mapping for allocated region */
+  lut->insert(pair<void*,void*>(ptr, reinterpret_cast<void *>(reinterpret_cast<char *>(ptr) + size-1)));
+
+  restore_our_own_hooks();
+
+  return ptr;
+}
+
 static void __attribute__((deprecated)) my_free_hook(void *ptr, const void *caller)
 {
   if(ptr == nullptr) return;
 
-  /* Restore all old hooks */
-  __malloc_hook = old_malloc_hook;
-  __free_hook   = old_free_hook;
+  restore_old_hooks();
 
   /* Call recursively */
   free(ptr);
 
-  /* Save underlying hooks */
-  old_malloc_hook = __malloc_hook;
-  old_free_hook   = __free_hook;
+  save_old_hooks();
 
   /* Delete address mapping for freed region */
   lut->erase(ptr);
 
-  /* Restore our own hooks */
-  __malloc_hook = my_malloc_hook;
-  __free_hook   = my_free_hook;
+  restore_our_own_hooks();
 }
 #pragma GCC diagnostic pop
 
