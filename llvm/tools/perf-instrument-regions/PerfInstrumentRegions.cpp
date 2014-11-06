@@ -133,7 +133,7 @@ static void checkProfilingDataStructLayout(const DataLayout *dl, StructType *pp_
 struct GlobalStringBuilder {
 	GlobalStringBuilder(Module *mod)
 		: module{mod}
-		, ctx{mod->getContext()}
+		, ctx(mod->getContext())
 	{}
 
 	Constant* create(StringRef str)
