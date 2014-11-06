@@ -834,6 +834,21 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
 
   findScops(*TopRegion);
 
+  // Fix instrumented regions.
+  if (instrumenter.getInsertedChecks().size() > 0) {
+    instrumenter.cloneInstrumentedRegions();
+
+    // Recompute regions and SCoPs.
+    // TODO: at this point, alias info needs to be correct for cloned regions.
+    releaseMemory();
+    instrumenter.releaseMemory();
+    instrumenter.setVerifyingOnly();
+    RI->releaseMemory();
+    RI->recalculate(F, DT, PDT, DF);
+    TopRegion = RI->getTopLevelRegion();
+    findScops(*TopRegion);
+  }
+
   // Only makes sense when we tracked errors.
   if (PollyTrackFailures) {
     emitMissedRemarksForValidRegions(F, ValidRegions);

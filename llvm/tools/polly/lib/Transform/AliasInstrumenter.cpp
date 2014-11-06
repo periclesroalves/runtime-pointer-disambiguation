@@ -603,6 +603,12 @@ void AliasInstrumenter::fixInstrumentedRegions() {
   }
 }
 
+void AliasInstrumenter::cloneInstrumentedRegions() {
+  fixInstrumentedRegions();
+
+  // CLONE REGIONS.
+}
+
 // Computes and prints the access bounds for a pointer.
 bool AliasInstrumenter::computeAndPrintBounds(Value *pointer, Region *r) {
   std::set<const SCEV *>  memAccesses;

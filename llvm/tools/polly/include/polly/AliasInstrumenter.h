@@ -213,6 +213,21 @@ public:
   //                               \|/
   void fixInstrumentedRegions();
 
+  // Produce two versions of each instrumented region: one with the original
+  // alias info, if the check fails, and one set to ignore dependencies, in
+  // case the check passes.
+  //     ____\|/___                 ____\|/___ 
+  //    | dy_check |               | dy_check |
+  //    '-----.----'               '-----.----'
+  //     ____\|/___     =>      F .------'------. T
+  //    | Region:  |         ____\|/__    _____\|/____
+  //    |    ...   |        | (Alias) |  | (No alias) |
+  //    '-----.----'        |    ...  |  |    ...     |
+  //         \|/            '-----.---'  '------.-----'
+  //                              '------.------'
+  //                                    \|/
+  void cloneInstrumentedRegions();
+
   // DEBUG - compute the lower and upper access bounds for the base pointer in
   // the given region. Also inserts instructions to print the computed bounds at
   // runtime. Returns true if the bounds can be computed, false otherwise.
