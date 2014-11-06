@@ -364,11 +364,18 @@ Value *SCEVRangeAnalyser::getULowerOrUpperBound(std::set<const SCEV *> &exprList
   std::set<const SCEV *>::iterator it = exprList.begin();
   const SCEV *expr = *it;
   Value *bestBound = expand(expr, upper);
+  ++it;
+
+  if (!bestBound)
+    return nullptr;
 
   while (it != exprList.end()) {
     expr = *it;
     Value *newBound = expand(expr, upper);
     Value *cmp;
+
+    if (!newBound)
+      return nullptr;
 
     // The old bound is promoted on type conflicts.
     if (bestBound->getType() != newBound->getType())

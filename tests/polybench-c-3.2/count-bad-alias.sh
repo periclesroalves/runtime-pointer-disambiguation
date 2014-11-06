@@ -9,6 +9,8 @@ tmpBadAlias=/tmp/polly-tmp-2.txt
 rm $tmpNoAlias $tmpBadAlias 2> /dev/null
 
 for test in `cat utilities/benchmark_list`; do
+  echo $test;
+
   # Ignore alias.
   ~/ufmg-research/build/Debug+Asserts/bin/clang -Xclang -load -Xclang ~/ufmg-research/build/tools/polly/Debug+Asserts/lib/LLVMPolly.dylib -O3 $test -I utilities/ -O3 -mllvm -polly -mllvm -polly-ignore-aliasing -mllvm -stats utilities/polybench.c 2>> $tmpNoAlias;
 
