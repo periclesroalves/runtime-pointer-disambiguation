@@ -669,9 +669,6 @@ Loop *CloneLoopPass::cloneLoop(Loop *OrigL, LPPassManager& LPM)
   // compute outputs produced by loop
   ValueSet outputs;
   findOutputs(OrigL, outputs);
-  /*for (Value *v : outputs) {
-  	errs() << "> " << *v << "\n";
-  }*/
 
   SmallVector<BasicBlock *, 16> NewBlocks;
 

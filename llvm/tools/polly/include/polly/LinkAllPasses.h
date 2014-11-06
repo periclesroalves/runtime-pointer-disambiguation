@@ -53,6 +53,8 @@ llvm::Pass *createIslCodeGenerationPass();
 llvm::Pass *createIslScheduleOptimizerPass();
 llvm::Pass *createTempScopInfoPass();
 
+llvm::Pass *createRegionCloningPass();
+
 extern char &IndependentBlocksID;
 extern char &CodePreparationID;
 }
@@ -93,6 +95,7 @@ struct PollyForcePassLinking {
     polly::createIslCodeGenerationPass();
     polly::createIslScheduleOptimizerPass();
     polly::createTempScopInfoPass();
+    polly::createRegionCloningPass();
   }
 } PollyForcePassLinking; // Force link by creating a global definition.
 }
@@ -115,6 +118,8 @@ void initializePlutoOptimizerPass(llvm::PassRegistry &);
 #endif
 void initializePollyCanonicalizePass(llvm::PassRegistry &);
 void initializePollyIndVarSimplifyPass(llvm::PassRegistry &);
+
+void initializeCloneRegionPass(llvm::PassRegistry&);
 }
 
 #endif
