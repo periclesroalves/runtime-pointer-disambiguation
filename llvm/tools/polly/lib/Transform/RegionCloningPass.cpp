@@ -29,7 +29,9 @@ namespace llvm {
   {
     static char ID;
 
-    CloneRegion() : RegionPass(ID) {}
+    CloneRegion() : RegionPass(ID) {
+    	initializeCloneRegionPass(*PassRegistry::getPassRegistry());
+    }
 
     bool        runOnRegion(Region *R, RGPassManager &RGM) override;
     const char *getPassName()                              const override { return "CloneRegion"; }
