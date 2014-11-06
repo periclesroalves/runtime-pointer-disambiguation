@@ -477,7 +477,7 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
       pointerBounds[pair.first] = std::make_pair(low, up);
 
       //profiling
-      printArrayBounds(pair.first, low, up, r, builder);
+      printArrayBounds(pair.first, low, up, r, builder, rangeAnalyser);
     }
 
     if (!pointerBounds.count(pair.second)) {
@@ -492,7 +492,7 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
       pointerBounds[pair.second] = std::make_pair(low, up);
 
       //profiling
-      printArrayBounds(pair.second, low, up, r, builder);
+      printArrayBounds(pair.second, low, up, r, builder, rangeAnalyser);
     }
 
     Value *check = insertCheck(pointerBounds[pair.first],
@@ -526,16 +526,16 @@ Value *AliasInstrumenter::getOrInsertGlobalString(StringRef str, BuilderType &bu
 }
 
 // Prints the array bounds of a value
-void AliasInstrumenter::printArrayBounds(Value *v, Value *l, Value *u, Region *r, BuilderType &builder)
+void AliasInstrumenter::printArrayBounds(Value *v, Value *l, Value *u, Region *r, BuilderType &builder, SCEVRangeAnalyser& rangeAnalyser)
 {
   errs() << "Tracing value " << fin->getName(v) << " in region " << fin->getName(r->getEntry()) << "\n";
 
   Value *regName = getOrInsertGlobalString(fin->getName(r->getEntry()), builder);
   Value *valName = getOrInsertGlobalString(fin->getName(v), builder);
 
-  Value *val = v->getType() == builder.getInt8PtrTy() ? v : builder.CreatePointerCast(v, builder.getInt8PtrTy());
-  Value *low = l->getType() == builder.getInt8PtrTy() ? l : builder.CreatePointerCast(l, builder.getInt8PtrTy());
-  Value *up  = u->getType() == builder.getInt8PtrTy() ? u : builder.CreatePointerCast(u, builder.getInt8PtrTy());
+  Value *val = rangeAnalyser.InsertNoopCastOfTo(v, builder.getInt8PtrTy());
+  Value *low = rangeAnalyser.InsertNoopCastOfTo(l, builder.getInt8PtrTy());
+  Value *up  = rangeAnalyser.InsertNoopCastOfTo(u, builder.getInt8PtrTy());
 
   assert(trace_fn);
   builder.CreateCall5(trace_fn, regName, valName, val, low, up);

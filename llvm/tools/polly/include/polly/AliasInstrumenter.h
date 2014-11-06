@@ -174,7 +174,7 @@ class AliasInstrumenter {
   Value *chainChecks(std::vector<Value *> checks, BuilderType &builder);
 
   // calls runtime to print the expected and the real array bounds of a value
-  void printArrayBounds(Value *v, Value *l, Value *u, Region *r, BuilderType &builder);
+  void printArrayBounds(Value *v, Value *l, Value *u, Region *r, BuilderType &builder, SCEVRangeAnalyser& rangeAnalyser);
 
   // creates and/or returns a reference to a global string value
   Value *getOrInsertGlobalString(StringRef str, BuilderType &builder);
