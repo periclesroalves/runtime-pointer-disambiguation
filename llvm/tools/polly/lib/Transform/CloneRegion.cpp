@@ -28,6 +28,8 @@
 using namespace llvm;
 using namespace std;
 
+#define DEBUG_TYPE "polly-clone-region"
+
 using ValueSet = set<Value*>;
 using InstrSet = set<Instruction*>;
 
@@ -204,9 +206,6 @@ Region *polly::cloneRegion(Region *R, RGPassManager *RGM, RegionInfo *RI, Domina
 	}
 
 	// ** replace uses of values produced inside region with phi that merges in the value of the cloned region
-
-  assert(NewParentLoop->getExitBlock() == exit);
-
   auto exiting = R->getExitingBlock(); // inside  region
   auto exit    = R->getExit();         // outside region
 
