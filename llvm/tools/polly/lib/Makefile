@@ -64,6 +64,8 @@ SOURCES= Polly.cpp \
 	 Transform/IndependentBlocks.cpp \
 	 Transform/IndVarSimplify.cpp \
 	 Transform/ScheduleOptimizer.cpp \
+	 Transform/RegionCloningPass.cpp \
+	 Transform/CloneRegion.cpp \
 	 ${GPGPU_FILES} \
 	 ${ISL_CODEGEN_FILES} \
          ${CLOOG_FILES} \
