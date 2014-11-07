@@ -197,7 +197,8 @@ public:
     return insertedChecks;
   }
 
-  void setVerifyingOnly() { verifyingOnly = true; }
+  void setVerifyingOnly(bool val) { verifyingOnly = val; }
+  bool getVerifyingOnly() {return verifyingOnly;}
   void releaseMemory() { insertedChecks.clear(); }
 
   // The structure of a region can't be changed while instrumenting it. This

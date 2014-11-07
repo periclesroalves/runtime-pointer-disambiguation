@@ -627,6 +627,11 @@ void ScopDetection::findScops(Region &R) {
   for (auto &SubRegion : R)
     ToExpand.push_back(SubRegion.get());
 
+  // Do not instrument when expanding, as we could break the instrumentation
+  // order.
+  bool wasVerifyingOnly = instrumenter.getVerifyingOnly();
+  instrumenter.setVerifyingOnly(true);
+
   for (Region *CurrentRegion : ToExpand) {
     // Skip regions that had errors.
     bool HadErrors = RejectLogs.hasErrors(CurrentRegion);
@@ -651,6 +656,8 @@ void ScopDetection::findScops(Region &R) {
     // regions and update the number of valid regions.
     ValidRegion -= eraseAllChildren(ValidRegions, *ExpandedR);
   }
+
+  instrumenter.setVerifyingOnly(wasVerifyingOnly);
 }
 
 bool ScopDetection::allBlocksValid(DetectionContext &Context) const {
@@ -843,7 +850,7 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
     // TODO: at this point, alias info needs to be correct for cloned regions.
     releaseMemory();
     instrumenter.releaseMemory();
-    instrumenter.setVerifyingOnly();
+    instrumenter.setVerifyingOnly(true);
     RI->releaseMemory();
     RI->recalculate(F, DT, PDT, DF);
     TopRegion = RI->getTopLevelRegion();
@@ -866,8 +873,8 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
 }
 
 void polly::ScopDetection::verifyRegion(const Region &R) const {
-  assert(isMaxRegionInScop(R) && "Expect R is a valid region.");
   DetectionContext Context(const_cast<Region &>(R), *AA, true /*verifying*/);
+  assert(isMaxRegionInScop(R) && "Expect R is a valid region.");
   isValidRegion(Context);
 }
 
