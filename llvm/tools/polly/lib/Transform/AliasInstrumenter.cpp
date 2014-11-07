@@ -584,6 +584,9 @@ Value *AliasInstrumenter::chainChecks(std::vector<Value *> checks, BuilderType &
 
 // Make all instrumented regions simple and isolate the dynamic checks.
 void AliasInstrumenter::fixInstrumentedRegions() {
+  // Reverse "insertedChecks", so that sub-regions always come first.
+  std::reverse(insertedChecks.begin(), insertedChecks.end());
+
   for (auto &check : insertedChecks) {
     Instruction *dyResult = dyn_cast<Instruction>(check.first);
     BasicBlock *entry = dyResult->getParent();
@@ -609,8 +612,6 @@ void AliasInstrumenter::cloneInstrumentedRegions(RegionInfo *ri,
                                                  DominanceFrontier *df) {
   fixInstrumentedRegions();
 
-  // The regions in "insertedChecks" are supposed to be ordered such that
-  // sub-regions always come first.
   for (auto &check : insertedChecks) {
     Instruction *dyResult = dyn_cast<Instruction>(check.first);
     Region *r = check.second;
