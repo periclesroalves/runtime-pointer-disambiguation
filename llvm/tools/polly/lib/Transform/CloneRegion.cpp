@@ -165,6 +165,15 @@ Region *polly::cloneRegion(Region *R, RGPassManager *RGM, RegionInfo *RI, Domina
 
   // **** alter Phi's in exit block of region
 
+  auto exiting = R->getExitingBlock(); // inside  region
+  auto exit    = R->getExit();         // outside region
+
+  assert(R->contains(exiting));
+  assert(!R->contains(exit));
+  assert(exiting);
+  assert(exit);
+  assert(exit == newRegion->getExit());
+
 	// ** add cloned basic blocks to phi's that use blocks of the original region
 	// yes, this can happen. -O3, for example, sometimes produces phi's with only one choice in the exit block
 
@@ -197,21 +206,22 @@ Region *polly::cloneRegion(Region *R, RGPassManager *RGM, RegionInfo *RI, Domina
 
 				auto value = PN->getIncomingValue(idx);
 
+				assert(value);
 				assert(VMap[BB]);
-				assert(VMap[value]);
 
-				PN->addIncoming(VMap[value], cast<BasicBlock>(VMap[BB]));
+				// if value comes from original region, try to find cloned value
+				// otherwise use unchanged
+				auto it2 = VMap.find(value);
+
+				Value *cloned_value = (it2 != VMap.end()) ? ((Value*) it2->second) : value;
+
+				// add new cloned block to phi
+				PN->addIncoming(cloned_value, cast<BasicBlock>(VMap[BB]));
 			}
 		}
 	}
 
 	// ** replace uses of values produced inside region with phi that merges in the value of the cloned region
-  auto exiting = R->getExitingBlock(); // inside  region
-  auto exit    = R->getExit();         // outside region
-
-  assert(exiting);
-  assert(exit);
-  assert(exit == newRegion->getExit());
 
 	BasicBlock *cloned_exiting = [&]() {
 		auto it = VMap.find(exiting);
@@ -253,7 +263,8 @@ Region *polly::cloneRegion(Region *R, RGPassManager *RGM, RegionInfo *RI, Domina
 		phi->addIncoming(VMap[output], cloned_exiting);
 	}
 
-	exit->dump();
+	// exit->getParent()->dump();
+	// ::exit(1);
 
   return newRegion;
 }
