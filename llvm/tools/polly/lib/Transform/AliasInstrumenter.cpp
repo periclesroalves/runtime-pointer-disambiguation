@@ -444,7 +444,7 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
         ast.getAliasSetForPointer(baseValue, AliasAnalysis::UnknownSize,
                                           inst.getMetadata(LLVMContext::MD_tbaa));
 
-      if (!as.isMustAlias())
+      if (!as.isMustAlias()) {
         if (verifyingOnly)
           return false;
 
@@ -464,6 +464,7 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
           else
             pairsToCheck.insert(std::make_pair(aliasValue, baseValue));
         }
+      }
     }
 
   std::map<Value *, std::pair<Value *, Value *> > pointerBounds;
