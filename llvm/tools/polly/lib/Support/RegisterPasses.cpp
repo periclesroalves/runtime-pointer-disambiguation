@@ -169,6 +169,8 @@ void initializePollyPasses(PassRegistry &Registry) {
   initializeScopInfoPass(Registry);
   initializeTempScopInfoPass(Registry);
 
+  initializeIgnoreClonesAAPass(Registry);
+
   initializeCloneRegionPass(Registry);
 }
 
