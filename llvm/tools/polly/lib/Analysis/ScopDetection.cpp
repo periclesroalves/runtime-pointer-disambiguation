@@ -629,6 +629,7 @@ void ScopDetection::findScops(Region &R) {
 
   // Do not instrument when expanding, as we could break the instrumentation
   // order.
+  // TODO: we must handle expanded regions, as there usually is a bunch of them.
   bool wasVerifyingOnly = instrumenter.getVerifyingOnly();
   instrumenter.setVerifyingOnly(true);
 
