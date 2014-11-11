@@ -826,6 +826,18 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
   DF = &getAnalysis<DominanceFrontier>();
   FIN = &getAnalysis<FullInstNamer>();
 
+  const void *PI = &AliasAnalysis::ID;
+
+  Pass& pAA = getAnalysisID<Pass>(PI);
+
+  assert(&pAA);
+  assert(pAA.getAdjustedAnalysisPointer(PI));
+
+  AA->alias(AliasAnalysis::Location(), AliasAnalysis::Location());
+
+  errs() << "AA: '" << pAA.getPassName() << "'\n";
+  exit(1);
+
   auto trace_fn = declareTraceFunction(F.getParent());
 
   Region *TopRegion = RI->getTopLevelRegion();

@@ -17,6 +17,9 @@
 #include "llvm/PassManager.h"
 
 namespace llvm {
+
+void initializeIgnoreClonesAAPass(llvm::PassRegistry&);
+
 namespace legacy {
 class PassManagerBase;
 }
