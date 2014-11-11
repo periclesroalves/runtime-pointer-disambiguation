@@ -846,11 +846,12 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
   if (instrumenter.getInsertedChecks().size() > 0) {
     instrumenter.cloneInstrumentedRegions(RI, DT, DF);
 
-    // Recompute dominance info.
+    // Recompute CFG properties.
     // TODO: recomputes dominance tree twice. Fix to update while cloning.
     DT->recalculate(F);
     PDT->DT->recalculate(F);
     DF->recalculate(DT);
+    LI->recalculate(DT);
     RI->releaseMemory();
     RI->recalculate(F, DT, PDT, DF);
 

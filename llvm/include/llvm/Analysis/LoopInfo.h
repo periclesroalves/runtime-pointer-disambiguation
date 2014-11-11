@@ -683,6 +683,8 @@ public:
 
   void verifyAnalysis() const override;
 
+  void recalculate(DominatorTree *DT);
+
   void releaseMemory() override { LI.releaseMemory(); }
 
   void print(raw_ostream &O, const Module* M = nullptr) const override;

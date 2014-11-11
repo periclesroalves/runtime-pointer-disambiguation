@@ -616,6 +616,11 @@ bool LoopInfo::runOnFunction(Function &) {
   return false;
 }
 
+void LoopInfo::recalculate(DominatorTree *DT) {
+  releaseMemory();
+  LI.Analyze(*DT);
+}
+
 /// updateUnloop - The last backedge has been removed from a loop--now the
 /// "unloop". Find a new parent for the blocks contained within unloop and
 /// update the loop tree. We don't necessarily have valid dominators at this
