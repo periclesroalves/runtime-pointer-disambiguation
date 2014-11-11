@@ -846,13 +846,19 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
   if (instrumenter.getInsertedChecks().size() > 0) {
     instrumenter.cloneInstrumentedRegions(RI, DT, DF);
 
-    // Recompute regions and SCoPs.
+    // Recompute dominance info.
+    // TODO: recomputes dominance tree twice. Fix to update while cloning.
+    DT->recalculate(F);
+    PDT->DT->recalculate(F);
+    DF->recalculate(DT);
+    RI->releaseMemory();
+    RI->recalculate(F, DT, PDT, DF);
+
+    // Recompute SCoPs.
     // TODO: at this point, alias info needs to be correct for cloned regions.
     releaseMemory();
     instrumenter.releaseMemory();
     instrumenter.setVerifyingOnly(true);
-    RI->releaseMemory();
-    RI->recalculate(F, DT, PDT, DF);
     TopRegion = RI->getTopLevelRegion();
     findScops(*TopRegion);
   }

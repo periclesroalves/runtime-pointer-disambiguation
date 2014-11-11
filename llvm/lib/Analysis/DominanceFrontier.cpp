@@ -35,6 +35,11 @@ void DominanceFrontier::releaseMemory() {
   Base.releaseMemory();
 }
 
+void DominanceFrontier::recalculate(DominatorTree *DT) {
+  releaseMemory();
+  Base.analyze(*DT);
+}
+
 bool DominanceFrontier::runOnFunction(Function &) {
   releaseMemory();
   Base.analyze(getAnalysis<DominatorTreeWrapperPass>().getDomTree());

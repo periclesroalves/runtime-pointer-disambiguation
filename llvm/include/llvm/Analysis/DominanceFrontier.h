@@ -189,6 +189,8 @@ public:
     return Base.compare(Other);
   }
 
+  void recalculate(DominatorTree *DT);
+
   void releaseMemory() override;
 
   bool runOnFunction(Function &) override;

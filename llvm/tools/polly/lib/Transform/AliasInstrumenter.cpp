@@ -486,7 +486,7 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
       pointerBounds[pair.first] = std::make_pair(low, up);
 
       //profiling
-      printArrayBounds(pair.first, low, up, r, builder, rangeAnalyser);
+      //printArrayBounds(pair.first, low, up, r, builder, rangeAnalyser);
     }
 
     if (!pointerBounds.count(pair.second)) {
@@ -501,7 +501,7 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
       pointerBounds[pair.second] = std::make_pair(low, up);
 
       //profiling
-      printArrayBounds(pair.second, low, up, r, builder, rangeAnalyser);
+      //printArrayBounds(pair.second, low, up, r, builder, rangeAnalyser);
     }
 
     Value *check = insertCheck(pointerBounds[pair.first],
