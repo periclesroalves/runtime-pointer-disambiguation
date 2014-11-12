@@ -1,0 +1,16 @@
+atax	575
+bicg	601
+doitgen	802
+dynprog	617
+fdtd-2d	1206
+floyd-warshall	349
+gemver	1519
+gesummv	719
+lu	370
+mvt	630
+seidel-2d	359
+symm	494
+syr2k	647
+syrk	560
+trisolv	408
+trmm	471

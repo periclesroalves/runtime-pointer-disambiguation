@@ -1,0 +1,16 @@
+atax	4
+bicg	4
+doitgen	3
+dynprog	2
+fdtd-2d	2
+floyd-warshall	2
+gemver	2
+gesummv	1
+lu	4
+mvt	2
+seidel-2d	3
+symm	2
+syr2k	3
+syrk	4
+trisolv	2
+trmm	1
