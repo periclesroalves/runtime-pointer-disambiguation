@@ -66,7 +66,6 @@ SOURCES= Polly.cpp \
 	 Transform/ScheduleOptimizer.cpp \
 	 Transform/RegionCloningPass.cpp \
 	 Transform/CloneRegion.cpp \
-	 Analysis/IgnoreClonesAA.cpp \
 	 ${GPGPU_FILES} \
 	 ${ISL_CODEGEN_FILES} \
          ${CLOOG_FILES} \

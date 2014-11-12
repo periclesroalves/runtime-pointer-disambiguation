@@ -18,8 +18,6 @@
 
 namespace llvm {
 
-void initializeIgnoreClonesAAPass(llvm::PassRegistry&);
-
 namespace legacy {
 class PassManagerBase;
 }
