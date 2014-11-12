@@ -416,6 +416,9 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(insertPtr);
 
+  Loop *l = li->getLoopFor(r->getEntry());
+  bool isInnerLoop = (l && l->getSubLoops().size() == 0);
+
   // Collect, for all memory accesses, their respective base pointer and access
   // function. For the accesses a[i], a[i+5], and b[i+j], we'd have something
   // like:
@@ -450,7 +453,8 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
                                           inst.getMetadata(LLVMContext::MD_tbaa));
 
       if (!as.isMustAlias()) {
-        if (verifyingOnly)
+        // TODO: clone currently doesn't support inner loops. Fix this.
+        if (isInnerLoop || verifyingOnly)
           return false;
 
         for (const auto &aliasPointer : as) {
