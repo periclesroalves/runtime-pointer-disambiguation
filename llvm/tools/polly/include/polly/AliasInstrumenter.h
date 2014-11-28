@@ -234,6 +234,10 @@ public:
   // the given region. Also inserts instructions to print the computed bounds at
   // runtime. Returns true if the bounds can be computed, false otherwise.
   bool computeAndPrintBounds(Value *pointer, Region *r);
+
+  // Checks if a region can be simplified without breaking the sinlge-entry
+  // single-exit property.
+  bool isSafeToSimplify(Region *r);
 };
 } // end namespace polly
 

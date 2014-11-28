@@ -855,6 +855,7 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
     LI->recalculate(DT);
     RI->releaseMemory();
     RI->recalculate(F, DT, PDT, DF);
+    SE->releaseMemory();
 
     // Recompute SCoPs.
     // TODO: at this point, alias info needs to be correct for cloned regions.

@@ -416,9 +416,6 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(insertPtr);
 
-  Loop *l = li->getLoopFor(r->getEntry());
-  bool isInnerLoop = (l && l->getSubLoops().size() == 0);
-
   // Collect, for all memory accesses, their respective base pointer and access
   // function. For the accesses a[i], a[i+5], and b[i+j], we'd have something
   // like:
@@ -453,8 +450,7 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
                                           inst.getMetadata(LLVMContext::MD_tbaa));
 
       if (!as.isMustAlias()) {
-        // TODO: clone currently doesn't support inner loops. Fix this.
-        if (isInnerLoop || verifyingOnly)
+        if (verifyingOnly)
           return false;
 
         for (const auto &aliasPointer : as) {
@@ -598,24 +594,62 @@ void AliasInstrumenter::fixInstrumentedRegions() {
   // Reverse "insertedChecks", so that sub-regions always come first.
   std::reverse(insertedChecks.begin(), insertedChecks.end());
 
-  for (auto &check : insertedChecks) {
+  // Regions that can't be fixed will be eliminated.
+  std::vector<std::pair<Value *, Region *> > oldChecks(insertedChecks);
+  insertedChecks.clear();
+
+  for (auto &check : oldChecks) {
     Instruction *dyResult = dyn_cast<Instruction>(check.first);
     BasicBlock *entry = dyResult->getParent();
     Region *r = check.second;
 
     assert((dyResult && entry == r->getEntry()) && "Malformed dynamic check.");
 
-    // Create a new entering block for the dynamic checks.
-    r->replaceEntryRecursive(SplitBlock(entry, dyResult->getNextNode(), li));
+    // Simplify the region if possible.
+    if (isSafeToSimplify(r)) {
+      if (!r->getEnteringBlock())
+        r->replaceEntryRecursive(SplitBlock(entry, entry->begin(), li));
   
-    // Create single exit edge.
-    if (!r->getExitingBlock()) {
-      BasicBlock *newExit = createSingleExitEdge(r, li);
+      if (!r->getExitingBlock()) {
+        BasicBlock *newExit = createSingleExitEdge(r, li);
   
-      for (auto &&subRegion : *r)
-        subRegion->replaceExitRecursive(newExit);
+        for (auto &&subRegion : *r)
+          subRegion->replaceExitRecursive(newExit);
+      }
+    }
+
+    // Move the checks to the entering block.
+    if (r->isSimple()) {
+      Instruction *inst;
+      BasicBlock::iterator it = dyResult->getParent()->getFirstNonPHI();
+      Instruction *insertPtr = &r->getEnteringBlock()->back();
+
+      do {
+        inst = it;
+        it++;
+        inst->removeFromParent();
+        inst->insertBefore(insertPtr);
+      } while (inst != dyResult);
+
+      insertedChecks.push_back(std::make_pair(check.first, r));
     }
   }
+}
+
+// Checks if creating single entry and exit edges for a region breaks the
+// single-entry single-exit property.
+bool AliasInstrumenter::isSafeToSimplify(Region *r) {
+  bool safeToSimplify = true;
+
+  for (auto *p : make_range(pred_begin(r->getEntry()), pred_end(r->getEntry())))
+    if (r->contains(p) && p != r->getExit())
+      safeToSimplify = false;
+
+  for (auto *s : make_range(succ_begin(r->getExit()), succ_end(r->getExit())))
+    if (r->contains(s) && s != r->getEntry())
+      safeToSimplify = false;
+
+  return safeToSimplify;
 }
 
 void AliasInstrumenter::cloneInstrumentedRegions(RegionInfo *ri,
