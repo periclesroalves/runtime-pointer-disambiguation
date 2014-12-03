@@ -25,5 +25,6 @@ cloog_src/
 
 # Executable test files
 tests/bad-alias
+tests/speccpu2006/
 
 llvm/grep
