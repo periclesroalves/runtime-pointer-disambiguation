@@ -7,6 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "llvm/ADT/StringExtras.h"
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/TypeBuilder.h"
@@ -668,6 +669,87 @@ void AliasInstrumenter::cloneInstrumentedRegions(RegionInfo *ri,
     builder.SetInsertPoint(br);
     builder.CreateCondBr(dyResult, clonedRegion->getEntry(), r->getEntry());
     br->eraseFromParent();
+
+    fixAliasInfo(clonedRegion);
+  }
+}
+
+// Use scoped alias tags to tell the compiler that pointer accesses in the
+// cloned region do not alias, unless they have the same base pointer. This will
+// allow other optimizations to take advantage of the information provided by
+// the dynamic alias cheks.
+void AliasInstrumenter::fixAliasInfo(Region *r) {
+  std::map<const Value *, std::set<Instruction *> > memAccesses;
+
+  // Build a map from base pointers to the instructions that can access them
+  // within the region.
+  for (BasicBlock *bb : r->blocks()) {
+    for (BasicBlock::iterator i = bb->begin(), e = --bb->end(); i != e; ++i) {
+      Instruction &inst = *i;
+
+      if (!isa<LoadInst>(inst) && !isa<StoreInst>(inst))
+        continue;
+
+      Value *ptr = getPointerOperand(inst);
+      Loop *l = li->getLoopFor(inst.getParent());
+      const SCEV *accessFunction = se->getSCEVAtScope(ptr, l);
+      const SCEVUnknown *basePointer =
+        dyn_cast<SCEVUnknown>(se->getPointerBase(accessFunction));
+      Value *basePointerValue = basePointer->getValue();
+
+      memAccesses[basePointerValue].insert(i);
+    }
+  }
+
+  MDBuilder MDB(currFn->getContext());
+  if (!mdDomain)
+    mdDomain = MDB.createAnonymousAliasScopeDomain(currFn->getName());
+  DenseMap<const Value *, MDNode *> scopes;
+  unsigned ptrCount = 0;
+
+  // Create a different scope for each base pointer in the region.
+  for (auto pair : memAccesses) {
+    const Value *basePointer = pair.first;
+    std::string name = currFn->getName();
+
+    if (basePointer->hasName()) {
+      name += ": %";
+      name += basePointer->getName();
+    } else {
+      name += ": ptr ";
+      name += utostr(ptrCount++);
+    }
+
+    MDNode *scope = MDB.createAnonymousAliasScope(mdDomain, name);
+    scopes.insert(std::make_pair(basePointer, scope));
+  }
+
+  // Set the actual scoped alias tags for each memory instruction in the region. 
+  // A memory instruction always aliases its base pointer and never aliases
+  // other pointers in the region.
+  for (auto pair : memAccesses) {
+    const Value *basePointer = pair.first;
+
+    // Set the alias metadata for each memory access instruction in the region.
+    for (auto memInst : pair.second) {
+      // A memory instruction always aliases its base pointer.
+      memInst->setMetadata(LLVMContext::MD_alias_scope, MDNode::concatenate(
+        memInst->getMetadata(LLVMContext::MD_alias_scope),
+          MDNode::get(currFn->getContext(), scopes[basePointer])));
+
+      // The instruction never aliases other pointers in the region.
+      for (auto otherPair : memAccesses) {
+        const Value *otherBasePointer = otherPair.first;
+
+        // Slip the instruction own base pointer.
+        if (otherBasePointer == basePointer)
+          continue;
+
+        memInst->setMetadata(LLVMContext::MD_noalias, MDNode::concatenate(
+          memInst->getMetadata(LLVMContext::MD_noalias),
+            MDNode::get(currFn->getContext(), scopes[otherBasePointer])));
+      }
+    }
   }
 }
 

@@ -831,8 +831,8 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
 
   Region *TopRegion = RI->getTopLevelRegion();
 
-  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, trace_fn,
-      /*verifyingOnly*/ false);
+  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, &F, trace_fn,
+                                   /*verifyingOnly*/ false);
   releaseMemory();
 
   if (OnlyFunction != "" && !F.getName().count(OnlyFunction))
@@ -891,7 +891,8 @@ void polly::ScopDetection::verifyAnalysis() const {
   if (!VerifyScops)
     return;
 
-  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, nullptr, /*verifyingOnly*/ true);
+  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, nullptr, nullptr,
+                                   /*verifyingOnly*/ true);
 
   for (const Region *R : ValidRegions)
     verifyRegion(*R);

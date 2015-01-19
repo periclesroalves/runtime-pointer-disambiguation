@@ -152,7 +152,11 @@ class AliasInstrumenter {
   AliasAnalysis *aa;
   LoopInfo *li;
   FullInstNamer *fin;
+  Function *currFn;
   Function *trace_fn;
+
+  // Metadata domain to be used by alias metadata.
+  MDNode *mdDomain = nullptr;
 
   // a map of strings to global string values
   std::map<StringRef, Value*> string2Value;
@@ -183,8 +187,11 @@ public:
   AliasInstrumenter() {}
 
   AliasInstrumenter(ScalarEvolution *se, const ScopDetection *sd, AliasAnalysis *aa,
-                    LoopInfo *li, FullInstNamer *fin, Function *trace_fn, bool verifying)
-    : se(se), sd(sd), aa(aa), li(li), fin(fin), trace_fn(trace_fn), verifyingOnly(verifying) {}
+                    LoopInfo *li, FullInstNamer *fin, Function *currFn,
+                    Function *trace_fn, bool verifying)
+    : se(se), sd(sd), aa(aa), li(li), fin(fin), currFn(currFn),
+    trace_fn(trace_fn),
+    verifyingOnly(verifying) {}
 
   // Check for dependencies within the current region, generating dynamic alias
   // checks for all pointers that can't be solved statically. Returns true if
@@ -229,6 +236,10 @@ public:
   //                                    \|/
   void cloneInstrumentedRegions(RegionInfo *ri, DominatorTree *dt,
                                 DominanceFrontier *df);
+
+  // Use scoped alias tags to tell the compiler that cloned regions are free of
+  // dependencies.
+  void fixAliasInfo(Region *r);
 
   // DEBUG - compute the lower and upper access bounds for the base pointer in
   // the given region. Also inserts instructions to print the computed bounds at
