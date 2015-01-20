@@ -1,0 +1,17 @@
+
+#########################################################
+##### How to build:
+
+First build LLVM and Clang 3.6
+Since this project LLVMs APIs which are subject to change it is not guaranteed that building with any version of LLVM will work without requiring some minor changes.
+The last known working LLVM version was git commit 75bb472c, from Oct 27 2014, and Clang git commit f898c185, from the same day, cloned from the official LLVM git mirror.
+Build LLVM with the CMake build system with the flag -DBUILD_SHARED_LIBS=ON.
+
+To run cmake on this project you have to specify the build directory of your LLVM version, either via the LLVM_DIR or CMAKE_PREFIX_PATH variable.
+To specify where the binaries and libraries produced by this build should be installed use the -DCMAKE_PREFIX_PATH flag.
+An example:
+	cmake -DCMAKE_PREFIX_PATH=$(realpath ../build-llvm) -DCMAKE_PREFIX_PATH:PATH=/home/foo/tools .
+
+You can then build via:
+	make
+	make install

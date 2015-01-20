@@ -1,0 +1,25 @@
+# This file is distributed under the Modified BSD Open Source License.
+# See LICENSE.TXT for details.
+
+*.a
+*.so
+*.so.?*
+*.dylib
+*~
+CMakeCache.txt
+CMakeFiles/
+#Makefile
+bin/
+build/
+build-*/
+cmake_install.cmake
+lib/
+tags
+.ycm_extra_conf.pyc
+.ninja_deps
+.ninja_log
+build.ninja
+install_manifest.txt
+rules.ninja
+*.sublime-project
+*.sublime-workspace

@@ -1,0 +1,156 @@
+% This file is distributed under the Modified BSD Open Source License.
+%  See LICENSE.TXT for details.
+
+\documentclass{article}
+
+\usepackage[latin1]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,arrows.meta}
+\begin{document}
+
+We develop a new technique to improve the compilers capability of optimizing innermost loops using the LLVM compiler infrastructure.
+In particular by the overcoming the limitations of static alias analyses by using profiling feedback to guide optimization.
+We combine a hybrid alias analysis scheme with loop cloning in order to expose instruction level parallelism and therefore allow the compiler to apply more agressive optimizations (eg. vectorization) when possible.
+
+First we identify the innermost loops of the program, they are the candidates for cloning. For each
+innermost loop we instrument all the instructions (loads and stores) that may alias in order to achieve a more precise alias analysis. We insert runtime checks to see if two ``may-alias'' memory locations point inside the same memory region of the heap. If they do, we cannot tell whether they actually alias or not. If they point to different memory regions, then we know that they do not alias.
+
+Each memory location can have more than one base pointers. We examine all the combinations of base pointers of the two interesting memory locations. The checks are hoisted as much as possible. In case of globals or function arguments a check is inserted in the first basic block of the function. Otherwise the check is inserted right after the instruction that defines the base pointer. The base pointers are quaranteed to dominate the loop preheader, thus no checks are inserted in the loop body. We do a bitwise AND of the checks and depending on the result the program either branches to the original loop body, or to a cloned version of it. The cloned loop contains ``no-alias'' annotations so that the compiler will be able to optimize it further.
+
+We implement the module as a sequence of transformation passes. First we insert all possible checks and execute the program. During execution, the program creates a trace file containing the actual aliasing information regarding the interesting instructions that we want to profile. Then we compile the module again with this profiling information and we only keep the checks that resulted in ``no-alias'' most of the
+time. A third pass surrounds the cloned loops with timers and compares the execution time with the original program. If a loop cloning was not profitable then it is discarded. The timers take into account the runtime overhead of the checks. The ``no-alias'' frequency threshold and the minimum accepted speedup are configurable.
+
+We assume that heap allocation is done using libc \texttt{malloc}. We overwrite \texttt{\_\_malloc\_initialize\_hook}, \texttt{\_\_malloc\_hook}, \texttt{\_\_memalign\_hook} and \texttt{\_\_free\_hook} to keep metadata regarding each memory allocation. Upon initialization, we create a C++ \texttt{std::map} object using a custom memory allocator. The allocator uses \texttt{mmap} to avoid recursive calls to \texttt{malloc}. The map is sorted by the keys in descending order. Upon a \texttt{malloc} call we insert a mapping M such that M.key is a pointer to the start of the allocated region, and M.value is a pointer to the end of the allocated region. Tracking an arbitrary pointer is done by calling the \texttt{lower\_bound} method on the map. This returns the first mapping with a key smaller than the given pointer. If the pointer is smaller than the value of the mapping, then it points inside this memory region. Upon a free call we erase the corresponding mapping.
+
+\section*{Usage}
+
+% Define file styles
+\tikzstyle{file}    = [draw, rectangle, fill=blue!20,   minimum height=2.5em, text centered, rounded corners]
+\tikzstyle{program} = [draw, ellipse,   fill=red!20,    minimum height=2.5em]
+\tikzstyle{library} = [draw, ellipse,   fill=green!20,  minimum height=2.5em]
+\tikzstyle{line}    = [draw,->, >=latex']
+
+% \tikzstyle{file} = [rectangle, draw, fill=blue!20, text width=5em, text centered, rounded corners, minimum height=4em]
+
+\begin{tikzpicture}[node distance = 2cm, auto, scale=0.9]
+	% Place nodes
+	\node [file]    (CPP)                          at (  0,   0.0)  {foo.cpp};
+	\node [program] (CLANG)                        at (  0,  -1.5)  {\texttt{clang}};
+	\node [file]    (UNOPTIMIZED)                  at (  0,  -3.0)  {foo.ll};
+	\node [program] (canonicalize)                 at (  0,  -4.5)  {\texttt{canonicalize}};
+	\node [file]    (INPUT)                        at (  0,  -6.0)  {input.ll};
+
+	\node [program] (ALIAS_PROF)                   at ( -5,  -6.0)  {alias profiling};
+	\node [library] (LIBMEMTRACK)                  at ( -5,  -4.5)  {\texttt{libmemtrack}};
+	\node [file]    (ALIAS_YAML)                   at ( -5,  -7.5)  {alias.yaml};
+
+	\node [program] (ILC-1)                        at (  5, -6.0)  {\texttt{clone-loops}};
+	\node [file]    (SPECULATIVE)                  at (  3, -7.5)  {speculative.ll};
+	\node [file]    (CLONEINFO_YAML)               at (  7, -7.5)  {cloneInfo.yaml};
+
+	\node [program] (PERF_INSTRUMENT)              at (  0,-10.0)  {performance profiling};
+	\node [library] (LIBPERF)                      at (  6,-10.0)  {\texttt{libperf}};
+
+	\node [file]    (INPUT_PERF)                   at (-2.5,-11.5) {execution time};
+	\node [file]    (SPECULATIVE_PERF)             at ( 2.5,-11.5) {execution time with cloning};
+
+	\node [program] (ANALYZE_FEEDBACK)             at (  0,-14.0)  {analyze prof. feedback};
+
+	\node [file]    (ALIAS_YAML_FILTERED)          at (  0,-16.0)  {filtered.alias.yaml};
+
+	\node [program] (MK_FINAL)                     at (  0,-18.0)  {\texttt{clone-loops} \& \texttt{clang}};
+
+	\node [file]    (FINAL)                        at (  0,-20)  {final binary};
+
+	% Draw edges
+	\draw[line] (CPP)         -- (CLANG);
+	\draw[line] (CLANG)       -- (UNOPTIMIZED);
+
+	\draw[line] (UNOPTIMIZED)  -- (canonicalize);
+	\draw[line] (canonicalize) -- (INPUT);
+
+	\draw[line] (INPUT)       -- (ALIAS_PROF);
+	\draw[line] (LIBMEMTRACK) -- (ALIAS_PROF);
+	\draw[line] (ALIAS_PROF)  -- (ALIAS_YAML);
+
+	\draw[line] (INPUT)      -- (ILC-1);
+	\draw[line] (ILC-1)      -- (SPECULATIVE);
+	\draw[line] (ILC-1)      -- (CLONEINFO_YAML);
+
+	\draw[line]        (LIBPERF)        -- (PERF_INSTRUMENT);
+	\draw[line, red]   (INPUT)          -- (PERF_INSTRUMENT);
+	\draw[line, green] (SPECULATIVE)    -- (PERF_INSTRUMENT);
+	\draw[line]        (CLONEINFO_YAML) -- (PERF_INSTRUMENT);
+
+	\draw[line, red] (PERF_INSTRUMENT) -- (INPUT_PERF);
+	\draw[line, green] (PERF_INSTRUMENT) -- (SPECULATIVE_PERF);
+
+	\draw[line] (INPUT_PERF)       -- (ANALYZE_FEEDBACK);
+	\draw[line] (SPECULATIVE_PERF) -- (ANALYZE_FEEDBACK);
+	\draw[line, bend right=45] (ALIAS_YAML.south) to node[auto, swap] {} (ANALYZE_FEEDBACK.west);
+
+	\draw[line] (ANALYZE_FEEDBACK)    -- (ALIAS_YAML_FILTERED);
+	\draw[line] (ALIAS_YAML_FILTERED) -- (MK_FINAL);
+	\draw[line, bend right=80] (INPUT.235) to node[auto, swap] {} (MK_FINAL.west);
+	\draw[line] (MK_FINAL)            -- (FINAL);
+\end{tikzpicture}
+
+The toolchain consists of six tools and two dynamic libraries, it furthermore makes use of \texttt{clang} and \texttt{opt} from the LLVM project. The relationship of these tools is shown in the above figure.
+
+\begin{itemize}
+	\item \texttt{canonicalize}\\
+		\begin{itemize}
+			\item Input:   A LLVM IR file (\texttt{.ll}).
+			\item Output:  A LLVM IR file.
+		\end{itemize}
+		This tool applies some transformations, such as loop simplification and memory to register promition.
+		Any LLVM IR file that is passes to a later stage must first be processed by this tool.
+		In order for the hybrid alias analysis to take full effect the input file should be compiled with either \texttt{-O0} or with \texttt{-fno-vectorize}, the final IR file can then be compiled with full optimizations enabled.
+	\item \texttt{alias-instrument}\\
+		\begin{itemize}
+			\item Input:   A LLVM IR file.
+			\item Output:  A LLVM IR file.
+		\end{itemize}
+		This tool inserts calls to alias profiling code. Programs that have been processed by this tool must be linked with \texttt{libmemtrack}.
+		Running the linked executable will create an alias trace file.
+	\item \texttt{aggregate-alias-trace}\\
+		\begin{itemize}
+			\item Input:   An alias trace file and path for the output YAML file
+			\item Output:  A YAML file containing the aggregated information from the alias trace
+		\end{itemize}
+		This file aggragegates the raw alias trace into a YAML file.
+		With the \texttt{--should-not-alias-threshold} option you can control at which probability two pointers are considered for runtime checks. The value should be a percentage as an integer between 1 and 100, and defaults to 5.
+	\item \texttt{clone-loops}\\
+		\begin{itemize}
+			\item Input:   A LLVM IR file, the aggregated alias information YAML, and the desired path for cloned loops file prodcued by this tool.
+			\item Output:  A LLVM IR file and a YAML file containing a list of cloned loops
+		\end{itemize}
+		This tool uses the alias information gathered in a previous profiling run and uses it to perform loop cloning and insert speculative alias checks.
+	\item \texttt{perf-instrument}\\
+		\begin{itemize}
+			\item Input:   Two LLVM IR files, first the file that was fed into \texttt{clone-loops} and then the output IR of \texttt{clone-loops}, and the cloned loops file.
+			\item Output:  Two LLVM IR files with performance profiling instrumentation.
+		\end{itemize}
+		This pass adds performance profiling instrumentation so the profitability of loop cloning can be evaluated.
+		Programs processed by this tool have to be linked with the \texttt{libperf} library and running them creates a performance trace file.
+	\item \texttt{aggregate-time-and-alias-trace}\\
+		\begin{itemize}
+			\item Input:   The alias YAML file, the YAML from the original programs performance profiling run, the YAML from the cloned programs perf profiling run and the desired path for the output file.
+			\item Output:  A YAML file containing the aggregated information from the alias trace
+		\end{itemize}
+		This file filters the alias YAML file with the information from the performance profiling run and removes loops for which cloning was not profitable.
+		The resulting YAML can be used as input for \texttt{clone-loops}
+		With the \texttt{--speedup-threshold} option you can control at which speedup cloning of a loop is considered profitable. The value should be a percentage as an integer, and defaults to 5.
+	\item \texttt{libmemtrack}\\
+		This library hooks into libc's \texttt{malloc} to facilitate our alias checks.
+		It furthermore contains helper functions for alias profiling.
+		There are two environment variables that control the behaviour of the tracing functions.
+		\texttt{TRACE\_FILE} controls the location of the trace file that is written, if not set it defaults to \texttt{alias.trace}.
+		\texttt{SAMPLING\_RATE} controls the sampling rate for tracing, it must contain a positive integer, higher numbers mean the profiling will be less accurate but also reduces the performance overhead of profiling.
+	\item \texttt{libperf}\\
+		This library contains helper functions for performance profiling.
+		There is one environment variables that controls the behaviour of the tracing functions.
+		\texttt{TRACE\_FILE} controls the location of the trace file that is written, if not set it defaults to `name of module' $+$ \texttt{.cputime}.
+\end{itemize}
+
+\end{document}

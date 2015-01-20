@@ -1,0 +1,18 @@
+#!/bin/bash -e
+# This file is distributed under the Modified BSD Open Source License.
+# See LICENSE.TXT for details.
+
+IR_FILE=$1
+
+if [ ! -r "$IR_FILE" ]
+then
+	echo "Could not access IR file '$IR_FILE'"
+	exit 1
+fi
+
+TMP=$(mktemp)
+
+../util/print-base-ptrs -print-only=AA_ "$1" > $TMP
+
+./yamleq $TMP "$2"
+

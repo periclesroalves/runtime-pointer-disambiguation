@@ -1,0 +1,21 @@
+# This file is distributed under the Modified BSD Open Source License.
+# See LICENSE.TXT for details.
+
+- "AA_copy::bb1":
+    base_pointers: !!set {
+        "a",
+        "b",
+        "r",
+    }
+    base_pointer_pairs: !!set {
+        !!set {"a", "b"},
+        !!set {"a", "r"},
+        !!set {"b", "r"},
+    }
+    instructions:
+        "tmp4": !!set { "a", }
+        "void3": !!set { "r", }
+        "tmp9": !!set { "b", }
+        "tmp13": !!set { "b", }
+        "void5": !!set { "r", }
+
