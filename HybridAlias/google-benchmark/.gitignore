@@ -2,7 +2,6 @@
 *.so
 *.so.?*
 *.dylib
-*.cmake
 *~
 /test/benchmark_test
 /test/re_test
