@@ -23,7 +23,7 @@ class FullInstNamer : public llvm::FunctionPass
 
     FullInstNamer();
 
-    virtual const char *getPassName()                               const override { return "FullInstNamer"; }
+    virtual const char *getPassName()                               const override { return "FullInstNamer-duplicate-remove-me"; }
     virtual void        getAnalysisUsage(llvm::AnalysisUsage &Info) const          { Info.setPreservesAll(); }
     virtual bool        runOnFunction(llvm::Function &F) override;
 

@@ -20,7 +20,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/CommandLine.h"
 #include <llvm/Support/Debug.h>
-#include "FullInstNamer.h"
+#include <llvm/Transforms/Utils/FullInstNamer.h>
 #include "Common.h"
 #include "BasePtrInfo.h"
 
@@ -45,16 +45,24 @@ namespace
 
 class DeclareTraceFunction : public ModulePass
 {
-  Function *trace_fn;
-
   public:
   static char ID;
 
-  DeclareTraceFunction() : ModulePass(ID), trace_fn(nullptr) {}
+  DeclareTraceFunction() : ModulePass(ID) {}
 
   virtual bool  runOnModule(Module& m) override;
   const char   *getPassName()    const override { return "DeclareTraceFunction"; }
-  Function     *getTraceFn()                    { assert(trace_fn); return trace_fn; }
+
+  static Function *getTraceFn(Module *m)
+  {
+    assert(m);
+
+    auto fn = m->getFunction(dumpTrace_fname);
+
+    assert(fn && "Trying to get alias trace function, but DeclareTraceFunction has not been run");
+
+    return fn;
+  }
 };
 
 class TraceLoopAlias: public LoopPass
@@ -73,11 +81,6 @@ class TraceLoopAlias: public LoopPass
   const char *getPassName()                       const override { return "TraceLoopAlias"; }
   void        getAnalysisUsage(AnalysisUsage &AU) const override
   {
-    // TODO: LLVM doc states that transformation passes should
-    //       not be chained with addRequire but with a custom
-    //       PassManager
-    AU.addRequired<DeclareTraceFunction>();
-
     AU.addRequired<DominatorTreeWrapperPass>();
     AU.addRequired<AliasAnalysis>();
   }
@@ -150,7 +153,7 @@ bool DeclareTraceFunction::runOnModule(Module &M)
 
   DEBUG(dbgs() << "create declaration of trace function\n");
 
-  trace_fn = Function::Create(
+  auto trace_fn = Function::Create(
     FunctionType::get(return_type, parameter_types, false),
     GlobalValue::ExternalLinkage,
     dumpTrace_fname,
@@ -180,22 +183,25 @@ bool TraceLoopAlias::runOnLoop(Loop *L, LPPassManager &LPM)
 
   const FullInstNamer FIN;
 
-  DominatorTree        &DT  = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
-  AliasAnalysis        &AA  = getAnalysis<AliasAnalysis>();
-  DeclareTraceFunction &DTF = getAnalysis<DeclareTraceFunction>();
+  auto loop_header = L->getHeader();
+  auto function    = loop_header->getParent();
+  auto module      = function->getParent();
 
-  Function *trace_fn = DTF.getTraceFn();
-
-  StringRef functionName = FIN.getName(L->getHeader()->getParent());
-  StringRef headerName   = FIN.getName(L->getHeader());
+  StringRef functionName = FIN.getName(function);
+  StringRef headerName   = FIN.getName(loop_header);
   string    loopName     = functionName.str() + "::" + headerName.str();
 
   if (InstrumentOnlyPrefix.size() && !ilc::hasPrefix(functionName, InstrumentOnlyPrefix))
     return false;
 
+  DominatorTree &DT  = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+  AliasAnalysis &AA  = getAnalysis<AliasAnalysis>();
+
   DEBUG(dbgs() << "========================================================\n");
   DEBUG(dbgs() << "TraceLoopAlias::runOnLoop(" << loopName << ")\n");
   DEBUG(dbgs() << "========================================================\n");
+
+  auto trace_fn = DeclareTraceFunction::getTraceFn(module);
 
   BasePtrInfo basePtrInfo{L, DT, AA};
 

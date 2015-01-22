@@ -4,7 +4,7 @@
 */
 
 #include "ilc/YamlUtils.h"
-#include "ilc/FullInstNamer.h"
+#include <llvm/Transforms/Utils/FullInstNamer.h>
 #include "ilc/Common.h"
 
 #include "llvm/IR/Function.h"           // for Function

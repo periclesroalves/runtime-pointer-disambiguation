@@ -44,7 +44,7 @@
 #include "llvm/Support/raw_ostream.h"   // for raw_ostream, errs, etc
 #include "llvm/Support/Debug.h"
 #include "llvm/IR/TypeBuilder.h"
-#include "ilc/FullInstNamer.h"
+#include <llvm/Transforms/Utils/FullInstNamer.h>
 #include "ilc/Common.h"
 #include "ilc/YamlUtils.h"
 #include "ilc/perflib.h"

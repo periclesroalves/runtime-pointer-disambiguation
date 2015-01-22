@@ -26,14 +26,15 @@ target_link_libraries (ILC
 	"${LLVM_BUILD_LIBRARY_DIR}/Support/CMakeFiles/LLVMSupport.dir/YAMLTraits.cpp.o"
 )
 
-add_library(FullInstNamer MODULE FullInstNamer.cpp)
+# add_library(FullInstNamer MODULE FullInstNamer.cpp)
 
 add_executable(print-base-ptrs
 	PrintBasePtrs.cpp
-	FullInstNamer.cpp
 	BasePtrInfo.cpp
 	Common.cpp
-	YamlUtils.cpp)
+	YamlUtils.cpp
+#	FullInstNamer.cpp
+)
 
 target_link_libraries(print-base-ptrs
 	# LLVM
@@ -51,7 +52,8 @@ target_link_libraries(print-base-ptrs
 add_executable(canonicalize
 	Canonicalize.cpp
 	Common.cpp
-	FullInstNamer.cpp)
+#	FullInstNamer.cpp
+)
 
 target_link_libraries(canonicalize
 	# LLVM
@@ -70,7 +72,8 @@ add_executable(alias-instrument
 	YamlUtils.cpp
 	Common.cpp
 	BasePtrInfo.cpp
-	FullInstNamer.cpp)
+#	FullInstNamer.cpp
+)
 
 target_link_libraries(alias-instrument
 	# LLVM
@@ -89,7 +92,8 @@ add_executable(clone-loops
 	YamlUtils.cpp
 	Common.cpp
 	BasePtrInfo.cpp
-	FullInstNamer.cpp)
+#	FullInstNamer.cpp
+)
 
 target_link_libraries(clone-loops
 	# LLVM
@@ -105,8 +109,9 @@ target_link_libraries(clone-loops
 add_executable(perf-instrument
 	PerfInstrumentRegions.cpp
 	YamlUtils.cpp
-	FullInstNamer.cpp
-	Common.cpp)
+	Common.cpp
+#	FullInstNamer.cpp
+)
 
 target_link_libraries(perf-instrument
 	# LLVM

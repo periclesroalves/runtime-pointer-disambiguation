@@ -6,7 +6,6 @@
 */
 
 #include "ilc/BasePtrInfo.h"
-#include "ilc/FullInstNamer.h"
 
 #include "llvm/InitializePasses.h"
 #include <llvm/Pass.h>
@@ -169,11 +168,15 @@ int main(int argc, char **argv) {
 
 	PassManager pm;
 
+	// insert declaration of tracing functions into module
+	pm.add(getPass("declare-trace-function"));
+	// do alias analysis
 	pm.add(getPass("globalsmodref-aa"));
 	pm.add(getPass("libcall-aa"));
 	pm.add(getPass("basicaa"));
 	pm.add(getPass("tbaa"));
 	pm.add(getPass("scoped-noalias"));
+	// insert loop tracing code
 	pm.add(getPass("trace-loop-alias"));
 
 	pm.run(*module);

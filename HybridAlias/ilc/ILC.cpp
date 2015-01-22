@@ -44,7 +44,7 @@
 #include "llvm/Support/FileSystem.h"
 #include "ilc/Common.h"
 #include "ilc/BasePtrInfo.h"
-#include "ilc/FullInstNamer.h"
+#include <llvm/Transforms/Utils/FullInstNamer.h>
 #include "ilc/YamlUtils.h"
 #include <cstring>
 #include <string>
