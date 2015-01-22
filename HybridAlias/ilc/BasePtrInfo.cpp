@@ -31,6 +31,10 @@ struct BasePtrBuilder {
   BasePtrInfo build(std::vector<Instruction*>& mem_instrs) {
     BasePtrInfo info;
 
+    DEBUG(dbgs() << "-----------------------------------------------------------\n");
+    DEBUG(dbgs() << "computing base ptrs for " << mem_instrs.size() << "memory acces(es)\n");
+    DEBUG(dbgs() << "-----------------------------------------------------------\n");
+
     // list of may-alias instruction pairs
     set<InstrPair> MayAliasPairs;
 

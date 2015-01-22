@@ -203,8 +203,6 @@ bool TraceLoopAlias::runOnLoop(Loop *L, LPPassManager &LPM)
 
   auto trace_fn = DeclareTraceFunction::getTraceFn(module);
 
-  return false;
-
   BasePtrInfo basePtrInfo = BasePtrInfo::build(L, DT, AA);
 
   set<ValuePair> &basePtrPairs = basePtrInfo.getBasePtrPairs();
