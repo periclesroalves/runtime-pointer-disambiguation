@@ -357,7 +357,7 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 
 	DEBUG(dbgs() << "recomputing base ptrs\n");
 
-	BasePtrInfo info = BasePtrInfo(loop, domTree, aa);
+	BasePtrInfo info = BasePtrInfo::build(loop, domTree, aa);
 
 	DEBUG(dbgs() << "filtering base ptr pairs with profile information\n");
 
@@ -725,8 +725,8 @@ void CloneLoopPass::addAliasScopeMetadata(LLVMContext& ctx, string loop_name, Ba
     SmallVector<Value*, 4> aliases;
     SmallVector<Value*, 4> noAliases;
 
-    Instruction *memInstr =  InstMapping.first;
-    ValueSet    &basePtrs = *InstMapping.second;
+    Instruction *memInstr = InstMapping.first;
+    ValueSet    &basePtrs = InstMapping.second;
 
     // add each base pointer of the instruction to the alias set
     // count all noalias candidate base pointers

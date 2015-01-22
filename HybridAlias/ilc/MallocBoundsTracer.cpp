@@ -180,7 +180,7 @@ bool MallocBoundsTracer::runOnLoop(Loop *L, LPPassManager &LPM)
   DeclareTraceFunction &DTF = getAnalysis<DeclareTraceFunction>();
 
   DEBUG(dbgs() << "A\n");
-  BasePtrInfo basePtrInfo{L, DT, AA};
+  BasePtrInfo basePtrInfo = BasePtrInfo::build(L, DT, AA);
   DEBUG(dbgs() << "B\n");
 
   Function *trace_fn = DTF.getTraceFn();

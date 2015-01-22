@@ -25,36 +25,26 @@ namespace llvm {
 typedef std::pair<llvm::Instruction*, llvm::Instruction*> InstrPair;
 typedef std::pair<llvm::Value*, llvm::Value*>             ValuePair;
 typedef std::set<llvm::Value*>                            ValueSet;
-typedef std::map<llvm::Instruction*, ValueSet*>           InstructionMap;
+typedef std::map<llvm::Instruction*, ValueSet>            InstructionMap;
 
-class BasePtrInfo
+struct BasePtrInfo
 {
-  const llvm::BasicBlock* const entry;
-  const llvm::DominatorTree&    domTree;
-  llvm::AliasAnalysis&          aliasAnalysis;
-  std::set<ValuePair>           basePtrPairs;
-  InstructionMap                basePtrs_for_instruction;
-  ValueSet                      allBasePtrs;
-
-  ValueSet&                     getOrInsertBasePtrs(llvm::Instruction *i);
-  void                          getBasePtrs(llvm::Value *ptr, ValueSet& basePtrs, ValueSet& visited);
-  bool                          mayReadOrWriteMemory(llvm::Instruction *i);
-  llvm::AliasAnalysis::Location getLocation(llvm::Instruction *i);
-  void                          buildInfo(std::list<llvm::Instruction*>& mem_instrs);
-  void                          rebuildAllBasePtrs();
-
-  public:
-
-  BasePtrInfo(llvm::Loop*   loop,   llvm::DominatorTree& tree, llvm::AliasAnalysis& aa);
-  BasePtrInfo(llvm::Region* region, llvm::DominatorTree& tree, llvm::AliasAnalysis& aa);
-
-  ~BasePtrInfo();
+  static BasePtrInfo build(llvm::Loop*   loop,   llvm::DominatorTree& tree, llvm::AliasAnalysis& aa);
+  static BasePtrInfo build(llvm::Region* region, llvm::DominatorTree& tree, llvm::AliasAnalysis& aa);
 
   void                 filter(const std::set<ValuePair>& badPairs);
   std::set<ValuePair>& getBasePtrPairs();
   ValueSet&            getBasePtrs(llvm::Instruction *i);
   const ValueSet&      getAllBasePtrs() const;
   InstructionMap&      getInstructionMap();
+private:
+  void rebuildAllBasePtrs();
+
+  std::set<ValuePair> basePtrPairs;
+  InstructionMap      basePtrs_for_instruction;
+  ValueSet            allBasePtrs;
+
+  friend struct BasePtrBuilder;
 };
 
 #endif // _BASE_PTR_INFO_H_
