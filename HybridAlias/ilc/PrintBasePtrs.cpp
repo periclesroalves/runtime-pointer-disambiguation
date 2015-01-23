@@ -7,7 +7,7 @@
 */
 
 #include "ilc/BasePtrInfo.h"
-#include "ilc/FullInstNamer.h"
+#include <llvm/Transforms/Utils/FullInstNamer.h>
 
 #include "llvm/InitializePasses.h"
 #include <llvm/Pass.h>
@@ -26,6 +26,8 @@
 #include "llvm/PassManager.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/SourceMgr.h"
+
+#define DEBUG_TYPE "print-base-ptrs"
 
 using namespace llvm;
 using namespace std;
@@ -91,12 +93,16 @@ bool PrintBasePtrs::runOnLoop(Loop *loop, LPPassManager &LPM)
 
 	std::string loop_name = (fn_name + "::" + getNameOrFail(header)).str();
 
+	DEBUG(dbgs() << "-----------------------------------------------------------\n");
+    DEBUG(dbgs() << loop_name << "\n");
+    DEBUG(dbgs() << "-----------------------------------------------------------\n");
+
 	// ** compute base pointers
 
 	AliasAnalysis& aa      = getAnalysis<AliasAnalysis>();
 	DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
 
-	BasePtrInfo info{loop, domTree, aa};
+	BasePtrInfo info = BasePtrInfo::build(loop, domTree, aa);
 
 	outs() << "- \"" << loop_name << "\":\n";
 
@@ -115,7 +121,7 @@ bool PrintBasePtrs::runOnLoop(Loop *loop, LPPassManager &LPM)
 	outs() << "    instructions:\n";
 	for (auto& mapping : info.getInstructionMap()) {
 		outs() << "        \"" << getNameOrFail(mapping.first) << "\": !!set { ";
-		for (auto basePtr : *mapping.second) {
+		for (auto basePtr : mapping.second) {
 			outs() << "\"" << getNameOrFail(basePtr) << "\", ";
 		}
 		outs() << "}\n";

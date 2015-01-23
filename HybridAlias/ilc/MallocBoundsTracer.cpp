@@ -21,7 +21,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/CommandLine.h"
 #include <llvm/Support/Debug.h>
-#include "FullInstNamer.h"
+#include <llvm/Transforms/Utils/FullInstNamer.h>
 #include "Common.h"
 #include "BasePtrInfo.h"
 
@@ -180,7 +180,7 @@ bool MallocBoundsTracer::runOnLoop(Loop *L, LPPassManager &LPM)
   DeclareTraceFunction &DTF = getAnalysis<DeclareTraceFunction>();
 
   DEBUG(dbgs() << "A\n");
-  BasePtrInfo basePtrInfo{L, DT, AA};
+  BasePtrInfo basePtrInfo = BasePtrInfo::build(L, DT, AA);
   DEBUG(dbgs() << "B\n");
 
   Function *trace_fn = DTF.getTraceFn();

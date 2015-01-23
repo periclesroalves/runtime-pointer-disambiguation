@@ -10,7 +10,7 @@
  */
 
 #include "ilc/BasePtrInfo.h"
-#include "ilc/FullInstNamer.h"
+#include <llvm/Transforms/Utils/FullInstNamer.h>
 
 #include "llvm/InitializePasses.h"
 #include <llvm/Pass.h>
