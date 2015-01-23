@@ -248,7 +248,7 @@ void BasePtrInfo::buildInfo(list<Instruction*>& ModRefInstructions)
 BasePtrInfo::BasePtrInfo(llvm::Loop* loop, llvm::DominatorTree& tree, llvm::AliasAnalysis& aa)
  : entry{loop->getLoopPreheader()}
  , domTree{tree}
- , aliasAnalysis{aa}
+ , aliasAnalysis(aa)
 {
   list<Instruction*> ModRefInstructions;
 
@@ -273,7 +273,7 @@ BasePtrInfo::BasePtrInfo(llvm::Loop* loop, llvm::DominatorTree& tree, llvm::Alia
 BasePtrInfo::BasePtrInfo(llvm::Region* region, llvm::DominatorTree& tree, llvm::AliasAnalysis& aa)
  : entry{region->getEnteringBlock()}
  , domTree{tree}
- , aliasAnalysis{aa}
+ , aliasAnalysis(aa)
 {
   list<Instruction*> ModRefInstructions;
 
