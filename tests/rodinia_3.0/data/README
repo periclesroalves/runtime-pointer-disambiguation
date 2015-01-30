@@ -1,0 +1,3 @@
+The "data" directory contains a number of enormous files, which can't be kept in
+the repository. In order to test the benchmar, download the Rodinia benchmark
+and copy the content of the "data" folder here.

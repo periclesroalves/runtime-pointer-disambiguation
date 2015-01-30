@@ -32,3 +32,4 @@ tests/speccpu2006/
 llvm/grep
 tests/ptrdist-1.1/Makefile-clean
 tests/ptrdist-1.1/Makefile-opt
+tests/rodinia_3.0/data/
