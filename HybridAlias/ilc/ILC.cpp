@@ -126,6 +126,7 @@ struct CloneLoopPass : public LoopPass {
 private:
 	Loop* cloneLoop(llvm::Loop *OrigL, LPPassManager& LPM);
 	void  addAliasScopeMetadata(LLVMContext& ctx, string loop_name, BasePtrInfo& info);
+	void  optimizeWithMustAliasInfo(LLVMContext& ctx, Loop *l, BasePairSet& must_aliases);
 
 	set<Loop*>              cloned_loops;
 	FullInstNamer           FIN;
@@ -164,6 +165,31 @@ cl::opt<string> CloneInfoFile(
 	cl::init("")
 );
 
+/**
+ * Replace all uses of `from' with `to', iff predicate `pred' evaluates to 
+ * `true' for the using instruction.
+ */
+template<typename Pred>
+static void replaceUsesWithIf(Value *from, Value *to, Pred&& pred) {
+	// updating inside loop invalidates llvms Use data structures,
+	// so we first find instructions to update, then do the update
+	SmallVector<User*, 4> to_update;
+
+	for (User *user : from->users())
+	{
+		if (pred(user))
+		{
+			DEBUG(dbgs() << "In " << *user << "\n");
+			DEBUG(dbgs() << "\treplacing " << *from << "\n");
+			DEBUG(dbgs() << "\twith      " << *to   << "\n");
+
+			to_update.push_back(user);
+		}
+	}
+
+	for (auto user : to_update)
+		user->replaceUsesOfWith(from, to);
+}
 
 bool DeclareFunctions::runOnModule(Module &M) {
 	DEBUG(dbgs() << "DeclareFunctions::runOnModule\n");
@@ -329,7 +355,7 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 
 	AliasInfo ai = AliasInfo::parseYaml(yaml_file->get()->getBuffer(), module);
 
-	auto alias_pairs = ai.getAliasPairs(fn, header);
+	const auto alias_pairs = ai.getAliasPairs(fn, header);
 
 	if (!alias_pairs)
 		return false;
@@ -346,14 +372,17 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 
 	// ** find pairs of bases that are likely to alias (used for filtering)
 
-	set<ValuePair>& probable_aliases = alias_pairs->should_alias;
+	BasePairSet probable_aliases;
+
+	probable_aliases.insert(alias_pairs->should_alias.begin(),       alias_pairs->should_alias.end());
+	probable_aliases.insert(alias_pairs->should_alias_exact.begin(), alias_pairs->should_alias_exact.end());
 
 	DEBUG(dbgs() << "found " << probable_aliases.size()  << " probable alias   pairs\n");
 
 	// ** compute base pointers
 
-	AliasAnalysis&     aa      = getAnalysis<AliasAnalysis>();
-	DominatorTree&     domTree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+	AliasAnalysis& aa      = getAnalysis<AliasAnalysis>();
+	DominatorTree& domTree = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
 
 	DEBUG(dbgs() << "recomputing base ptrs\n");
 
@@ -365,7 +394,7 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 
 	DEBUG(dbgs() << info.getBasePtrPairs().size() << " base ptr pairs remain\n");
 
-	if (info.getBasePtrPairs().empty())
+	if (info.getBasePtrPairs().empty() && alias_pairs->should_alias_exact.empty())
 		return false;
 
 	DEBUG(dbgs() << "cloning loop\n");
@@ -396,16 +425,17 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 
 	vector<Instruction*> conditionals;
 
-	// compare the magic numbers for each pair
-	// "and" the list of conditionals on loop preheader
+	/// compare the magic numbers for each pair
+	/// "and" the list of conditionals on loop preheader
 
 	for (auto aliases : info.getBasePtrPairs()) {
 		auto l = magic.create(aliases.first);
 		auto r = magic.create(aliases.second);
 
-		// TODO: hoist to least dominator
+		/// TODO: hoist to least dominator
 
-		// add the cmp just before the last instruction of the bb (maybe it is a branch, adding after it would break the control flow)
+		/// add the cmp just before the last instruction of the bb,
+		/// adding after it's terminator would break the control flow
 		IRBuilder<> IRB_ICmpNE(cast<Instruction>(&(lastOf(l->getParent(), r->getParent())->back())));
 
 		Instruction *cmp = cast<Instruction>(IRB_ICmpNE.CreateICmpNE(l, r));
@@ -413,14 +443,34 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 		conditionals.push_back(cmp);
 	}
 
-	// create clone info and dump it in file
-	if(cloneInfoStream)
+	// ** create clone info and dump it in file
+	InsertionPoint firstInsertionPoint = magic.getFirstInsertionPoint();
+
+	if(cloneInfoStream && firstInsertionPoint)
 	{
-		CloningInfo CI(fn, header, magic.getFirstInsertionPoint(), InsertionPoint(loop->getExitBlock()));
+		CloningInfo CI(fn, header, firstInsertionPoint, InsertionPoint(loop->getExitBlock()));
 
 		CI.writeYaml(*cloneInfoStream);
 	}
 
+	// compare base pointers we expect to alias exactly by equality.
+
+	for (auto& base_pair : alias_pairs->should_alias_exact) {
+		DEBUG(dbgs() << "Exact aliases:\n");
+		DEBUG(dbgs() << "\t" << *(base_pair.first)  << "\n");
+		DEBUG(dbgs() << "\t" << *(base_pair.second) << "\n");
+
+		auto a = base_pair.first;
+		auto b = base_pair.second;
+
+		IRBuilder<> IRB{preheader, --preheader->end()};
+
+		Instruction *cmp = cast<Instruction>(IRB.CreateICmpEQ(a, b));
+
+		conditionals.push_back(cmp);
+	}
+
+	// Create `and' of all comparisons
 	assert(!conditionals.empty());
 
 	while (conditionals.size() > 1) {
@@ -460,6 +510,12 @@ bool CloneLoopPass::runOnLoop(Loop *loop, LPPassManager &LPM)
 	);
 	// remove original branch
 	preheader->back().eraseFromParent();
+
+	// **
+
+	DEBUG(dbgs() << "Optimizing with must alias info\n");
+
+	optimizeWithMustAliasInfo(ctx, loop, alias_pairs->should_alias_exact);
 
 	// ** Insert noalias metadata
 
@@ -527,7 +583,7 @@ static void CloneDominatorInfo(BasicBlock *BB,
 }
 
 /// Find values created in loop used outside of it
-void findOutputs(Loop *l, ValueSet& outputs) {
+void findOutputs(Loop *l, InstrSet& outputs) {
 	for (auto BB : l->getBlocks()) {
 		// If an instruction is used outside the region, it's an output.
 		for (BasicBlock::iterator II = BB->begin(), IE = BB->end(); II != IE; ++II) {
@@ -561,7 +617,7 @@ Loop *CloneLoopPass::cloneLoop(Loop *OrigL, LPPassManager& LPM)
   assert(exit);
 
   // compute outputs produced by loop
-  ValueSet outputs;
+  InstrSet outputs;
   findOutputs(OrigL, outputs);
 
   SmallVector<BasicBlock *, 16> NewBlocks;
@@ -656,7 +712,7 @@ Loop *CloneLoopPass::cloneLoop(Loop *OrigL, LPPassManager& LPM)
 
 		IRBuilder<> irb{outside->begin()};
 
-		for (Value *output : outputs)
+		for (Instruction *output : outputs)
 		{
 			DEBUG(dbgs() << "Updating uses of " << *output << "\n");
 
@@ -666,31 +722,16 @@ Loop *CloneLoopPass::cloneLoop(Loop *OrigL, LPPassManager& LPM)
 
 			// replace all uses of output OUTSIDE of loop with phi
 
-			SmallVector<Instruction*, 4> to_update; // updating inside loop invalidates Use data structures
+			replaceUsesWithIf(
+				output,
+				phi, 
+				[=](User *u) -> bool {
+					// an instruction can only be used by instructions, right?
+					Instruction *i = cast<Instruction>(u);
 
-			for (User *user : output->users())
-			{
-				DEBUG(dbgs() << "  Considering user: " << *user << "\n");
-
-				// an instruction can only be used by instructions, right?
-				auto *using_instr = cast<Instruction>(user);
-
-				if (OrigL->contains(using_instr))
-				{
-					DEBUG(dbgs() << "  Leaving use unchanged: " << *user << "\n");
-					continue;
+					return !OrigL->contains(i); 
 				}
-
-				DEBUG(dbgs() << "  Updating use:\n");
-				DEBUG(dbgs() << "    user:        " << *using_instr << "\n");
-				DEBUG(dbgs() << "    old operand: " << *output      << "\n");
-				DEBUG(dbgs() << "    new operand: " << *phi         << "\n");
-
-				to_update.push_back(using_instr);
-			}
-
-			for (auto user : to_update)
-				user->replaceUsesOfWith(output, phi);
+			);
 
 			// can't add these before, otherwise use in new phi would be replaced
 			phi->addIncoming(output,       inside);
@@ -701,6 +742,26 @@ Loop *CloneLoopPass::cloneLoop(Loop *OrigL, LPPassManager& LPM)
   return NewParentLoop;
 }
 
+/// Given a pair of pointers of which we know that they point to the same address,
+/// we can replace one of the two with the other.
+void CloneLoopPass::optimizeWithMustAliasInfo(LLVMContext& ctx, Loop *l, BasePairSet& must_aliases) {
+	for (auto& base_pair : must_aliases) {
+		auto from = base_pair.first;
+		auto to   = base_pair.second;
+
+		// replace all uses of `a' inside loop with `b'
+		replaceUsesWithIf(
+			from,
+			to, 
+			[=](Value *v) -> bool {
+				if (auto i = dyn_cast<Instruction>(v))
+					return l->contains(i); 
+
+				return false;
+			}
+		);
+	}
+}
 
 /// Add new alias scopes for each pair of loop inputs we speculate to have no alias,
 /// tag the mapped noalias parameters with noalias metadata specifying the new scope,
