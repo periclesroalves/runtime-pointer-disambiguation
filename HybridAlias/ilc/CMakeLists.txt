@@ -8,7 +8,6 @@ add_executable(print-base-ptrs
 	BasePtrInfo.cpp
 	Common.cpp
 	YamlUtils.cpp
-#	FullInstNamer.cpp
 )
 
 target_link_libraries(print-base-ptrs
@@ -27,7 +26,6 @@ target_link_libraries(print-base-ptrs
 add_executable(canonicalize
 	Canonicalize.cpp
 	Common.cpp
-#	FullInstNamer.cpp
 )
 
 target_link_libraries(canonicalize
@@ -43,11 +41,7 @@ target_link_libraries(canonicalize
 
 add_executable(alias-instrument
 	TraceLoopAliasWrapper.cpp
-	TraceLoopAlias.cpp
-	YamlUtils.cpp
-	Common.cpp
 	BasePtrInfo.cpp
-#	FullInstNamer.cpp
 )
 
 target_link_libraries(alias-instrument
@@ -59,6 +53,7 @@ target_link_libraries(alias-instrument
 	LLVMSupport
 	LLVMOption
 	LLVMDebugInfo
+	LLVMInstrumentation
 )
 
 add_executable(clone-loops
@@ -67,7 +62,6 @@ add_executable(clone-loops
 	YamlUtils.cpp
 	Common.cpp
 	BasePtrInfo.cpp
-#	FullInstNamer.cpp
 )
 
 target_link_libraries(clone-loops
@@ -85,7 +79,6 @@ add_executable(perf-instrument
 	PerfInstrumentRegions.cpp
 	YamlUtils.cpp
 	Common.cpp
-#	FullInstNamer.cpp
 )
 
 target_link_libraries(perf-instrument

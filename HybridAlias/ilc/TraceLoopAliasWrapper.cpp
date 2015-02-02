@@ -5,8 +5,6 @@
   Simple executable that wraps the TraceLoopAlias pass
 */
 
-#include "ilc/BasePtrInfo.h"
-
 #include "llvm/InitializePasses.h"
 #include <llvm/Pass.h>
 #include <llvm/Analysis/LoopPass.h>
@@ -57,7 +55,8 @@
 #include "llvm/Support/raw_ostream.h"   // for raw_ostream, errs, etc
 #include "llvm/Support/Debug.h"
 #include "llvm/IR/TypeBuilder.h"
-#include "ilc/Common.h"
+#include <llvm/Support/CorseCommon.h>
+#include <llvm/Analysis/BasePointers.h>
 
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Instructions.h"
@@ -165,11 +164,13 @@ int main(int argc, char **argv) {
 	initializeScalarEvolutionAliasAnalysisPass(Registry);
 	initializeTypeBasedAliasAnalysisPass(Registry);
 	initializeScopedNoAliasAAPass(Registry);
+	initializeAliasTracerModuleHelperPass(Registry);
+	initializeAliasTracerPass(Registry);
 
 	PassManager pm;
 
 	// insert declaration of tracing functions into module
-	pm.add(getPass("declare-trace-function"));
+	pm.add(getPass("alias-tracer-module-helper"));
 	// do alias analysis
 	pm.add(getPass("globalsmodref-aa"));
 	pm.add(getPass("libcall-aa"));
@@ -177,7 +178,7 @@ int main(int argc, char **argv) {
 	pm.add(getPass("tbaa"));
 	pm.add(getPass("scoped-noalias"));
 	// insert loop tracing code
-	pm.add(getPass("trace-loop-alias"));
+	pm.add(getPass("alias-tracer"));
 
 	pm.run(*module);
 

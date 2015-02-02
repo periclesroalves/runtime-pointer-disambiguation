@@ -34,6 +34,7 @@ namespace llvm {
 
 class ModulePass;
 class FunctionPass;
+class LoopPass;
 
 // Insert GCOV profiling instrumentation
 struct GCOVOptions {
@@ -120,6 +121,9 @@ ModulePass *createDebugIRPass(bool HideDebugIntrinsics,
 ///       function with parameters in order to generate the file that will be
 ///       seen by the debugger.
 ModulePass *createDebugIRPass();
+
+LoopPass   *createAliasTracerPass();
+ModulePass *createAliasTracerModuleHelperPass();
 
 } // End llvm namespace
 

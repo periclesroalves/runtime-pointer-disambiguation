@@ -91,6 +91,8 @@ add_llvm_library(LLVMSupport
   Valgrind.cpp
   Watchdog.cpp
 
+  CorseCommon.cpp
+
   ADDITIONAL_HEADERS
   Unix/Host.inc
   Unix/Memory.inc

@@ -21,8 +21,11 @@
 #include "llvm/Support/CommandLine.h"
 #include <llvm/Support/Debug.h>
 #include <llvm/Transforms/Utils/FullInstNamer.h>
-#include "Common.h"
-#include "BasePtrInfo.h"
+#include <llvm/Transforms/Instrumentation.h>
+#include <llvm/InitializePasses.h>
+
+#include <llvm/Support/CorseCommon.h>
+#include <llvm/Analysis/BasePointers.h>
 
 #include <string.h>
 #include <string>
@@ -35,50 +38,24 @@
 
 using namespace llvm;
 using namespace std;
-using namespace ilc;
 
 // Make sure this matches the name of the tracer function in libmemtrack.a
 static const char *const dumpTrace_fname = "gcg_trace_alias_pair";
 
-namespace 
-{
+namespace {
 
-class DeclareTraceFunction : public ModulePass
-{
-  public:
-  static char ID;
-
-  DeclareTraceFunction() : ModulePass(ID) {}
-
-  virtual bool  runOnModule(Module& m) override;
-  const char   *getPassName()    const override { return "DeclareTraceFunction"; }
-
-  static Function *getTraceFn(Module *m)
-  {
-    assert(m);
-
-    auto fn = m->getFunction(dumpTrace_fname);
-
-    assert(fn && "Trying to get alias trace function, but DeclareTraceFunction has not been run");
-
-    return fn;
-  }
-};
-
-class TraceLoopAlias: public LoopPass
-{
+class AliasTracer: public LoopPass {
   Instruction      *insertBefore;
   StringMap<Value*> string2Value;
 
   Value* getOrInsertGlobalString(StringRef str);
-
-  public:
+public:
   static char ID;
 
-  TraceLoopAlias() : LoopPass(ID) {}
+  AliasTracer();
 
   bool        runOnLoop(Loop *L, LPPassManager &LPM)    override;
-  const char *getPassName()                       const override { return "TraceLoopAlias"; }
+  const char *getPassName()                       const override { return "AliasTracer"; }
   void        getAnalysisUsage(AnalysisUsage &AU) const override
   {
     AU.addRequired<DominatorTreeWrapperPass>();
@@ -86,13 +63,64 @@ class TraceLoopAlias: public LoopPass
   }
 };
 
+struct AliasTracerModuleHelper : public ModulePass {
+  static char ID;
+
+  AliasTracerModuleHelper();
+
+  virtual bool  runOnModule(Module& m) override;
+  const char   *getPassName()    const override { return "AliasTracerModuleHelper"; }
+
+  static Function *getTraceFn(Module *m) {
+    assert(m);
+
+    auto fn = m->getFunction(dumpTrace_fname);
+
+    assert(fn && "Trying to get alias trace function, but AliasTracerModuleHelper has not been run");
+
+    return fn;
+  }
+};
+
 } // end anonymous namespace
+
+char AliasTracer::ID = 0;
+char AliasTracerModuleHelper::ID = 0;
+
+INITIALIZE_PASS(AliasTracer,
+  "alias-tracer",
+  "Instrument loops for alias profiling",
+  false,
+  false
+)
+
+INITIALIZE_PASS(AliasTracerModuleHelper,
+  "alias-tracer-module-helper",
+  "Declare external reference to alias tracing function",
+  false,
+  false
+)
+
+LoopPass *llvm::createAliasTracerPass() {
+  return new AliasTracer();
+}
+ModulePass *llvm::createAliasTracerModuleHelperPass() {
+  return new AliasTracerModuleHelper();
+}
+
+AliasTracer::AliasTracer() : LoopPass(ID) {
+  initializeAliasTracerPass(*PassRegistry::getPassRegistry());
+}
+
+AliasTracerModuleHelper::AliasTracerModuleHelper() : ModulePass(ID) {
+  initializeAliasTracerModuleHelperPass(*PassRegistry::getPassRegistry());
+}
 
 
 /****************** PRIVATE API *****************/
 
 // Creates a global string constant and returns a pointer to it
-Value *TraceLoopAlias::getOrInsertGlobalString(StringRef str)
+Value *AliasTracer::getOrInsertGlobalString(StringRef str)
 {
   assert(!str.empty() && "Tried to create empty string constant");
 
@@ -112,19 +140,9 @@ Value *TraceLoopAlias::getOrInsertGlobalString(StringRef str)
 }
 
 
+static Instruction* getInsertionPoint(Function *fn, Value *val1, Value *val2);
+
 /********************* PUBLIC API ***********************/
-
-char DeclareTraceFunction::ID = 0;
-static RegisterPass<DeclareTraceFunction> X(
-	"declare-trace-function",
-	"Declare external refernce to alias tracing function"
-);
-
-char TraceLoopAlias::ID = 0;
-static RegisterPass<TraceLoopAlias> Y(
-	"trace-loop-alias",
-	"Instrument loops for alias profiling"
-);
 
 cl::opt<string> InstrumentOnlyPrefix(
 	"instrument-only",
@@ -132,9 +150,9 @@ cl::opt<string> InstrumentOnlyPrefix(
 	cl::init("")
 );
 
-bool DeclareTraceFunction::runOnModule(Module &M)
+bool AliasTracerModuleHelper::runOnModule(Module &M)
 {
-  DEBUG(dbgs() << "DeclareTraceFunction::runOnModule\n");
+  DEBUG(dbgs() << "AliasTracerModuleHelper::runOnModule\n");
 
   DEBUG(dbgs() << "get basic types\n");
 
@@ -174,7 +192,7 @@ bool DeclareTraceFunction::runOnModule(Module &M)
   return true;
 }
 
-bool TraceLoopAlias::runOnLoop(Loop *L, LPPassManager &LPM)
+bool AliasTracer::runOnLoop(Loop *L, LPPassManager &LPM)
 {
   //we are interested only in innermost loops
   if(L->getSubLoops().size() > 0) return false;
@@ -191,17 +209,17 @@ bool TraceLoopAlias::runOnLoop(Loop *L, LPPassManager &LPM)
   StringRef headerName   = FIN.getName(loop_header);
   string    loopName     = functionName.str() + "::" + headerName.str();
 
-  if (InstrumentOnlyPrefix.size() && !ilc::hasPrefix(functionName, InstrumentOnlyPrefix))
+  if (InstrumentOnlyPrefix.size() && !hasPrefix(functionName, InstrumentOnlyPrefix))
     return false;
 
   DominatorTree &DT  = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
   AliasAnalysis &AA  = getAnalysis<AliasAnalysis>();
 
   DEBUG(dbgs() << "========================================================\n");
-  DEBUG(dbgs() << "TraceLoopAlias::runOnLoop(" << loopName << ")\n");
+  DEBUG(dbgs() << "AliasTracer::runOnLoop(" << loopName << ")\n");
   DEBUG(dbgs() << "========================================================\n");
 
-  auto trace_fn = DeclareTraceFunction::getTraceFn(module);
+  auto trace_fn = AliasTracerModuleHelper::getTraceFn(module);
 
   BasePtrInfo basePtrInfo = BasePtrInfo::build(L, DT, AA);
 
@@ -238,3 +256,24 @@ bool TraceLoopAlias::runOnLoop(Loop *L, LPPassManager &LPM)
 
   return true;
 }
+
+Instruction *getInsertionPoint(Function *fn, Value *val1, Value *val2)
+{
+  if (isGlobalOrArgument(val1)) {
+    if (isGlobalOrArgument(val2)) {
+      return fn->getEntryBlock().getFirstInsertionPt();
+    } else {
+      return &cast<Instruction>(val2)->getParent()->back();
+    }
+  } else {
+    if (isGlobalOrArgument(val2)) {
+      return &cast<Instruction>(val1)->getParent()->back();
+    } else {
+      auto i1 = cast<Instruction>(val1);
+      auto i2 = cast<Instruction>(val2);
+
+      return &lastOf(i1->getParent(), i2->getParent())->back();
+    }
+  }
+}
+
