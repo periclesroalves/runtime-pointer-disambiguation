@@ -24,17 +24,16 @@ extern "C" __attribute__((noinline)) void AA_double_memset(size_t n, size_t dstA
 
 static void BM_double_memset(benchmark::State &state) {
 	size_t  n    = 2048;
-	size_t *dstA = bench_calloc<size_t>(n);
-	size_t *dstB = bench_calloc<size_t>(n);
+	size_t *data = bench_calloc<size_t>(n);
 	size_t *val  = bench_calloc<size_t>(1);
 
 	while (state.KeepRunning()) {
-		AA_double_memset(n, dstA, dstB, val);
+		AA_double_memset(n, data, data, val);
 	}
 
-	blackhole(dstA);
-	blackhole(dstB);
+	blackhole(data);
+	blackhole(val);
 }
 
 
-BENCHMARK(BM_double_memset);
+BENCHMARK(BM_double_memset)->Range(2000, 20000);

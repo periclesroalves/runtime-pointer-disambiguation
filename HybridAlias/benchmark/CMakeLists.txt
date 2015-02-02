@@ -12,6 +12,7 @@ set(BENCHMARKS
 	double_memset.cpp
 	dotprod.cpp
 	fft.cpp
+	sum.cpp
 )
 
 ## split command line args because add_custom_command excepts a list
