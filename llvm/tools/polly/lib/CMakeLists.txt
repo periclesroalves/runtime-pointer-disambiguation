@@ -58,6 +58,7 @@ add_polly_library(Polly
   ${POLLY_PLUTO_FILES}
   Transform/RegionCloningPass.cpp
   Transform/CloneRegion.cpp
+  Transform/SCEVRangeAnalyser.cpp
   )
 
 # Build a monolithic Polly.a and a thin module LLVMPolly.moduleext that links to
