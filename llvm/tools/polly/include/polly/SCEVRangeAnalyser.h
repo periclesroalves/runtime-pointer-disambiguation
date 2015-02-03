@@ -13,6 +13,13 @@
 #ifndef POLLY_SCEV_RANGE_ANALYSER_H
 #define POLLY_SCEV_RANGE_ANALYSER_H 1
 
+#include "llvm/Transforms/Utils/FullInstNamer.h"
+#include "llvm/Analysis/AliasSetTracker.h"
+#include "llvm/Analysis/RegionInfo.h"
+#include "llvm/Analysis/ScalarEvolutionExpander.h"
+#include "llvm/IR/Module.h"
+#include <map>
+
 namespace llvm {
 class ScalarEvolution;
 class AliasAnalysis;
