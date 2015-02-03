@@ -11,9 +11,10 @@
 #include <cerrno>
 #include <cstdio>
 #include <map>
-#include <error.h>
 #include <malloc.h>
 #include <limits.h>
+#include <stdarg.h>
+#include <string.h>
 
 using namespace std;
 
@@ -25,6 +26,19 @@ typedef std::map< void *, void *, std::greater<void *>, BootstrapAllocator< std:
 static size_t  sampling_rate;
 static Map    *lut;
 static FILE   *file;
+
+static void _error(int exit_status, const char *msg, ...) {
+  va_list ap;
+
+  fprintf(stderr, "Error: ");
+  va_start(ap, msg);
+  vfprintf(stderr, msg, ap);
+  va_end(ap);
+  if (errno)
+    fprintf(stderr, ": %s", strerror(errno));
+  fprintf(stderr, "\n");
+  exit(exit_status);
+}
 
 // TODO: pass all alias pairs for a loop in at once
 void gcg_trace_alias_pair(const char *loop, const char *name1, void *ptr1, const char *name2, void *ptr2) 
@@ -57,7 +71,7 @@ extern "C" void memtrack_dumpArrayBounds(const char *region, const char *valueNa
   auto it = lut->lower_bound(value);
 
   if(it->first == nullptr)
-    error(1, errno, "Could not track value '%s'\n", valueName);
+    _error(1, "Could not track value '%s'\n", valueName);
 
   fprintf(stdout, "Region '%s' - Value '%s' :\n- value = %p\n- guess = [ %p , %p ]\n- real  = [ %p , %p ]\n", 
                        region,   valueName,           value,        lowGuess, upGuess,    it->first, it->second);
@@ -133,7 +147,7 @@ static inline FILE *init_tracer()
   FILE *file = fopen(path, "w");
 
   if(file == nullptr)
-    error(1, errno, "Could not open trace file '%s'", path);
+    _error(1, "Could not open trace file '%s'", path);
 
   return file;
 }
@@ -151,19 +165,15 @@ static inline size_t init_sampling_rate()
     // Check for various possible errors
 
     if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) || (errno != 0 && val == 0))
-      error(1, errno, "Error parsing SAMPLING_RATE");
+      _error(1, "Error parsing SAMPLING_RATE");
 
-    if (endptr == env_rate) {
-      fprintf(stderr, "Error parsing SAMPLING_RATE: No digits were found\n");
-      exit(EXIT_FAILURE);
-    }
+    if (endptr == env_rate)
+      _error(1, "Error parsing SAMPLING_RATE: No digits were found\n");
 
     // If we got here, strtol() successfully parsed a number
 
-    if (*endptr != '\0') {
-      fprintf(stderr, "Error parsing SAMPLING_RATE: Characters after number: %s\n", endptr);
-      exit(EXIT_FAILURE);
-    }
+    if (*endptr != '\0')
+      _error(1, "Error parsing SAMPLING_RATE: Characters after number: %s\n", endptr);
 
     rate = val;
   }

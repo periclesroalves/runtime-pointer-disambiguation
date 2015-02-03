@@ -17,6 +17,10 @@ extern "C"
 #include <sys/mman.h>
 }
 
+#ifndef MAP_ANONYMOUS
+#  define MAP_ANONYMOUS MAP_ANON
+#endif
+
 template<typename T>
 class BootstrapAllocator
 {
