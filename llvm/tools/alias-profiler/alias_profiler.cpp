@@ -4,10 +4,8 @@
 */
 
 #include "alias_profiler.h"
-#include "bootstrap_allocator.hpp"
 
-#include <map>         // the only C++ dependencies
-#include <type_traits>
+#include <map> // the only C++ dependency
 
 #include <dlfcn.h>
 #include <errno.h>
@@ -25,17 +23,19 @@
           : _error(1, "Assertion failure: " #EXPR ": " FMT, ## ARGS))
 #endif
 
-using Map = std::map<void*, void*, std::greater<void*>, BootstrapAllocator<std::pair<void*, void*>>>;
+static void _error(int exit_status, const char *msg, ...);
+
+#include "bootstrap_allocator.hpp"
+
+using Map = std::map<void*, void*, std::greater<void*>, BootstrapAllocator<std::pair<void*,void*>>>;
 
 static size_t  sampling_rate;
 static FILE   *trace_file;
-static std::aligned_storage<sizeof(Map)> lut;
+static char    lut[sizeof(Map)];
 
 static void *(*libc_malloc)(size_t);
-static void  (*libc_free)(void*);
 static void *(*libc_memalign)(size_t, size_t);
-
-static void _error(int exit_status, const char *msg, ...);
+static void (*libc_free)(void*);
 
 static Map& malloc_table();
 
@@ -184,20 +184,21 @@ static void init_alias_tracer()
   ASSERT(trace_file    == nullptr, "init_alias_tracer called twice");
   ASSERT(sampling_rate == 0,       "init_alias_tracer called twice");
 
+  /// must be done before `malloc', `free', etc., are called
+
   new (reinterpret_cast<void*>(&lut)) Map();
 
-  libc_malloc   = (void *(*)(size_t))         dlsym(RTLD_NEXT, "malloc");
-  libc_free     = (void  (*)(void*))          dlsym(RTLD_NEXT, "free");
-  libc_memalign = (void *(*)(size_t, size_t)) dlsym(RTLD_NEXT, "memalign");
+  libc_malloc   = (void *(*)(size_t))         (void*) dlsym(RTLD_NEXT, "malloc");
+  libc_memalign = (void *(*)(size_t, size_t)) (void*) dlsym(RTLD_NEXT, "memalign");
+  libc_free     = (void (*)(void*))           (void*) dlsym(RTLD_NEXT, "free");
+
+  /// these call malloc
 
   trace_file    = init_trace_file();
   sampling_rate = init_sampling_rate();
 }
 
-
 void* malloc(size_t size) {
-  // puts("malloc");
-
   ASSERT(libc_malloc, "malloc called before init_alias_tracer");
 
   void *ptr = libc_malloc(size);
@@ -209,15 +210,13 @@ void* malloc(size_t size) {
 
 void free(void *ptr) {
   ASSERT(libc_free, "free called before init_alias_tracer");
-
+ 
   libc_free(ptr);
 
   malloc_table().erase(ptr);
 }
 
 void *memalign(size_t alignment, size_t size) {
-  // printf("memalign %zu\n", size);
-
   ASSERT(libc_memalign, "memalign called before init_alias_tracer");
 
   void *ptr = libc_memalign(alignment, size);

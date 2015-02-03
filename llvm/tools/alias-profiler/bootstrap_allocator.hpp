@@ -12,7 +12,6 @@
 
 extern "C"
 {
-#include <assert.h>
 #include <unistd.h>
 #include <sys/mman.h>
 }
@@ -38,7 +37,7 @@ private:
 public:
 	typedef T 			value_type;
 	typedef value_type* 		pointer;
-            typedef const value_type* 	const_pointer;
+	typedef const value_type* 	const_pointer;
 	typedef value_type& 		reference;
 	typedef const value_type& 	const_reference;
 	typedef std::size_t 		size_type;
@@ -50,14 +49,13 @@ public:
 		typedef BootstrapAllocator<U> other;
 	};
 
-	pointer		address(reference r) 		const { return &r; }
-	const_pointer	address(const_reference r) 	const { return &r; }
+	pointer       address(reference r)       const { return &r; }
+	const_pointer address(const_reference r) const { return &r; }
 
 	BootstrapAllocator(void) /*throw()*/
 	{
 		long pageSize = sysconf(_SC_PAGESIZE);
-		/*if(pageSize == -1) throw std::runtime_error(std::string("Unable to get pagesize"));*/
-		assert(pageSize != -1);
+		ASSERT(pageSize > 0, "Could not get system page size");
 
 		this->pageSize = pageSize;
 		freeList = nullptr;
@@ -66,7 +64,7 @@ public:
 		if(spacing < sizeof(Chain)) spacing = sizeof(Chain);
 	}
 
-            template<typename U>
+	template<typename U>
 	BootstrapAllocator(const BootstrapAllocator<U> & other) : BootstrapAllocator() {}
 
 	~BootstrapAllocator() /*throw()*/
@@ -86,7 +84,7 @@ public:
 		}
 
 		/*if(nbFoundPages < nbAllocatedPages) throw std::runtime_error("BootstrapAllocator destruction : not everything was freed");*/
-		assert(nbFoundPages == nbAllocatedPages);
+		ASSERT(nbFoundPages == nbAllocatedPages, "");
 
 		for(size_t i = 0; i < nbFoundPages; ++i) munmap(pages[i], pageSize);
 	}
@@ -100,8 +98,7 @@ public:
 		if(freeList == nullptr)
 		{
 			void *page = mmap(NULL, pageSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-			/*if(page == MAP_FAILED) throw std::bad_alloc();*/
-			assert(page != MAP_FAILED);
+			ASSERT(page != MAP_FAILED, "Could not mmap page of size %lu", pageSize);
 
 			nbAllocatedPages++;
 			// Cut page into blocks
