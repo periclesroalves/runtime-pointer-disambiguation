@@ -18,6 +18,7 @@
 #include "llvm/Analysis/RegionInfo.h"
 #include "llvm/Analysis/ScalarEvolutionExpander.h"
 #include "llvm/IR/Module.h"
+#include "polly/SCEVRangeAnalyser.h"
 #include <map>
 
 namespace llvm {
