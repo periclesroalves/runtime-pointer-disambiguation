@@ -16,7 +16,7 @@
 
 /// we can't use libc's assert since that calls malloc
 #ifdef NDEBUG
-# define ASSERT(EXPR, FMT, ARGS...) static_cast<void>()
+# define ASSERT(EXPR, FMT, ARGS...) static_cast<void>(0)
 #else
 # define ASSERT(EXPR, FMT, ARGS...) \
   ((EXPR) ? static_cast<void>(0) \
