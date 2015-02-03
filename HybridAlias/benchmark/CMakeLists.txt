@@ -24,12 +24,17 @@ endif()
 
 ### FIND EXECUTABLES USED BY BUILD
 
-## find LLVMs opt
+## find LLVM tools
 
-find_program(OPT "opt" NO_DEFAULT_PATH PATHS "${LLVM_TOOLS_BINARY_DIR}")
+find_program(OPT              "opt"              NO_DEFAULT_PATH PATHS "${LLVM_TOOLS_BINARY_DIR}")
+find_program(ALIAS_INSTRUMENT "alias-instrument" NO_DEFAULT_PATH PATHS "${LLVM_TOOLS_BINARY_DIR}")
 
 if ("${OPT}" STREQUAL "OPT-NOTFOUND")
 	message(FATAL_ERROR "Could not find opt executable")
+endif()
+
+if ("${ALIAS_INSTRUMENT}" STREQUAL "ALIAS_INSTRUMENT-NOTFOUND")
+	message(FATAL_ERROR "Could not find alias-instrument executable")
 endif()
 
 ## find python
@@ -104,7 +109,7 @@ foreach(CPP_FILE ${BENCHMARKS})
 	## created instrumented .ll
 	add_custom_command(
 		OUTPUT  "${LL_INSTRUMENTED}"
-		COMMAND "$<TARGET_FILE:alias-instrument>" "${LL_INPUT}" -instrument-only=AA_ -o "${LL_INSTRUMENTED}"
+		COMMAND "${ALIAS_INSTRUMENT}" "${LL_INPUT}" -instrument-only=AA_ -o "${LL_INSTRUMENTED}"
 		DEPENDS "${LL_INPUT}" alias-instrument
 		VERBATIM
 	)

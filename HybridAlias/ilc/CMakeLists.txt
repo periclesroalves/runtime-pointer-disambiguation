@@ -39,23 +39,6 @@ target_link_libraries(canonicalize
 	LLVMDebugInfo
 )
 
-add_executable(alias-instrument
-	TraceLoopAliasWrapper.cpp
-	BasePtrInfo.cpp
-)
-
-target_link_libraries(alias-instrument
-	# LLVM
-	LLVMCore
-	LLVMBitReader LLVMBitWriter
-	LLVMIRReader
-	LLVMTransformUtils LLVMAnalysis
-	LLVMSupport
-	LLVMOption
-	LLVMDebugInfo
-	LLVMInstrumentation
-)
-
 add_executable(clone-loops
 	ILCWrapper.cpp
 	ILC.cpp
@@ -95,7 +78,7 @@ target_link_libraries(perf-instrument
 add_library(perf MODULE perflib.cpp)
 
 ## set where executables & libraries will be placed
-INSTALL(TARGETS canonicalize alias-instrument clone-loops perf-instrument perf
+INSTALL(TARGETS canonicalize clone-loops perf-instrument perf
 	RUNTIME DESTINATION bin
 	LIBRARY DESTINATION lib
 )
