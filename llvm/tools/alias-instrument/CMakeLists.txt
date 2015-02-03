@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+
 set(LLVM_LINK_COMPONENTS
   ${LLVM_TARGETS_TO_BUILD}
   Analysis
