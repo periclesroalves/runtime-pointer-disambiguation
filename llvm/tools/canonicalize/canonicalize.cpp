@@ -9,20 +9,8 @@
  *  - full-instnamer ... so all instructions have a name
  */
 
-#include "ilc/BasePtrInfo.h"
-#include <llvm/Transforms/Utils/FullInstNamer.h>
-
-#include "llvm/InitializePasses.h"
-#include <llvm/Pass.h>
-#include <llvm/Analysis/LoopPass.h>
-#include <llvm/Analysis/AliasAnalysis.h>
-#include <llvm/IR/Dominators.h>
-#include "llvm/Support/CommandLine.h"
 #include <string>
-
-
 #include <assert.h>                     // for assert
-#include <llvm/IR/ValueSymbolTable.h>   // for ValueSymbolTable
 #include <stddef.h>                     // for size_t
 #include <stdlib.h>                     // for exit
 #include <sys/types.h>                  // for int32_t, int64_t
@@ -32,6 +20,14 @@
 #include <type_traits>                  // for remove_reference<>::type
 #include <utility>                      // for make_pair
 #include <vector>                       // for vector
+
+#include "llvm/InitializePasses.h"
+#include <llvm/Pass.h>
+#include <llvm/Analysis/LoopPass.h>
+#include <llvm/Analysis/AliasAnalysis.h>
+#include <llvm/IR/Dominators.h>
+#include "llvm/Support/CommandLine.h"
+#include <llvm/IR/ValueSymbolTable.h>   // for ValueSymbolTable
 #include "llvm/ADT/APInt.h"             // for APInt
 #include "llvm/ADT/ArrayRef.h"          // for ArrayRef
 #include "llvm/ADT/StringMap.h"         // for StringMap, StringMapEntry, etc
@@ -62,8 +58,6 @@
 #include "llvm/Support/raw_ostream.h"   // for raw_ostream, errs, etc
 #include "llvm/Support/Debug.h"
 #include "llvm/IR/TypeBuilder.h"
-#include "ilc/Common.h"
-
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/LLVMContext.h"
@@ -73,6 +67,9 @@
 #include "llvm/PassManager.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/SourceMgr.h"
+#include <llvm/Transforms/Utils/FullInstNamer.h>
+#include <llvm/Analysis/BasePointers.h>
+#include <llvm/Support/CorseCommon.h>
 
 using namespace llvm;
 using namespace std;

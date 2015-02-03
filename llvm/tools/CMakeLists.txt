@@ -55,6 +55,7 @@ add_llvm_tool_subdirectory(yaml2obj)
 add_llvm_tool_subdirectory(alias-instrument)
 add_llvm_tool_subdirectory(alias-profiler)
 add_llvm_tool_subdirectory(perf-instrument-regions)
+add_llvm_tool_subdirectory(canonicalize)
 
 if(NOT CYGWIN AND LLVM_ENABLE_PIC)
   add_llvm_tool_subdirectory(lto)
