@@ -34,6 +34,7 @@ void polly::registerCanonicalicationPasses(llvm::PassManagerBase &PM,
   if (!SCEVCodegen)
     PM.add(polly::createIndVarSimplifyPass());
 
+  PM.add(llvm::createLICMPass());
   PM.add(polly::createCodePreparationPass());
 }
 
