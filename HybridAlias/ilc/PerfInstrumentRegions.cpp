@@ -132,50 +132,6 @@ static Constant* getPointerTo(LLVMContext& ctx, GlobalValue *global) {
 /// sanity check for layout of struct ProfilingData in C and LLVM
 static void checkProfilingDataStructLayout(const DataLayout *dl, StructType *pp_ty);
 
-/// Helper for creating string constants
-struct GlobalStringBuilder {
-	GlobalStringBuilder(Module *mod)
-		: module{mod}
-		, ctx(mod->getContext())
-	{}
-
-	Constant* create(StringRef str)
-	{
-		assert(!str.empty() && "Tried to create empty string constant");
-
-		auto global_entry = cache.find(str);
-
-		if (global_entry != cache.end())
-			return global_entry->second;
-
-		// create global variable
-
-		auto constant_data = ConstantDataArray::getString(ctx, str);
-
-		auto global = new GlobalVariable{
-			*module,
-			constant_data->getType(),
-			true,
-			GlobalValue::PrivateLinkage,
-			constant_data,
-			".str"
-		};
-		global->setAlignment(1);
-
-		// create pointer to start of global
-
-		auto global_ptr = getPointerTo(ctx, global);
-
-		cache.insert(make_pair(str, global_ptr));
-
-		return global_ptr;
-	}
-private:
-	Module              *module;
-	LLVMContext&         ctx;
-	StringMap<Constant*> cache;
-};
-
 static string removeSuffix(string str, string suffix);
 
 static void emitIncrementProfileData(LLVMContext& ctx, IRBuilder<>& irb, Constant *profile_data, uint32_t field, Value *increment)
@@ -258,8 +214,6 @@ int main(int argc, char **argv) {
 	auto instrument = [&](Module *module, vector<CloningInfo>& regions) {
 		DEBUG(fancy_dbgs() << "Instrumenting " << module->getModuleIdentifier() << "\n");
 
-		GlobalStringBuilder strings{module};
-
 		// ** Type Definitions
 		DEBUG(fancy_dbgs() << "\tCreating LLVM types\n");
 
@@ -296,9 +250,11 @@ int main(int argc, char **argv) {
 
 		for (auto& region : regions)
 		{
+			IRBuilder<> IRB{region.header};
+
 			vector<Constant*> fields = {
-				strings.create(fin.getNameOrFail(argv[0], region.function)),
-				strings.create(fin.getNameOrFail(argv[0], region.header)),
+				cast<Constant>(IRB.CreateGlobalStringPtr(fin.getNameOrFail(argv[0], region.function))),
+				cast<Constant>(IRB.CreateGlobalStringPtr(fin.getNameOrFail(argv[0], region.header))),
 				zero,
 				zero,
 			};
@@ -502,7 +458,7 @@ int main(int argc, char **argv) {
 
 			CallInst* call = irb.CreateCall3(
 				func_perf_printSummary,
-				strings.create(module->getModuleIdentifier()),
+				irb.CreateGlobalStringPtr(module->getModuleIdentifier()),
 				num_profile_points,
 				getPointerTo(ctx, gvar_array_ProfileData)
 			);
