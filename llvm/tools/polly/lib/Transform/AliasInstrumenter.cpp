@@ -185,32 +185,13 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
   return true;
 }
 
-
-// Creates a global string constant and returns a pointer to it
-Value *AliasInstrumenter::getOrInsertGlobalString(StringRef str, BuilderType &builder)
-{
-  assert(!str.empty() && "Tried to create empty string constant");
- 
-  // look up in map
-  std::map<StringRef, Value*>::iterator I = string2Value.find(str);
- 
-  if(I != string2Value.end()) return I->second;
- 
-  Value *globalStr = builder.CreateGlobalStringPtr(str);
- 
-  //update map
-  string2Value[str] = globalStr;
-
-  return globalStr;
-}
-
 // Prints the array bounds of a value
 void AliasInstrumenter::printArrayBounds(Value *v, Value *l, Value *u, Region *r, BuilderType &builder, SCEVRangeAnalyser& rangeAnalyser)
 {
   errs() << "Tracing value " << fin->getName(v) << " in region " << fin->getName(r->getEntry()) << "\n";
 
-  Value *regName = getOrInsertGlobalString(fin->getName(r->getEntry()), builder);
-  Value *valName = getOrInsertGlobalString(fin->getName(v), builder);
+  Value *regName = builder.CreateGlobalStringPtr(fin->getName(r->getEntry()));
+  Value *valName = builder.CreateGlobalStringPtr(fin->getName(v));
 
   Value *val = rangeAnalyser.InsertNoopCastOfTo(v, builder.getInt8PtrTy());
   Value *low = rangeAnalyser.InsertNoopCastOfTo(l, builder.getInt8PtrTy());
