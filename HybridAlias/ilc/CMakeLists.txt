@@ -23,22 +23,6 @@ target_link_libraries(print-base-ptrs
 	pthread dl m
 )
 
-add_executable(canonicalize
-	Canonicalize.cpp
-	Common.cpp
-)
-
-target_link_libraries(canonicalize
-	# LLVM
-	LLVMCore
-	LLVMBitReader LLVMBitWriter
-	LLVMIRReader
-	LLVMTransformUtils LLVMAnalysis
-	LLVMSupport
-	LLVMOption
-	LLVMDebugInfo
-)
-
 add_executable(clone-loops
 	ILCWrapper.cpp
 	ILC.cpp
@@ -78,7 +62,7 @@ target_link_libraries(perf-instrument
 add_library(perf MODULE perflib.cpp)
 
 ## set where executables & libraries will be placed
-INSTALL(TARGETS canonicalize clone-loops perf-instrument perf
+INSTALL(TARGETS clone-loops perf-instrument perf
 	RUNTIME DESTINATION bin
 	LIBRARY DESTINATION lib
 )
