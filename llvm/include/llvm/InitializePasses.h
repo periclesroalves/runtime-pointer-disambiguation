@@ -145,7 +145,6 @@ void initializeInlineCostAnalysisPass(PassRegistry&);
 void initializeInstCombinerPass(PassRegistry&);
 void initializeInstCountPass(PassRegistry&);
 void initializeInstNamerPass(PassRegistry&);
-void initializeFullInstNamerPass(PassRegistry&);
 void initializeInternalizePassPass(PassRegistry&);
 void initializeIntervalPartitionPass(PassRegistry&);
 void initializeJumpInstrTableInfoPass(PassRegistry&);
@@ -282,6 +281,10 @@ void initializeMachineFunctionPrinterPassPass(PassRegistry&);
 void initializeStackMapLivenessPass(PassRegistry&);
 void initializeMachineCombinerPass(PassRegistry &);
 void initializeLoadCombinePass(PassRegistry&);
+
+void initializeFullInstNamerPass(PassRegistry&);
+void initializeAliasTracerPass(PassRegistry&);
+void initializeAliasTracerModuleHelperPass(PassRegistry&);
 }
 
 #endif

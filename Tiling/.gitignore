@@ -1,0 +1,12 @@
+build/*
+test/*
+*~
+*.jar
+*.o
+*.ll
+*.out
+jacobi3d_generated.cc
+.emacs*
+.externalToolBuilders
+.cproject
+.project

@@ -79,7 +79,6 @@ include_directories(${PROJECT_SOURCE_DIR})
 enable_testing()
 
 add_subdirectory(ilc)
-add_subdirectory(runtime)
 add_subdirectory(benchmark)
 
 install(

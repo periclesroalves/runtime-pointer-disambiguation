@@ -60,12 +60,8 @@ class DeclareTraceFunction : public ModulePass
 
 class MallocBoundsTracer: public LoopPass
 {
-  Instruction      *insertBefore;
-  StringMap<Value*> string2Value;
-
-  Value* getOrInsertGlobalString(StringRef str);
-
-  public:
+  Instruction *insertBefore;
+public:
   static char ID;
 
   MallocBoundsTracer() : LoopPass(ID) {}
@@ -88,30 +84,10 @@ class MallocBoundsTracer: public LoopPass
 } // end anonymous namespace
 
 
-/****************** PRIVATE API *****************/
-
-// Creates a global string constant and returns a pointer to it
-Value *MallocBoundsTracer::getOrInsertGlobalString(StringRef str)
-{
-  assert(!str.empty() && "Tried to create empty string constant");
-
-  // look up in map
-  StringMap<Value*>::iterator I = string2Value.find(str);
-
-  if(I != string2Value.end()) return I->second;
-
-  IRBuilder<> IRB(insertBefore);
-
-  Value *globalStr = IRB.CreateGlobalStringPtr(str);
-
-  // update map
-  string2Value[str] = globalStr;
-
-  return globalStr;
-}
+/********************* PRIVATE API ***********************/
 
 
-/********************* PUBLIC API ***********************/
+/********************* PUBLIC API  ***********************/
 
 char DeclareTraceFunction::ID = 0;
 static RegisterPass<DeclareTraceFunction> X(
@@ -221,8 +197,8 @@ bool MallocBoundsTracer::runOnLoop(Loop *L, LPPassManager &LPM)
     // cast to Int8PtrTy if needed
     Value *ptr = base_ptr->getType() == IRB.getInt8PtrTy() ? base_ptr : IRB.CreatePointerCast(base_ptr, IRB.getInt8PtrTy());
 
-    Value *loop_name = getOrInsertGlobalString(loopName);
-    Value *ptr_name  = getOrInsertGlobalString(FIN.getName(base_ptr));
+    Value *loop_name = IRB.CreateGlobalStringPtr(loopName);
+    Value *ptr_name  = IRB.CreateGlobalStringPtr(FIN.getName(base_ptr));
 
     IRB.CreateCall3(trace_fn, loop_name, ptr_name, ptr);
   }

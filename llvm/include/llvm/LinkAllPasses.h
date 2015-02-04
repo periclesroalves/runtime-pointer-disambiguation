@@ -142,7 +142,6 @@ namespace {
       (void) llvm::createLoopDeletionPass();
       (void) llvm::createPostDomTree();
       (void) llvm::createInstructionNamerPass();
-      (void) llvm::createFullInstructionNamerPass();
       (void) llvm::createMetaRenamerPass();
       (void) llvm::createFunctionAttrsPass();
       (void) llvm::createMergeFunctionsPass();
@@ -163,6 +162,10 @@ namespace {
       (void) llvm::createPartiallyInlineLibCallsPass();
       (void) llvm::createScalarizerPass();
       (void) llvm::createSeparateConstOffsetFromGEPPass();
+
+      (void) llvm::createFullInstructionNamerPass();
+      (void) llvm::createAliasTracerPass();
+      (void) llvm::createAliasTracerModuleHelperPass();
 
       (void)new llvm::IntervalPartition();
       (void)new llvm::FindUsedTypes();

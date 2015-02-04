@@ -27,7 +27,8 @@ namespace yaml {
 }
 }
 
-using BasePair = std::pair<llvm::Value*, llvm::Value*>;
+using BasePair    = std::pair<llvm::Value*, llvm::Value*>;
+using BasePairSet = std::set<BasePair>;
 
 struct AliasPairs {
 	std::set<BasePair> should_alias_exact;
@@ -103,6 +104,8 @@ struct InsertionPoint {
 
 	llvm::Value*       operator->()       { return val; }
 	const llvm::Value* operator->() const { return val; }
+
+	explicit operator bool() const { return val; }
 private:
 	llvm::Value *val;
 };

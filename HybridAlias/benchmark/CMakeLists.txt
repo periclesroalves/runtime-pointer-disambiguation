@@ -12,6 +12,7 @@ set(BENCHMARKS
 	double_memset.cpp
 	dotprod.cpp
 	fft.cpp
+	sum.cpp
 )
 
 ## split command line args because add_custom_command excepts a list
@@ -21,14 +22,24 @@ else()
 	separate_arguments(cxx_flags UNIX_COMMAND    "${CMAKE_CXX_FLAGS}")
 endif()
 
-### FIND EXECUTABLES USED BY BUILD
+### FIND EXECUTABLES & LIBRARIES USED BY BUILD
 
-## find LLVMs opt
+## find LLVM tools & libs
 
-find_program(OPT "opt" NO_DEFAULT_PATH PATHS "${LLVM_TOOLS_BINARY_DIR}")
+find_program(OPT              "opt"              NO_DEFAULT_PATH PATHS "${LLVM_TOOLS_BINARY_DIR}")
+find_program(ALIAS_INSTRUMENT "alias-instrument" NO_DEFAULT_PATH PATHS "${LLVM_TOOLS_BINARY_DIR}")
+find_library(ALIAS_PROFILER   "alias-profiler"   NO_DEFAULT_PATH PATHS "${LLVM_LIBRARY_DIRS}")
 
 if ("${OPT}" STREQUAL "OPT-NOTFOUND")
 	message(FATAL_ERROR "Could not find opt executable")
+endif()
+
+if ("${ALIAS_INSTRUMENT}" STREQUAL "ALIAS_INSTRUMENT-NOTFOUND")
+	message(FATAL_ERROR "Could not find alias-instrument executable")
+endif()
+
+if ("${ALIAS_PROFILER}" STREQUAL "ALIAS_PROFILER-NOTFOUND")
+	message(FATAL_ERROR "Could not find alias-profiler executable")
 endif()
 
 ## find python
@@ -103,7 +114,7 @@ foreach(CPP_FILE ${BENCHMARKS})
 	## created instrumented .ll
 	add_custom_command(
 		OUTPUT  "${LL_INSTRUMENTED}"
-		COMMAND "$<TARGET_FILE:alias-instrument>" "${LL_INPUT}" -instrument-only=AA_ -o "${LL_INSTRUMENTED}"
+		COMMAND "${ALIAS_INSTRUMENT}" "${LL_INPUT}" -instrument-only=AA_ -o "${LL_INSTRUMENTED}"
 		DEPENDS "${LL_INPUT}" alias-instrument
 		VERBATIM
 	)
@@ -141,9 +152,8 @@ foreach(CPP_FILE ${BENCHMARKS})
 	)
 	add_custom_command(
 		OUTPUT  "${INSTRUMENTED_BENCHMARK}"
-		COMMAND ${CLANGXX} ${cxx_flags} -O3 "${LL_INSTRUMENTED_O3}" "$<TARGET_LINKER_FILE:benchmark>" "$<TARGET_LINKER_FILE:bench_util>" -lpthread "-Wl,-rpath,${CMAKE_BINARY_DIR}/runtime/" "-L${CMAKE_BINARY_DIR}/runtime/" -lmemtrack -o "${INSTRUMENTED_BENCHMARK}"
+		COMMAND ${CLANGXX} ${cxx_flags} -O3 "${LL_INSTRUMENTED_O3}" "$<TARGET_LINKER_FILE:benchmark>" "$<TARGET_LINKER_FILE:bench_util>" -lpthread "-Wl,-rpath,$<TARGET_LINKER_FILE_DIR:alias-profiler>" "-L$<TARGET_LINKER_FILE_DIR:alias-profiler>" -lalias-profiler -o "${INSTRUMENTED_BENCHMARK}"
 		DEPENDS "${LL_INSTRUMENTED_O3}"
-		        memtrack
 		        benchmark
 		        bench_util
 		VERBATIM
@@ -199,9 +209,8 @@ foreach(CPP_FILE ${BENCHMARKS})
 	## link benchmark executables
 	add_custom_command(
 		OUTPUT  "${SPECULATIVE_BENCHMARK}"
-		COMMAND ${CLANGXX} ${cxx_flags} -O3 "${LL_SPECULATIVE_O3}" "$<TARGET_LINKER_FILE:benchmark>" "$<TARGET_LINKER_FILE:bench_util>" -lpthread "-Wl,-rpath,$<TARGET_LINKER_FILE_DIR:memtrack>" "-L$<TARGET_LINKER_FILE_DIR:memtrack>" -lmemtrack -o "${SPECULATIVE_BENCHMARK}"
+		COMMAND ${CLANGXX} ${cxx_flags} -O3 "${LL_SPECULATIVE_O3}" "$<TARGET_LINKER_FILE:benchmark>" "$<TARGET_LINKER_FILE:bench_util>" -lpthread "-Wl,-rpath,$<TARGET_LINKER_FILE_DIR:alias-profiler>" "-L$<TARGET_LINKER_FILE_DIR:alias-profiler>" -lalias-profiler -o "${SPECULATIVE_BENCHMARK}"
 		DEPENDS "${LL_SPECULATIVE_O3}"
-		        memtrack
 		        benchmark
 		        bench_util
 		VERBATIM
@@ -246,11 +255,10 @@ foreach(CPP_FILE ${BENCHMARKS})
 	)
 	add_custom_command(
 		OUTPUT  "${SPECULATIVE_PERF_BENCHMARK}"
-		COMMAND ${CLANGXX} ${cxx_flags} -O3 "${LL_SPECULATIVE_PERF_O3}" "$<TARGET_LINKER_FILE:perf>" "$<TARGET_LINKER_FILE:benchmark>" "$<TARGET_LINKER_FILE:bench_util>" -lpthread "-Wl,-rpath,$<TARGET_LINKER_FILE_DIR:memtrack>" "-L$<TARGET_LINKER_FILE_DIR:memtrack>" -lmemtrack "-Wl,-rpath,$<TARGET_LINKER_FILE_DIR:perf>" "-L$<TARGET_LINKER_FILE_DIR:perf>" -lperf -o "${SPECULATIVE_PERF_BENCHMARK}"
+		COMMAND ${CLANGXX} ${cxx_flags} -O3 "${LL_SPECULATIVE_PERF_O3}" "$<TARGET_LINKER_FILE:perf>" "$<TARGET_LINKER_FILE:benchmark>" "$<TARGET_LINKER_FILE:bench_util>" -lpthread "-Wl,-rpath,$<TARGET_LINKER_FILE_DIR:alias-profiler>" "-L$<TARGET_LINKER_FILE_DIR:alias-profiler>" -lalias-profiler "-Wl,-rpath,$<TARGET_LINKER_FILE_DIR:perf>" "-L$<TARGET_LINKER_FILE_DIR:perf>" -lperf -o "${SPECULATIVE_PERF_BENCHMARK}"
 		DEPENDS "${LL_SPECULATIVE_PERF_O3}"
 		        bench_util
 		        benchmark
-		        memtrack
 		VERBATIM
 	)
 
@@ -299,9 +307,8 @@ foreach(CPP_FILE ${BENCHMARKS})
 	## link final executable
 	add_custom_command(
 		OUTPUT  "${FINAL_BENCHMARK}"
-		COMMAND ${CLANGXX} ${cxx_flags} -O3 "${LL_FINAL_O3}" "$<TARGET_LINKER_FILE:benchmark>" "$<TARGET_LINKER_FILE:bench_util>" -lpthread "-Wl,-rpath,$<TARGET_LINKER_FILE_DIR:memtrack>" "-L$<TARGET_LINKER_FILE_DIR:memtrack>" -lmemtrack -o "${FINAL_BENCHMARK}"
+		COMMAND ${CLANGXX} ${cxx_flags} -O3 "${LL_FINAL_O3}" "$<TARGET_LINKER_FILE:benchmark>" "$<TARGET_LINKER_FILE:bench_util>" -lpthread "-Wl,-rpath,$<TARGET_LINKER_FILE_DIR:alias-profiler>" "-L$<TARGET_LINKER_FILE_DIR:alias-profiler>" -lalias-profiler -o "${FINAL_BENCHMARK}"
 		DEPENDS "${LL_FINAL_O3}"
-		        memtrack
 		        benchmark
 		        bench_util
 		VERBATIM

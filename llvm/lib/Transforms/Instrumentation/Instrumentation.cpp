@@ -28,6 +28,9 @@ void llvm::initializeInstrumentation(PassRegistry &Registry) {
   initializeMemorySanitizerPass(Registry);
   initializeThreadSanitizerPass(Registry);
   initializeDataFlowSanitizerPass(Registry);
+
+  initializeAliasTracerPass(Registry);
+  initializeAliasTracerModuleHelperPass(Registry);
 }
 
 /// LLVMInitializeInstrumentation - C binding for
