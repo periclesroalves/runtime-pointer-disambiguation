@@ -49,10 +49,7 @@
 
 #include "llvm/Pass.h"
 #include "llvm/Analysis/AliasSetTracker.h"
-#include "llvm/Analysis/DominanceFrontier.h"
-#include "llvm/Transforms/Utils/FullInstNamer.h"
 
-#include "polly/AliasInstrumenter.h"
 #include "polly/ScopDetectionDiagnostic.h"
 
 #include <set>
@@ -63,9 +60,6 @@ using namespace llvm;
 namespace llvm {
 class RegionInfo;
 class Region;
-class DominatorTree;
-class DominanceFrontier;
-struct PostDominatorTree;
 class LoopInfo;
 class Loop;
 class ScalarEvolution;
@@ -131,10 +125,6 @@ class ScopDetection : public FunctionPass {
   LoopInfo *LI;
   RegionInfo *RI;
   AliasAnalysis *AA;
-  DominatorTree *DT;
-  PostDominatorTree *PDT;
-  DominanceFrontier *DF;
-  FullInstNamer *FIN;
   //@}
 
   /// @brief Context variables for SCoP detection.
@@ -158,8 +148,6 @@ class ScopDetection : public FunctionPass {
 
   // Remember a list of errors for every region.
   mutable RejectLogsContainer RejectLogs;
-
-  mutable AliasInstrumenter instrumenter;
 
   // Delinearize all non affine memory accesses and return false when there
   // exists a non affine memory access that cannot be delinearized. Return true

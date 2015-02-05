@@ -6,14 +6,35 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-// Utilities for generating symbolic bounds for a Scalar Evolution expression
-// and instrumenting a program with dynamic alias checks.
+// Instrument regions with runtime checks capable of verifying if there are true
+// dependences or not. This is achieved through address interval comparison
+// between all loads/stores within the region. This pass also does region
+// versioning, based on the dynamic check result.
+//
+// Thee following example:
+//
+//   for (int i = 0; i < N; i++)
+//     A[i] = B[i + M];
+//
+// We would become the following code:
+//
+//   // Tests if access to A and B do not overlap.
+//   if ((A + N - 1 < B) || (B + N + M - 1 < A)) {
+//     // Version of the loop with no depdendencies.
+//     for (int i = 0; i < N; i++)
+//       A[i] = B[i + M];
+//   } else {
+//     // Version of the loop with unknown alias dependencies.
+//     for (int i = 0; i < N; i++)
+//       A[i] = B[i + M];
+//   }
 //===----------------------------------------------------------------------===//
 
 #ifndef POLLY_ALIAS_INSTRUMENTER_H
 #define POLLY_ALIAS_INSTRUMENTER_H
 
 #include "llvm/Transforms/Utils/FullInstNamer.h"
+#include "llvm/Analysis/DominanceFrontier.h"
 #include "llvm/Analysis/AliasSetTracker.h"
 #include "llvm/Analysis/RegionInfo.h"
 #include "llvm/Analysis/ScalarEvolutionExpander.h"
@@ -25,6 +46,9 @@ namespace llvm {
 class ScalarEvolution;
 class AliasAnalysis;
 class SCEV;
+class DominatorTree;
+class DominanceFrontier;
+struct PostDominatorTree;
 class Value;
 class Region;
 class Instruction;
@@ -40,22 +64,24 @@ class DetectionContext;
 
 Function* declareTraceFunction(Module *m);
 
-class AliasInstrumenter {
+class AliasInstrumenter : public FunctionPass {
   typedef IRBuilder<true, TargetFolder> BuilderType;
 
+  // Analyses used.
   ScalarEvolution *se;
-  const ScopDetection *sd;
   AliasAnalysis *aa;
   LoopInfo *li;
+  RegionInfo *ri;
+  DominatorTree *dt;
+  PostDominatorTree *pdt;
+  DominanceFrontier *df;
   FullInstNamer *fin;
+
   Function *currFn;
   Function *trace_fn;
 
   // Metadata domain to be used by alias metadata.
   MDNode *mdDomain = nullptr;
-
-  // If set, halt on dependencies, without instrumenting.
-  bool verifyingOnly;
 
   // List of dynamic checks generated while solving dependencies. Each value
   // indicates, at runtime, if the corresponding region is free of dependencies.
@@ -73,14 +99,13 @@ class AliasInstrumenter {
   // calls runtime to print the expected and the real array bounds of a value
   void printArrayBounds(Value *v, Value *l, Value *u, Region *r, BuilderType &builder, SCEVRangeAnalyser& rangeAnalyser);
 public:
-  AliasInstrumenter() {}
+  static char ID;
+  explicit AliasInstrumenter() : FunctionPass(ID) {}
 
-  AliasInstrumenter(ScalarEvolution *se, const ScopDetection *sd, AliasAnalysis *aa,
-                    LoopInfo *li, FullInstNamer *fin, Function *currFn,
-                    Function *trace_fn, bool verifying)
-    : se(se), sd(sd), aa(aa), li(li), fin(fin), currFn(currFn),
-    trace_fn(trace_fn),
-    verifyingOnly(verifying) {}
+  // FunctionPass interface.
+  virtual void getAnalysisUsage(AnalysisUsage &AU) const;
+  virtual bool runOnFunction(Function &F);
+  void releaseMemory() { insertedChecks.clear(); }
 
   // Check for dependencies within the current region, generating dynamic alias
   // checks for all pointers that can't be solved statically. Returns true if
@@ -92,10 +117,6 @@ public:
   std::vector<std::pair<Value *, Region *> > &getInsertedChecks() {
     return insertedChecks;
   }
-
-  void setVerifyingOnly(bool val) { verifyingOnly = val; }
-  bool getVerifyingOnly() {return verifyingOnly;}
-  void releaseMemory() { insertedChecks.clear(); }
 
   // The structure of a region can't be changed while instrumenting it. This
   // method fix the structure of the instrumented regions by simplifying them
@@ -140,5 +161,10 @@ public:
   bool isSafeToSimplify(Region *r);
 };
 } // end namespace polly
+
+namespace llvm {
+class PassRegistry;
+void initializeAliasInstrumenterPass(llvm::PassRegistry &);
+}
 
 #endif

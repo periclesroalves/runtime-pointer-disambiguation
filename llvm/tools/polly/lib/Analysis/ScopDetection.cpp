@@ -63,7 +63,6 @@
 #include "llvm/IR/DiagnosticPrinter.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/Support/Debug.h"
-#include "llvm/Transforms/Utils/FullInstNamer.h"
 #include <set>
 
 using namespace llvm;
@@ -465,6 +464,25 @@ bool ScopDetection::isValidMemoryAccess(Instruction &Inst,
   if (IntToPtrInst *Inst = dyn_cast<IntToPtrInst>(BaseValue))
     return invalid<ReportIntToPtr>(Context, /*Assert=*/true, Inst);
 
+  if (IgnoreAliasing)
+    return true;
+
+  // Check if the base pointer of the memory access does alias with
+  // any other pointer. This cannot be handled at the moment.
+  AliasSet &AS =
+      Context.AST.getAliasSetForPointer(BaseValue, AliasAnalysis::UnknownSize,
+                                        Inst.getMetadata(LLVMContext::MD_tbaa));
+
+  // INVALID triggers an assertion in verifying mode, if it detects that a
+  // SCoP was detected by SCoP detection and that this SCoP was invalidated by
+  // a pass that stated it would preserve the SCoPs. We disable this check as
+  // the independent blocks pass may create memory references which seem to
+  // alias, if -basicaa is not available. They actually do not, but as we can
+  // not proof this without -basicaa we would fail. We disable this check to
+  // not cause irrelevant verification failures.
+  if (!AS.isMustAlias())
+    return invalid<ReportAlias>(Context, /*Assert=*/false, &Inst, AS);
+
   return true;
 }
 
@@ -627,12 +645,12 @@ void ScopDetection::findScops(Region &R) {
   for (auto &SubRegion : R)
     ToExpand.push_back(SubRegion.get());
 
-  // Do not instrument when expanding, as we could break the instrumentation
-  // order.
-  // TODO: we must handle expanded regions, as there usually is a bunch of them.
-  bool wasVerifyingOnly = instrumenter.getVerifyingOnly();
-  instrumenter.setVerifyingOnly(true);
-
+//  // Do not instrument when expanding, as we could break the instrumentation
+//  // order.
+//  // TODO: we must handle expanded regions, as there usually is a bunch of them.
+//  bool wasVerifyingOnly = instrumenter.getVerifyingOnly();
+//  instrumenter.setVerifyingOnly(true);
+//
   for (Region *CurrentRegion : ToExpand) {
     // Skip regions that had errors.
     bool HadErrors = RejectLogs.hasErrors(CurrentRegion);
@@ -657,8 +675,8 @@ void ScopDetection::findScops(Region &R) {
     // regions and update the number of valid regions.
     ValidRegion -= eraseAllChildren(ValidRegions, *ExpandedR);
   }
-
-  instrumenter.setVerifyingOnly(wasVerifyingOnly);
+//
+//  instrumenter.setVerifyingOnly(wasVerifyingOnly);
 }
 
 bool ScopDetection::allBlocksValid(DetectionContext &Context) const {
@@ -679,12 +697,12 @@ bool ScopDetection::allBlocksValid(DetectionContext &Context) const {
       if (!isValidInstruction(*I, Context) && !KeepGoing)
         return false;
 
-  // TODO: if instrumentation fails we need be able to return a report like:
-  //   return invalid<ReportAlias>(context, /*Assert=*/false, &inst, as);
-  if (!IgnoreAliasing &&
-      !instrumenter.checkAndSolveDependencies(&Context.CurRegion))
-    return false;
-
+//  // TODO: if instrumentation fails we need be able to return a report like:
+//  //   return invalid<ReportAlias>(context, /*Assert=*/false, &inst, as);
+//  if (!IgnoreAliasing &&
+//      !instrumenter.checkAndSolveDependencies(&Context.CurRegion))
+//    return false;
+//
   if (!hasAffineMemoryAccesses(Context))
     return false;
 
@@ -822,17 +840,13 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
 
   AA = &getAnalysis<AliasAnalysis>();
   SE = &getAnalysis<ScalarEvolution>();
-  DT = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
-  PDT = &getAnalysis<PostDominatorTree>();
-  DF = &getAnalysis<DominanceFrontier>();
-  FIN = &getAnalysis<FullInstNamer>();
-
-  auto trace_fn = declareTraceFunction(F.getParent());
-
+//
+//  auto trace_fn = declareTraceFunction(F.getParent());
+//
   Region *TopRegion = RI->getTopLevelRegion();
 
-  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, &F, trace_fn,
-                                   /*verifyingOnly*/ false);
+//  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, &F, trace_fn,
+//                                   /*verifyingOnly*/ false);
   releaseMemory();
 
   if (OnlyFunction != "" && !F.getName().count(OnlyFunction))
@@ -843,29 +857,29 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
 
   findScops(*TopRegion);
 
-  // Fix instrumented regions.
-  if (instrumenter.getInsertedChecks().size() > 0) {
-    instrumenter.cloneInstrumentedRegions(RI, DT, DF);
-
-    // Recompute CFG properties.
-    // TODO: recomputes dominance tree twice. Fix to update while cloning.
-    DT->recalculate(F);
-    PDT->DT->recalculate(F);
-    DF->recalculate(DT);
-    LI->recalculate(DT);
-    RI->releaseMemory();
-    RI->recalculate(F, DT, PDT, DF);
-    SE->releaseMemory();
-
-    // Recompute SCoPs.
-    // TODO: at this point, alias info needs to be correct for cloned regions.
-    releaseMemory();
-    instrumenter.releaseMemory();
-    instrumenter.setVerifyingOnly(true);
-    TopRegion = RI->getTopLevelRegion();
-    findScops(*TopRegion);
-  }
-
+//  // Fix instrumented regions.
+//  if (instrumenter.getInsertedChecks().size() > 0) {
+//    instrumenter.cloneInstrumentedRegions(RI, DT, DF);
+//
+//    // Recompute CFG properties.
+//    // TODO: recomputes dominance tree twice. Fix to update while cloning.
+//    DT->recalculate(F);
+//    PDT->DT->recalculate(F);
+//    DF->recalculate(DT);
+//    LI->recalculate(DT);
+//    RI->releaseMemory();
+//    RI->recalculate(F, DT, PDT, DF);
+//    SE->releaseMemory();
+//
+//    // Recompute SCoPs.
+//    // TODO: at this point, alias info needs to be correct for cloned regions.
+//    releaseMemory();
+//    instrumenter.releaseMemory();
+//    instrumenter.setVerifyingOnly(true);
+//    TopRegion = RI->getTopLevelRegion();
+//    findScops(*TopRegion);
+//  }
+//
   // Only makes sense when we tracked errors.
   if (PollyTrackFailures) {
     emitMissedRemarksForValidRegions(F, ValidRegions);
@@ -882,17 +896,14 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
 }
 
 void polly::ScopDetection::verifyRegion(const Region &R) const {
-  DetectionContext Context(const_cast<Region &>(R), *AA, true /*verifying*/);
   assert(isMaxRegionInScop(R) && "Expect R is a valid region.");
+  DetectionContext Context(const_cast<Region &>(R), *AA, true /*verifying*/);
   isValidRegion(Context);
 }
 
 void polly::ScopDetection::verifyAnalysis() const {
   if (!VerifyScops)
     return;
-
-  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, nullptr, nullptr,
-                                   /*verifyingOnly*/ true);
 
   for (const Region *R : ValidRegions)
     verifyRegion(*R);
@@ -901,14 +912,11 @@ void polly::ScopDetection::verifyAnalysis() const {
 void ScopDetection::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequired<DominatorTreeWrapperPass>();
   AU.addRequired<PostDominatorTree>();
-  AU.addRequired<DominanceFrontier>();
   AU.addRequired<LoopInfo>();
   AU.addRequired<ScalarEvolution>();
   // We also need AA and RegionInfo when we are verifying analysis.
   AU.addRequiredTransitive<AliasAnalysis>();
   AU.addRequiredTransitive<RegionInfoPass>();
-  // gcg
-  AU.addRequired<FullInstNamer>();
   AU.setPreservesAll();
 }
 
@@ -937,9 +945,7 @@ INITIALIZE_AG_DEPENDENCY(AliasAnalysis);
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass);
 INITIALIZE_PASS_DEPENDENCY(LoopInfo);
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTree);
-INITIALIZE_PASS_DEPENDENCY(DominanceFrontier);
 INITIALIZE_PASS_DEPENDENCY(RegionInfoPass);
 INITIALIZE_PASS_DEPENDENCY(ScalarEvolution);
-INITIALIZE_PASS_DEPENDENCY(FullInstNamer);
 INITIALIZE_PASS_END(ScopDetection, "polly-detect",
                     "Polly - Detect static control parts (SCoPs)", false, false)

@@ -34,7 +34,6 @@ namespace polly {
 
 using namespace llvm;
 
-class ScopDetection;
 class DetectionContext;
 
 // Utility for computing Value objects corresponding to the lower and upper
@@ -46,8 +45,8 @@ class DetectionContext;
 class SCEVRangeAnalyser : private SCEVExpander {
   friend class AliasInstrumenter;
 
-  const ScopDetection *sd;
   ScalarEvolution *se;
+  AliasAnalysis *aa;
   Region *r;
   bool currentUpper; // Which bound is currently being extracted. Used mainly
                       // by methods of SCEVExpander, which are not aware of
@@ -66,6 +65,11 @@ class SCEVRangeAnalyser : private SCEVExpander {
   Value* getSavedExpression(const SCEV *S, Instruction *InsertPt, bool upper);
   void rememberExpression(const SCEV *S, Instruction *InsertPt, bool upper,
                           Value *V);
+
+  // FIXME: shamelessly taken from polly::ScopDetection, in order to eliminate
+  //       dependencies from Polly's code. Needs to be refactored.
+  // Checks if a value is invariant in a given region.
+  bool isInvariant(const Value &val, const Region &reg);  
 
   // We need to overwrite this method so the most specialized visit methods are
   // called before the visitors on SCEVExpander.
@@ -118,9 +122,9 @@ class SCEVRangeAnalyser : private SCEVExpander {
   void insertPtrPrintf(Value *val);
 
 public:
-  SCEVRangeAnalyser(ScalarEvolution *se, const ScopDetection *sd, Region *r,
-                    Instruction *insertPtr)
-    : SCEVExpander(*se, "scevrange"), sd(sd), se(se), r(r),
+  SCEVRangeAnalyser(ScalarEvolution *se, AliasAnalysis *aa, Region *r,
+      Instruction *insertPtr)
+    : SCEVExpander(*se, "scevrange"), se(se), aa(aa), r(r),
       currentUpper(true) {
     SetInsertPoint(insertPtr);
   }

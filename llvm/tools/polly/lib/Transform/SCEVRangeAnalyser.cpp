@@ -14,7 +14,6 @@
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
 #include "polly/AliasInstrumenter.h"
-#include "polly/ScopDetection.h"
 #include "polly/Support/ScopHelper.h"
 #include "polly/CloneRegion.h"
 
@@ -271,7 +270,7 @@ Value *SCEVRangeAnalyser::visitSMaxExpr(const SCEVSMaxExpr *expr, bool upper) {
 Value *SCEVRangeAnalyser::visitUnknown(const SCEVUnknown *expr, bool upper) {
   Value *val = expr->getValue();
 
-  if (!sd->isInvariant(*val, *r))
+  if (!isInvariant(*val, *r))
     return nullptr;
 
   return val;
@@ -358,4 +357,45 @@ Value *SCEVRangeAnalyser::getULowerBound(std::set<const SCEV *> &exprList) {
 
 Value *SCEVRangeAnalyser::getUUpperBound(std::set<const SCEV *> &exprList) {
   return getULowerOrUpperBound(exprList, /*upper*/true);
+}
+
+bool SCEVRangeAnalyser::isInvariant(const Value &val, const Region &reg) {
+  // A reference to function argument or constant value is invariant.
+  if (isa<Argument>(val) || isa<Constant>(val))
+    return true;
+
+  const Instruction *i = dyn_cast<Instruction>(&val);
+  if (!i)
+    return false;
+
+  if (!reg.contains(i))
+    return true;
+
+  if (i->mayHaveSideEffects())
+    return false;
+
+  // When Val is a Phi node, it is likely not invariant. We do not check whether
+  // Phi nodes are actually invariant, we assume that Phi nodes are usually not
+  // invariant. Recursively checking the operators of Phi nodes would lead to
+  // infinite recursion.
+  if (isa<PHINode>(*i))
+    return false;
+
+  for (const Use &operand : i->operands())
+    if (!isInvariant(*operand, reg))
+      return false;
+
+  // When the instruction is a load instruction, check that no write to memory
+  // in the region aliases with the load.
+  if (const LoadInst *li = dyn_cast<LoadInst>(i)) {
+    AliasAnalysis::Location loc = aa->getLocation(li);
+    const Region::const_block_iterator be = reg.block_end();
+    // Check if any basic block in the region can modify the location pointed to
+    // by 'Loc'.  If so, 'Val' is (likely) not invariant in the region.
+    for (const BasicBlock *bb : reg.blocks())
+      if (aa->canBasicBlockModify(*bb, loc))
+        return false;
+  }
+
+  return true;
 }

@@ -9,11 +9,13 @@
 
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Analysis/AliasAnalysis.h"
+#include "llvm/Analysis/PostDominators.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/TypeBuilder.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
 #include "polly/AliasInstrumenter.h"
+#include "polly/LinkAllPasses.h"
 #include "polly/ScopDetection.h"
 #include "polly/Support/ScopHelper.h"
 #include "polly/CloneRegion.h"
@@ -76,7 +78,7 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
 
   // Set instruction insertion context.
   Instruction *insertPtr = r->getEntry()->getFirstNonPHI();
-  SCEVRangeAnalyser rangeAnalyser(se, sd, r, insertPtr);
+  SCEVRangeAnalyser rangeAnalyser(se, aa, r, insertPtr);
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(insertPtr);
 
@@ -114,9 +116,6 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
                                           inst.getMetadata(LLVMContext::MD_tbaa));
 
       if (!as.isMustAlias()) {
-        if (verifyingOnly)
-          return false;
-
         for (const auto &aliasPointer : as) {
           Value *aliasValue = aliasPointer.getValue();
 
@@ -403,7 +402,7 @@ bool AliasInstrumenter::computeAndPrintBounds(Value *pointer, Region *r) {
 
   // Set instruction insertion context.
   Instruction *insertPtr = r->getEntry()->begin();
-  SCEVRangeAnalyser rangeAnalyser(se, sd, r, insertPtr);
+  SCEVRangeAnalyser rangeAnalyser(se, aa, r, insertPtr);
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(insertPtr);
 
@@ -440,3 +439,50 @@ bool AliasInstrumenter::computeAndPrintBounds(Value *pointer, Region *r) {
 
   return true;
 }
+
+bool AliasInstrumenter::runOnFunction(llvm::Function &F) {
+  li = &getAnalysis<LoopInfo>();
+  ri = &getAnalysis<RegionInfoPass>().getRegionInfo();
+  aa = &getAnalysis<AliasAnalysis>();
+  se = &getAnalysis<ScalarEvolution>();
+  dt = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+  pdt = &getAnalysis<PostDominatorTree>();
+  df = &getAnalysis<DominanceFrontier>();
+  fin = &getAnalysis<FullInstNamer>();
+
+  errs() << "I'm alive!";
+
+  return 0;
+}
+
+void AliasInstrumenter::getAnalysisUsage(AnalysisUsage &AU) const {
+  AU.addRequired<DominatorTreeWrapperPass>();
+  AU.addRequired<PostDominatorTree>();
+  AU.addRequired<DominanceFrontier>();
+  AU.addRequired<LoopInfo>();
+  AU.addRequired<ScalarEvolution>();
+  AU.addRequired<AliasAnalysis>();
+  AU.addRequired<RegionInfoPass>();
+  AU.addRequired<FullInstNamer>();
+
+  // Changing the CFG like we do doesn't preserve anything.
+  AU.addPreserved<AliasAnalysis>();
+}
+
+char AliasInstrumenter::ID = 0;
+
+Pass *polly::createAliasInstrumenterPass() { return new AliasInstrumenter(); }
+
+INITIALIZE_PASS_BEGIN(AliasInstrumenter, "polly-instrument-dependences",
+                      "Polly - Instrument alias dependencies", false,
+                      false);
+INITIALIZE_AG_DEPENDENCY(AliasAnalysis);
+INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass);
+INITIALIZE_PASS_DEPENDENCY(LoopInfo);
+INITIALIZE_PASS_DEPENDENCY(PostDominatorTree);
+INITIALIZE_PASS_DEPENDENCY(DominanceFrontier);
+INITIALIZE_PASS_DEPENDENCY(RegionInfoPass);
+INITIALIZE_PASS_DEPENDENCY(ScalarEvolution);
+INITIALIZE_PASS_DEPENDENCY(FullInstNamer);
+INITIALIZE_PASS_END(AliasInstrumenter, "polly-instrument-dependences",
+                    "Polly - Instrument alias dependencies", false, false) 
