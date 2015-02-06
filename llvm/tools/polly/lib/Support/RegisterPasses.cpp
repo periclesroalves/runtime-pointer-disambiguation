@@ -121,7 +121,7 @@ static cl::opt<bool> DeadCodeElim("polly-run-dce",
                                   cl::cat(PollyCategory));
 
 static cl::opt<bool> AliasInstrumenter(
-    "polly-instrument-dependences",
+    "polly-instrument-dependencies",
     cl::desc("Instrument dependences that can't be solved statically with"
              "with runtime checks"),
     cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));

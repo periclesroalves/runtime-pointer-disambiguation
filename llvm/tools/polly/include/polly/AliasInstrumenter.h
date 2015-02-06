@@ -98,6 +98,19 @@ class AliasInstrumenter : public FunctionPass {
 
   // calls runtime to print the expected and the real array bounds of a value
   void printArrayBounds(Value *v, Value *l, Value *u, Region *r, BuilderType &builder, SCEVRangeAnalyser& rangeAnalyser);
+
+  // TODO: functions copied from ScopDetection. Needs refactoring.
+  bool isInvariant(const Value &Val, const Region &Reg);
+  bool isValidCallInst(CallInst &CI);
+  bool isValidMemoryAccess(Instruction &Inst, Region &R);
+  bool isValidInstruction(Instruction &Inst, Region &R);
+  bool isValidLoop(Loop *L, Region &R);
+  bool isValidExit(Region &R);
+  bool isValidCFG(BasicBlock &BB, Region &R);
+  bool allBlocksValid(Region &R);
+  bool isValidRegion(Region &R);
+  void findScops(Region &R);
+
 public:
   static char ID;
   explicit AliasInstrumenter() : FunctionPass(ID) {}
@@ -144,8 +157,7 @@ public:
   //         \|/            '-----.---'  '------.-----'
   //                              '------.------'
   //                                    \|/
-  void cloneInstrumentedRegions(RegionInfo *ri, DominatorTree *dt,
-                                DominanceFrontier *df);
+  void cloneInstrumentedRegions();
 
   // Use scoped alias tags to tell the compiler that cloned regions are free of
   // dependencies.

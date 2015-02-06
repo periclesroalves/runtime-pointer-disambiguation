@@ -645,12 +645,6 @@ void ScopDetection::findScops(Region &R) {
   for (auto &SubRegion : R)
     ToExpand.push_back(SubRegion.get());
 
-//  // Do not instrument when expanding, as we could break the instrumentation
-//  // order.
-//  // TODO: we must handle expanded regions, as there usually is a bunch of them.
-//  bool wasVerifyingOnly = instrumenter.getVerifyingOnly();
-//  instrumenter.setVerifyingOnly(true);
-//
   for (Region *CurrentRegion : ToExpand) {
     // Skip regions that had errors.
     bool HadErrors = RejectLogs.hasErrors(CurrentRegion);
@@ -675,8 +669,6 @@ void ScopDetection::findScops(Region &R) {
     // regions and update the number of valid regions.
     ValidRegion -= eraseAllChildren(ValidRegions, *ExpandedR);
   }
-//
-//  instrumenter.setVerifyingOnly(wasVerifyingOnly);
 }
 
 bool ScopDetection::allBlocksValid(DetectionContext &Context) const {
@@ -697,12 +689,6 @@ bool ScopDetection::allBlocksValid(DetectionContext &Context) const {
       if (!isValidInstruction(*I, Context) && !KeepGoing)
         return false;
 
-//  // TODO: if instrumentation fails we need be able to return a report like:
-//  //   return invalid<ReportAlias>(context, /*Assert=*/false, &inst, as);
-//  if (!IgnoreAliasing &&
-//      !instrumenter.checkAndSolveDependencies(&Context.CurRegion))
-//    return false;
-//
   if (!hasAffineMemoryAccesses(Context))
     return false;
 
@@ -840,13 +826,8 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
 
   AA = &getAnalysis<AliasAnalysis>();
   SE = &getAnalysis<ScalarEvolution>();
-//
-//  auto trace_fn = declareTraceFunction(F.getParent());
-//
   Region *TopRegion = RI->getTopLevelRegion();
 
-//  instrumenter = AliasInstrumenter(SE, this, AA, LI, FIN, &F, trace_fn,
-//                                   /*verifyingOnly*/ false);
   releaseMemory();
 
   if (OnlyFunction != "" && !F.getName().count(OnlyFunction))
@@ -857,29 +838,6 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
 
   findScops(*TopRegion);
 
-//  // Fix instrumented regions.
-//  if (instrumenter.getInsertedChecks().size() > 0) {
-//    instrumenter.cloneInstrumentedRegions(RI, DT, DF);
-//
-//    // Recompute CFG properties.
-//    // TODO: recomputes dominance tree twice. Fix to update while cloning.
-//    DT->recalculate(F);
-//    PDT->DT->recalculate(F);
-//    DF->recalculate(DT);
-//    LI->recalculate(DT);
-//    RI->releaseMemory();
-//    RI->recalculate(F, DT, PDT, DF);
-//    SE->releaseMemory();
-//
-//    // Recompute SCoPs.
-//    // TODO: at this point, alias info needs to be correct for cloned regions.
-//    releaseMemory();
-//    instrumenter.releaseMemory();
-//    instrumenter.setVerifyingOnly(true);
-//    TopRegion = RI->getTopLevelRegion();
-//    findScops(*TopRegion);
-//  }
-//
   // Only makes sense when we tracked errors.
   if (PollyTrackFailures) {
     emitMissedRemarksForValidRegions(F, ValidRegions);

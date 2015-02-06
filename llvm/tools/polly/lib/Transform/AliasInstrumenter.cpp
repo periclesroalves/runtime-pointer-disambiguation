@@ -19,6 +19,8 @@
 #include "polly/ScopDetection.h"
 #include "polly/Support/ScopHelper.h"
 #include "polly/CloneRegion.h"
+#include "polly/CodeGen/BlockGenerators.h"
+#include "polly/Support/SCEVValidator.h"
 
 using namespace llvm;
 using namespace polly;
@@ -296,9 +298,10 @@ bool AliasInstrumenter::isSafeToSimplify(Region *r) {
   return safeToSimplify;
 }
 
-void AliasInstrumenter::cloneInstrumentedRegions(RegionInfo *ri,
-                                                 DominatorTree *dt,
-                                                 DominanceFrontier *df) {
+void AliasInstrumenter::cloneInstrumentedRegions() {
+  if (insertedChecks.size() <= 0)
+    return;
+
   fixInstrumentedRegions();
 
   for (auto &check : insertedChecks) {
@@ -440,6 +443,282 @@ bool AliasInstrumenter::computeAndPrintBounds(Value *pointer, Region *r) {
   return true;
 }
 
+bool AliasInstrumenter::isInvariant(const Value &Val, const Region &Reg) {
+  // A reference to function argument or constant value is invariant.
+  if (isa<Argument>(Val) || isa<Constant>(Val))
+    return true;
+
+  const Instruction *I = dyn_cast<Instruction>(&Val);
+  if (!I)
+    return false;
+
+  if (!Reg.contains(I))
+    return true;
+
+  if (I->mayHaveSideEffects())
+    return false;
+
+  // When Val is a Phi node, it is likely not invariant. We do not check whether
+  // Phi nodes are actually invariant, we assume that Phi nodes are usually not
+  // invariant. Recursively checking the operators of Phi nodes would lead to
+  // infinite recursion.
+  if (isa<PHINode>(*I))
+    return false;
+
+  for (const Use &Operand : I->operands())
+    if (!isInvariant(*Operand, Reg))
+      return false;
+
+  // When the instruction is a load instruction, check that no write to memory
+  // in the region aliases with the load.
+  if (const LoadInst *li = dyn_cast<LoadInst>(I)) {
+    AliasAnalysis::Location Loc = aa->getLocation(li);
+    const Region::const_block_iterator BE = Reg.block_end();
+    // Check if any basic block in the region can modify the location pointed to
+    // by 'Loc'.  If so, 'Val' is (likely) not invariant in the region.
+    for (const BasicBlock *BB : Reg.blocks())
+      if (aa->canBasicBlockModify(*BB, Loc))
+        return false;
+  }
+
+  return true;
+}
+
+bool AliasInstrumenter::isValidMemoryAccess(Instruction &Inst, Region &R) {
+  Value *Ptr = getPointerOperand(Inst);
+  Loop *L = li->getLoopFor(Inst.getParent());
+  const SCEV *AccessFunction = se->getSCEVAtScope(Ptr, L);
+  const SCEVUnknown *BasePointer;
+  Value *BaseValue;
+
+  BasePointer = dyn_cast<SCEVUnknown>(se->getPointerBase(AccessFunction));
+
+  if (!BasePointer)
+    return false;
+
+  BaseValue = BasePointer->getValue();
+
+  if (isa<UndefValue>(BaseValue))
+    return false;
+
+  // Check that the base address of the access is invariant in the current
+  // region.
+  if (!isInvariant(*BaseValue, R))
+    // Verification of this property is difficult as the independent blocks
+    // pass may introduce aliasing that we did not have when running the
+    // scop detection.
+    return false;
+
+  AccessFunction = se->getMinusSCEV(AccessFunction, BasePointer);
+
+  if (IntToPtrInst *Inst = dyn_cast<IntToPtrInst>(BaseValue))
+    return false;
+
+  return true;
+}
+
+bool AliasInstrumenter::isValidInstruction(Instruction &Inst, Region &R) {
+  if (PHINode *PN = dyn_cast<PHINode>(&Inst))
+    if (!canSynthesize(PN, li, se, &R))
+      return false;
+
+  // We only check the call instruction but not invoke instruction.
+  if (CallInst *CI = dyn_cast<CallInst>(&Inst)) {
+    if (isValidCallInst(*CI))
+      return true;
+
+    return false;
+  }
+
+  if (!Inst.mayWriteToMemory() && !Inst.mayReadFromMemory()) {
+    if (!isa<AllocaInst>(Inst))
+      return true;
+
+    return false;
+  }
+
+  // Check the access function.
+  if (isa<LoadInst>(Inst) || isa<StoreInst>(Inst))
+    return isValidMemoryAccess(Inst, R);
+
+  // We do not know this instruction, therefore we assume it is invalid.
+  return false;
+}
+
+bool AliasInstrumenter::isValidLoop(Loop *L, Region &R) {
+  // Ensure that each loop has a canonical induction variable.
+  PHINode *IndVar = L->getCanonicalInductionVariable();
+
+  if (!IndVar)
+    return false;
+
+  // Is the loop count affine?
+  const SCEV *LoopCount = se->getBackedgeTakenCount(L);
+  if (!isAffineExpr(&R, LoopCount, *se))
+    return false;
+
+  return true;
+}
+
+bool AliasInstrumenter::isValidExit(Region &R) {
+  // PHI nodes are not allowed in the exit basic block.
+  if (BasicBlock *Exit = R.getExit()) {
+    BasicBlock::iterator I = Exit->begin();
+    if (I != Exit->end() && isa<PHINode>(*I))
+      return false;
+  }
+
+  return true;
+}
+
+bool AliasInstrumenter::isValidCFG(BasicBlock &BB, Region &R) {
+  TerminatorInst *TI = BB.getTerminator();
+
+  // Return instructions are only valid if the region is the top level region.
+  if (isa<ReturnInst>(TI) && !R.getExit() && TI->getNumOperands() == 0)
+    return true;
+
+  BranchInst *Br = dyn_cast<BranchInst>(TI);
+
+  if (!Br)
+    return false;
+
+  if (Br->isUnconditional())
+    return true;
+
+  Value *Condition = Br->getCondition();
+
+  // UndefValue is not allowed as condition.
+  if (isa<UndefValue>(Condition))
+    return false;
+
+  // Only Constant and ICmpInst are allowed as condition.
+  if (!(isa<Constant>(Condition) || isa<ICmpInst>(Condition)))
+    return false;
+
+  // Allow perfectly nested conditions.
+  assert(Br->getNumSuccessors() == 2 && "Unexpected number of successors");
+
+  if (ICmpInst *ICmp = dyn_cast<ICmpInst>(Condition)) {
+    // Unsigned comparisons are not allowed. They trigger overflow problems
+    // in the code generation.
+    //
+    // TODO: This is not sufficient and just hides bugs. However it does pretty
+    // well.
+    if (ICmp->isUnsigned())
+      return false;
+
+    // Are both operands of the ICmp affine?
+    if (isa<UndefValue>(ICmp->getOperand(0)) ||
+        isa<UndefValue>(ICmp->getOperand(1)))
+      return false;
+
+    Loop *L = li->getLoopFor(ICmp->getParent());
+    const SCEV *LHS = se->getSCEVAtScope(ICmp->getOperand(0), L);
+    const SCEV *RHS = se->getSCEVAtScope(ICmp->getOperand(1), L);
+
+    if (!isAffineExpr(&R, LHS, *se) ||
+        !isAffineExpr(&R, RHS, *se))
+      return false;
+  }
+
+  // Allow loop exit conditions.
+  Loop *L = li->getLoopFor(&BB);
+  if (L && L->getExitingBlock() == &BB)
+    return true;
+
+  // Allow perfectly nested conditions.
+  Region *bbR = ri->getRegionFor(&BB);
+  if (bbR->getEntry() != &BB)
+    return false;
+
+  return true;
+}
+
+bool AliasInstrumenter::allBlocksValid(Region &R) {
+  for (const BasicBlock *BB : R.blocks()) {
+    Loop *L = li->getLoopFor(BB);
+    if (L && L->getHeader() == BB && !isValidLoop(L, R))
+      return false;
+  }
+
+  for (BasicBlock *BB : R.blocks())
+    if (!isValidCFG(*BB, R))
+      return false;
+
+  for (BasicBlock *BB : R.blocks())
+    for (BasicBlock::iterator I = BB->begin(), E = --BB->end(); I != E; ++I)
+      if (!isValidInstruction(*I, R))
+        return false;
+
+  // Try to solve dependencies through instrumentation/
+  if (!checkAndSolveDependencies(&R))
+    return false;
+
+  return true;
+}
+
+bool AliasInstrumenter::isValidRegion(Region &R) {
+  // Top-level regions can't be a SCoP.
+  if (R.isTopLevelRegion())
+    return false;
+
+  if (!R.getEnteringBlock()) {
+    BasicBlock *entry = R.getEntry();
+    Loop *L = li->getLoopFor(entry);
+
+    if (L) {
+      if (!L->isLoopSimplifyForm())
+        return false;
+
+      for (pred_iterator PI = pred_begin(entry), PE = pred_end(entry); PI != PE;
+           ++PI) {
+        // Region entering edges come from the same loop but outside the region
+        // are not allowed.
+        if (L->contains(*PI) && !R.contains(*PI))
+          return false;
+      }
+    }
+  }
+
+  // SCoP cannot contain the entry block of the function, because we need
+  // to insert alloca instruction there when translate scalar to array.
+  if (R.getEntry() == &(R.getEntry()->getParent()->getEntryBlock()))
+    return false;
+
+  if (!isValidExit(R))
+    return false;
+
+  if (!allBlocksValid(R))
+    return false;
+
+  return true;
+} 
+
+static bool regionWithoutLoops(Region &R, LoopInfo *LI) {
+  for (const BasicBlock *BB : R.blocks())
+    if (R.contains(LI->getLoopFor(BB)))
+      return false;
+
+  return true;
+}
+
+void AliasInstrumenter::findScops(Region &R) {
+  if (regionWithoutLoops(R, li))
+    return;
+
+  bool IsValidRegion = isValidRegion(R);
+
+  // If this region can be fully handled, stop the search.
+  if (IsValidRegion)
+    return;
+
+  for (auto &SubRegion : R)
+    findScops(*SubRegion);
+
+  // TODO: we should look for expanded regions, as ScopDetection does.
+}
+
 bool AliasInstrumenter::runOnFunction(llvm::Function &F) {
   li = &getAnalysis<LoopInfo>();
   ri = &getAnalysis<RegionInfoPass>().getRegionInfo();
@@ -450,9 +729,14 @@ bool AliasInstrumenter::runOnFunction(llvm::Function &F) {
   df = &getAnalysis<DominanceFrontier>();
   fin = &getAnalysis<FullInstNamer>();
 
-  errs() << "I'm alive!";
+  auto trace_fn = declareTraceFunction(F.getParent());
+  Region *TopRegion = ri->getTopLevelRegion();
 
-  return 0;
+  releaseMemory();
+  findScops(*TopRegion);
+  cloneInstrumentedRegions();
+  
+  return false;
 }
 
 void AliasInstrumenter::getAnalysisUsage(AnalysisUsage &AU) const {
