@@ -730,6 +730,7 @@ bool AliasInstrumenter::runOnFunction(llvm::Function &F) {
   fin = &getAnalysis<FullInstNamer>();
 
   auto trace_fn = declareTraceFunction(F.getParent());
+  currFn = &F;
   Region *TopRegion = ri->getTopLevelRegion();
 
   releaseMemory();
