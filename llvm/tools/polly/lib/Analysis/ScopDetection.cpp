@@ -469,9 +469,11 @@ bool ScopDetection::isValidMemoryAccess(Instruction &Inst,
 
   // Check if the base pointer of the memory access does alias with
   // any other pointer. This cannot be handled at the moment.
+  AAMDNodes AATags;
+  Inst.getAAMetadata(AATags);
   AliasSet &AS =
       Context.AST.getAliasSetForPointer(BaseValue, AliasAnalysis::UnknownSize,
-                                        Inst.getMetadata(LLVMContext::MD_tbaa));
+                                        AATags);
 
   // INVALID triggers an assertion in verifying mode, if it detects that a
   // SCoP was detected by SCoP detection and that this SCoP was invalidated by

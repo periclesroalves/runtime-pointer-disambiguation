@@ -92,11 +92,6 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
   // for aliasing. If the pointers a, b, and c may alias each other, we'd have:
   // - pairsToCheck: (<a,b>, <b,c>, <a,c>)
   for (BasicBlock *bb : r->blocks()) {
-    // Don't need to check for dependencies on instrumented blocks.
-    // TODO: remove this. This should be done by updating alias info.
-    if (bb->getName().endswith(".clone"))
-      continue;
-
     for (BasicBlock::iterator i = bb->begin(), e = --bb->end(); i != e; ++i) {
       Instruction &inst = *i;
 
@@ -155,9 +150,6 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
         return false;
 
       pointerBounds[pair.first] = std::make_pair(low, up);
-
-      //profiling
-      //printArrayBounds(pair.first, low, up, r, builder, rangeAnalyser);
     }
 
     if (!pointerBounds.count(pair.second)) {
@@ -170,9 +162,6 @@ bool AliasInstrumenter::checkAndSolveDependencies(Region *r) {
         return false;
 
       pointerBounds[pair.second] = std::make_pair(low, up);
-
-      //profiling
-      //printArrayBounds(pair.second, low, up, r, builder, rangeAnalyser);
     }
 
     Value *check = insertCheck(pointerBounds[pair.first],
