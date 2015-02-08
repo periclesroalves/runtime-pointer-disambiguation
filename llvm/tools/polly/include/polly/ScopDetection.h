@@ -191,12 +191,6 @@ class ScopDetection : public FunctionPass {
   /// @return True if R is a Scop, false otherwise.
   bool isValidRegion(Region &R) const;
 
-  /// @brief Check if a call instruction can be part of a Scop.
-  ///
-  /// @param CI The call instruction to check.
-  /// @return True if the call instruction is valid, false otherwise.
-  static bool isValidCallInst(CallInst &CI);
-
   /// @brief Check if a memory access can be part of a Scop.
   ///
   /// @param Inst The instruction accessing the memory.
@@ -265,6 +259,12 @@ public:
   /// This was added to give the DOT printer easy access to this information.
   RegionInfo *getRI() const { return RI; }
 
+  /// @brief Check if a call instruction can be part of a Scop.
+  ///
+  /// @param CI The call instruction to check.
+  /// @return True if the call instruction is valid, false otherwise.
+  static bool isValidCallInst(CallInst &CI);
+
   /// @brief Is the region is the maximum region of a Scop?
   ///
   /// @param R The Region to test if it is maximum.
@@ -281,7 +281,8 @@ public:
   ///
   /// @return True if the value represented by Val is invariant in the region
   ///         identified by Reg.
-  bool isInvariant(const Value &Val, const Region &Reg) const;
+  static bool isInvariant(const Value &Val, const Region &Reg, LoopInfo *LI,
+                          AliasAnalysis *AA);
 
   /// @brief Get a message why a region is invalid
   ///

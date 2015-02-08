@@ -315,7 +315,8 @@ bool ScopDetection::isValidCallInst(CallInst &CI) {
   return false;
 }
 
-bool ScopDetection::isInvariant(const Value &Val, const Region &Reg) const {
+bool ScopDetection::isInvariant(const Value &Val, const Region &Reg,
+                                LoopInfo *LI, AliasAnalysis *AA) {
   // A reference to function argument or constant value is invariant.
   if (isa<Argument>(Val) || isa<Constant>(Val))
     return true;
@@ -338,7 +339,7 @@ bool ScopDetection::isInvariant(const Value &Val, const Region &Reg) const {
     return false;
 
   for (const Use &Operand : I->operands())
-    if (!isInvariant(*Operand, Reg))
+    if (!isInvariant(*Operand, Reg, LI, AA))
       return false;
 
   // When the instruction is a load instruction, check that no write to memory
@@ -424,7 +425,7 @@ bool ScopDetection::isValidMemoryAccess(Instruction &Inst,
 
   // Check that the base address of the access is invariant in the current
   // region.
-  if (!isInvariant(*BaseValue, Context.CurRegion))
+  if (!isInvariant(*BaseValue, Context.CurRegion, LI, AA))
     // Verification of this property is difficult as the independent blocks
     // pass may introduce aliasing that we did not have when running the
     // scop detection.

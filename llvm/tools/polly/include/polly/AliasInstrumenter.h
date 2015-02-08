@@ -83,9 +83,35 @@ class AliasInstrumenter : public FunctionPass {
   // Metadata domain to be used by alias metadata.
   MDNode *mdDomain = nullptr;
 
-  // List of dynamic checks generated while solving dependencies. Each value
-  // indicates, at runtime, if the corresponding region is free of dependencies.
+  // List of dynamic checks generated while instrumenting regions. Each value in
+  // this list is a boolean that indicates, at runtime, if the corresponding
+  // region is free of true dependencies. This value usually lives right before
+  // the region entry.
   std::vector<std::pair<Value *, Region *> > insertedChecks;
+
+  // Walks the region tree, trying to insert dynamic checks for the greatest
+  // possible regions.
+  void findAndInstrumentRegions(Region &r);
+
+  // Checks if the given region has all the properties needed for
+  // instrumentation.
+  bool isSafeToInstrument(Region &r);
+
+  // Checks if the given instruction doesn't break the properties needed for
+  // instrumentation (basically checks if it doesn't access memory in an
+  // unpredictable way).
+  bool isValidInstruction(Instruction &inst);
+
+  // Checks for alias dependencies within the current region, generating dynamic
+  // checks if possible. Returns true if all dependecies could be solved either
+  // statically or through run-time checks.
+  // For every pair (A,B) of pointers in the region that may alias, we generate:
+  // - check(A, B) -> upperAddrA < lowerAddrB || upperAddrB < lowerAddrA
+  bool tryInstrumentDependencies(Region *r);
+
+  // Get the value that represents the base pointer of the given memory access
+  // instruction in the given region. The pointer must be region invariant.
+  Value *getBasePtrValue(Instruction &inst, Region *r);
 
   // Inserts a dynamic test to guarantee that accesses to two pointers do not
   // overlap, given their access ranges.
@@ -93,43 +119,9 @@ class AliasInstrumenter : public FunctionPass {
                      std::pair<Value *, Value *> boundsB,
                      BuilderType &builder, SCEVRangeAnalyser &rangeAnalyser);
 
-  // Chain all checks to a single result value using "and" operations.
+  // Chain the checks that compare different pairs of pointers to a single
+  // result value using "and" operations.
   Value *chainChecks(std::vector<Value *> checks, BuilderType &builder);
-
-  // calls runtime to print the expected and the real array bounds of a value
-  void printArrayBounds(Value *v, Value *l, Value *u, Region *r, BuilderType &builder, SCEVRangeAnalyser& rangeAnalyser);
-
-  // TODO: functions copied from ScopDetection. Needs refactoring.
-  bool isInvariant(const Value &Val, const Region &Reg);
-  bool isValidCallInst(CallInst &CI);
-  bool isValidMemoryAccess(Instruction &Inst, Region &R);
-  bool isValidInstruction(Instruction &Inst, Region &R);
-  bool isValidLoop(Loop *L, Region &R);
-  bool isValidExit(Region &R);
-  bool isValidCFG(BasicBlock &BB, Region &R);
-  bool allBlocksValid(Region &R);
-  bool isValidRegion(Region &R);
-  void findScops(Region &R);
-
-public:
-  static char ID;
-  explicit AliasInstrumenter() : FunctionPass(ID) {}
-
-  // FunctionPass interface.
-  virtual void getAnalysisUsage(AnalysisUsage &AU) const;
-  virtual bool runOnFunction(Function &F);
-  void releaseMemory() { insertedChecks.clear(); }
-
-  // Check for dependencies within the current region, generating dynamic alias
-  // checks for all pointers that can't be solved statically. Returns true if
-  // all dependecies could be solved. For every pair (A,B) of pointers that may
-  // alias, generates:
-  // - check(A, B) -> upperAddrA < lowerAddrB || upperAddrB < lowerAddrA
-  bool checkAndSolveDependencies(Region *r);
-
-  std::vector<std::pair<Value *, Region *> > &getInsertedChecks() {
-    return insertedChecks;
-  }
 
   // The structure of a region can't be changed while instrumenting it. This
   // method fix the structure of the instrumented regions by simplifying them
@@ -144,9 +136,13 @@ public:
   //                               \|/
   void fixInstrumentedRegions();
 
+  // Checks if a region can be simplified to have single entry and exit EDGES
+  // without breaking the sinlge entry and exit BLOCKS property.
+  bool isSafeToSimplify(Region *r);
+
   // Produce two versions of each instrumented region: one with the original
-  // alias info, if the check fails, and one set to ignore dependencies, in
-  // case the check passes.
+  // alias info, if the run-time alias check fails, and one set to ignore 
+  // dependencies, in case the check passes.
   //     ____\|/___                 ____\|/___ 
   //    | dy_check |               | dy_check |
   //    '-----.----'               '-----.----'
@@ -160,7 +156,9 @@ public:
   void cloneInstrumentedRegions();
 
   // Use scoped alias tags to tell the compiler that cloned regions are free of
-  // dependencies.
+  // dependencies. Basically creates a separate alias scope for each base
+  // pointer in the region. Each load/store instruction is then associated with
+  // it's base pointer scope, generating disjoint alias sets in the region.
   void fixAliasInfo(Region *r);
 
   // DEBUG - compute the lower and upper access bounds for the base pointer in
@@ -168,9 +166,20 @@ public:
   // runtime. Returns true if the bounds can be computed, false otherwise.
   bool computeAndPrintBounds(Value *pointer, Region *r);
 
-  // Checks if a region can be simplified without breaking the sinlge-entry
-  // single-exit property.
-  bool isSafeToSimplify(Region *r);
+  // DEBUG - calls runtime to print the expected and the real array bounds of a
+  // value.
+  void printArrayBounds(Value *v, Value *l, Value *u, Region *r,
+                        BuilderType &builder,
+                        SCEVRangeAnalyser& rangeAnalyser);
+
+public:
+  static char ID;
+  explicit AliasInstrumenter() : FunctionPass(ID) {}
+
+  // FunctionPass interface.
+  virtual void getAnalysisUsage(AnalysisUsage &AU) const;
+  virtual bool runOnFunction(Function &F);
+  void releaseMemory() { insertedChecks.clear(); }
 };
 } // end namespace polly
 
