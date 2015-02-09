@@ -108,18 +108,12 @@ bool SCEVAliasInstrumenter::isSafeToSimplify(Region *r) {
 }
 
 bool SCEVAliasInstrumenter::simplifyRegion(Region *r) {
-  // If already simple, do nothing.
-  if (r->isSimple())
-    return true;
-
   if (!isSafeToSimplify(r))
     return false;
 
-  // Create entering block.
-  if (!r->getEnteringBlock()) {
-    BasicBlock *entry = r->getEntry();
-    r->replaceEntryRecursive(SplitBlock(entry, entry->begin(), li));
-  }
+  // Create a new entering block to host the checks, even if we already had one.
+  BasicBlock *entry = r->getEntry();
+  r->replaceEntryRecursive(SplitBlock(entry, entry->begin(), li));
 
   // Create exiting block.
   if (!r->getExitingBlock()) {
@@ -144,7 +138,7 @@ void SCEVAliasInstrumenter::hoistChecks() {
 
     assert((dyResult && entry == r->getEntry()) && "Malformed dynamic check.");
 
-    // Skip regions that can't be simplified.
+    // Only simple regions can be cloned. Skip regions that can't be simplified.
     if (!simplifyRegion(r))
       continue;
 
