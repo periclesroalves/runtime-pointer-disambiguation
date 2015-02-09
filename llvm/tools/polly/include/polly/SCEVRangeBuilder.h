@@ -1,4 +1,4 @@
-//===------------- SCEVRangeAnalyser.h --------------------------*- C++ -*-===//
+//===------------- SCEVRangeBuilder.h ---------------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -6,8 +6,12 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-// Utilities for generating symbolic bounds for a Scalar Evolution expression
-// and instrumenting a program with dynamic alias checks.
+// Utility for computing Value objects corresponding to the lower and upper
+// bounds of a SCEV within a region R. The resulting expressions can be filled
+// with runtime values, in order to dynamically compute the exact bounds. Bounds
+// are only provided if they can be computed right before the region start,
+// i.e., all values in the SCEV are region invariant or vary in a well-behaved
+// way.
 //===----------------------------------------------------------------------===//
 
 #ifndef POLLY_SCEV_RANGE_ANALYSER_H
@@ -36,17 +40,12 @@ using namespace llvm;
 
 class DetectionContext;
 
-// Utility for computing Value objects corresponding to the lower and upper
-// bounds of a SCEV within a region R. The generated values are inserted into
-// the region entry. The resulting expressions can then be filled with runtime
-// values, in order to dynamically compute the exact bounds. Bounds are only
-// provided if they can be computed right before the region start, i.e., all
-// values in the SCEV are region invariant or vary in a well-behaved way.
-class SCEVRangeAnalyser : private SCEVExpander {
-  friend class AliasInstrumenter;
+class SCEVRangeBuilder : private SCEVExpander {
+  friend class SCEVAliasInstrumenter;
 
   ScalarEvolution *se;
   AliasAnalysis *aa;
+  LoopInfo *li;
   Region *r;
   bool currentUpper; // Which bound is currently being extracted. Used mainly
                       // by methods of SCEVExpander, which are not aware of
@@ -65,11 +64,6 @@ class SCEVRangeAnalyser : private SCEVExpander {
   Value* getSavedExpression(const SCEV *S, Instruction *InsertPt, bool upper);
   void rememberExpression(const SCEV *S, Instruction *InsertPt, bool upper,
                           Value *V);
-
-  // FIXME: shamelessly taken from polly::ScopDetection, in order to eliminate
-  //       dependencies from Polly's code. Needs to be refactored.
-  // Checks if a value is invariant in a given region.
-  bool isInvariant(const Value &val, const Region &reg);  
 
   // We need to overwrite this method so the most specialized visit methods are
   // called before the visitors on SCEVExpander.
@@ -104,6 +98,7 @@ class SCEVRangeAnalyser : private SCEVExpander {
     }
   }
 
+  // Find detailed description for each method at their implementation headers.
   Value *visitConstant(const SCEVConstant *constant, bool upper);
   Value *visitTruncateExpr(const SCEVTruncateExpr *expr, bool upper);
   Value *visitZeroExtendExpr(const SCEVZeroExtendExpr *expr, bool upper);
@@ -116,15 +111,18 @@ class SCEVRangeAnalyser : private SCEVExpander {
   Value *visitSMaxExpr(const SCEVSMaxExpr *expr, bool upper);
   Value *visitUnknown(const SCEVUnknown *expr, bool upper);
 
-  // Generates the lower or upper bound for a set of unsigned expressions.
+  // Generates the lower or upper bound for a set of unsigned expressions. More
+  // details in the method implementation header.
   Value *getULowerOrUpperBound(std::set<const SCEV *> &exprList, bool upper);
 
+  // DEBUG - generates a printf instruction for the given value at the current
+  // insertion point. Uses pointer format.
   void insertPtrPrintf(Value *val);
 
 public:
-  SCEVRangeAnalyser(ScalarEvolution *se, AliasAnalysis *aa, Region *r,
-      Instruction *insertPtr)
-    : SCEVExpander(*se, "scevrange"), se(se), aa(aa), r(r),
+  SCEVRangeBuilder(ScalarEvolution *se, AliasAnalysis *aa, LoopInfo *li,
+      Region *r, Instruction *insertPtr)
+    : SCEVExpander(*se, "scevrange"), se(se), aa(aa), li(li), r(r),
       currentUpper(true) {
     SetInsertPoint(insertPtr);
   }

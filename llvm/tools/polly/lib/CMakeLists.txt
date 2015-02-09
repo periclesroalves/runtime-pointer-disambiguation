@@ -48,7 +48,7 @@ add_polly_library(Polly
   Support/RegisterPasses.cpp
   Support/ScopHelper.cpp
   ${POLLY_JSON_FILES}
-  Transform/AliasInstrumenter.cpp
+  Transform/SCEVAliasInstrumenter.cpp
   Transform/Canonicalization.cpp
   Transform/CodePreparation.cpp
   Transform/DeadCodeElimination.cpp
@@ -58,7 +58,7 @@ add_polly_library(Polly
   ${POLLY_PLUTO_FILES}
   Transform/RegionCloningPass.cpp
   Transform/CloneRegion.cpp
-  Transform/SCEVRangeAnalyser.cpp
+  Transform/SCEVRangeBuilder.cpp
   )
 
 # Build a monolithic Polly.a and a thin module LLVMPolly.moduleext that links to

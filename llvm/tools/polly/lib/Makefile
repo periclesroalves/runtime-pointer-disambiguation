@@ -55,7 +55,7 @@ SOURCES= Polly.cpp \
 	 CodeGen/Utils.cpp \
 	 CodeGen/RuntimeDebugBuilder.cpp \
 	 Exchange/JSONExporter.cpp \
-	 Transform/AliasInstrumenter.cpp \
+	 Transform/SCEVAliasInstrumenter.cpp \
 	 Transform/Canonicalization.cpp \
 	 Transform/CodePreparation.cpp \
 	 Transform/DeadCodeElimination.cpp \
@@ -64,7 +64,7 @@ SOURCES= Polly.cpp \
 	 Transform/ScheduleOptimizer.cpp \
 	 Transform/RegionCloningPass.cpp \
 	 Transform/CloneRegion.cpp \
-	 Transform/SCEVRangeAnalyser.cpp \
+	 Transform/SCEVRangeBuilder.cpp \
 	 ${GPGPU_FILES} \
 	 ${ISL_CODEGEN_FILES} \
          ${CLOOG_FILES} \

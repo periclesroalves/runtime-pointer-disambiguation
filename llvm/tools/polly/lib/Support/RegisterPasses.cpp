@@ -120,7 +120,7 @@ static cl::opt<bool> DeadCodeElim("polly-run-dce",
                                   cl::Hidden, cl::init(true), cl::ZeroOrMore,
                                   cl::cat(PollyCategory));
 
-static cl::opt<bool> AliasInstrumenter(
+static cl::opt<bool> SCEVAliasInstrumenter(
     "polly-use-scev-alias-checks",
     cl::desc("Instrument dependences that can't be solved statically with"
              "with runtime checks"),
@@ -171,7 +171,7 @@ void initializePollyPasses(PassRegistry &Registry) {
   initializeIslScheduleOptimizerPass(Registry);
   initializePollyIndVarSimplifyPass(Registry);
   initializePollyCanonicalizePass(Registry);
-  initializeAliasInstrumenterPass(Registry);
+  initializeSCEVAliasInstrumenterPass(Registry);
   initializeScopDetectionPass(Registry);
   initializeScopInfoPass(Registry);
   initializeTempScopInfoPass(Registry);
@@ -212,8 +212,8 @@ void initializePollyPasses(PassRegistry &Registry) {
 static void registerPollyPasses(llvm::PassManagerBase &PM) {
   registerCanonicalicationPasses(PM, SCEVCodegen);
 
-  if (AliasInstrumenter)
-    PM.add(polly::createAliasInstrumenterPass());
+  if (SCEVAliasInstrumenter)
+    PM.add(polly::createSCEVAliasInstrumenterPass());
 
   PM.add(polly::createScopInfoPass());
 

@@ -32,7 +32,7 @@ llvm::Pass *createCloogInfoPass();
 llvm::Pass *createCodeGenerationPass();
 #endif
 llvm::Pass *createCodePreparationPass();
-llvm::Pass *createAliasInstrumenterPass();
+llvm::Pass *createSCEVAliasInstrumenterPass();
 llvm::Pass *createDeadCodeElimPass();
 llvm::Pass *createDependencesPass();
 llvm::Pass *createDOTOnlyPrinterPass();
@@ -76,7 +76,7 @@ struct PollyForcePassLinking {
     polly::createCodeGenerationPass();
 #endif
     polly::createCodePreparationPass();
-    polly::createAliasInstrumenterPass();
+    polly::createSCEVAliasInstrumenterPass();
     polly::createDeadCodeElimPass();
     polly::createDependencesPass();
     polly::createDOTOnlyPrinterPass();
@@ -108,7 +108,7 @@ class PassRegistry;
 void initializeCodeGenerationPass(llvm::PassRegistry &);
 #endif
 void initializeCodePreparationPass(llvm::PassRegistry &);
-void initializeAliasInstrumenterPass(llvm::PassRegistry &);
+void initializeSCEVAliasInstrumenterPass(llvm::PassRegistry &);
 void initializeDeadCodeElimPass(llvm::PassRegistry &);
 void initializeIndependentBlocksPass(llvm::PassRegistry &);
 void initializeJSONExporterPass(llvm::PassRegistry &);

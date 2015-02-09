@@ -1,4 +1,4 @@
-//===------------- AliasInstrumenter.h --------------------------*- C++ -*-===//
+//===------------- SCEVAliasInstrumenter.h ----------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -33,13 +33,12 @@
 #ifndef POLLY_ALIAS_INSTRUMENTER_H
 #define POLLY_ALIAS_INSTRUMENTER_H
 
-#include "llvm/Transforms/Utils/FullInstNamer.h"
 #include "llvm/Analysis/DominanceFrontier.h"
 #include "llvm/Analysis/AliasSetTracker.h"
 #include "llvm/Analysis/RegionInfo.h"
 #include "llvm/Analysis/ScalarEvolutionExpander.h"
 #include "llvm/IR/Module.h"
-#include "polly/SCEVRangeAnalyser.h"
+#include "polly/SCEVRangeBuilder.h"
 #include <map>
 
 namespace llvm {
@@ -62,10 +61,34 @@ using namespace llvm;
 class ScopDetection;
 class DetectionContext;
 
-Function* declareTraceFunction(Module *m);
-
-class AliasInstrumenter : public FunctionPass {
+class SCEVAliasInstrumenter : public FunctionPass {
   typedef IRBuilder<true, TargetFolder> BuilderType;
+
+  /**
+   * Holds information about the region being instrumented, like memory
+   * properties.
+   */
+  struct InstrumentationContext {
+    Region &r; // The region being instrumented.
+
+    // Stores, for each memory accesses instruction in the region, its
+    // respective base pointer and access function.
+    // For the accesses a[i], a[i+5], and b[i+j], we'd have something like:
+    // - memAccesses: {a: (i,i+5), b: (i+j)}
+    std::map<Value *, std::set<const SCEV *> > memAccesses;
+
+    // Stores all pairs of base pointers that need to be dynamically checked
+    // against each other, for the region to be considered free of aliasing.
+    // If the pointers a, b, and c may alias in the region, we'd have:
+    // - pairsToCheck: (<a,b>, <b,c>, <a,c>)
+    std::set<std::pair<Value *, Value *> > pairsToCheck;
+
+    // Holds the lower and upper bounds for each base pointer in the region,
+    // represented by the bounds of the smallest and largest access expressions.
+    std::map<Value *, std::pair<Value *, Value *> > pointerBounds;
+
+    InstrumentationContext(Region &r) : r(r) {}
+  };
 
   // Analyses used.
   ScalarEvolution *se;
@@ -75,10 +98,9 @@ class AliasInstrumenter : public FunctionPass {
   DominatorTree *dt;
   PostDominatorTree *pdt;
   DominanceFrontier *df;
-  FullInstNamer *fin;
 
+  // Function being analysed.
   Function *currFn;
-  Function *trace_fn;
 
   // Metadata domain to be used by alias metadata.
   MDNode *mdDomain = nullptr;
@@ -95,50 +117,46 @@ class AliasInstrumenter : public FunctionPass {
 
   // Checks if the given region has all the properties needed for
   // instrumentation.
-  bool isSafeToInstrument(Region &r);
+  bool canInstrument(InstrumentationContext &context);
 
   // Checks if the given instruction doesn't break the properties needed for
   // instrumentation (basically checks if it doesn't access memory in an
   // unpredictable way).
   bool isValidInstruction(Instruction &inst);
 
-  // Checks for alias dependencies within the current region, generating dynamic
-  // checks if possible. Returns true if all dependecies could be solved either
-  // statically or through run-time checks.
-  // For every pair (A,B) of pointers in the region that may alias, we generate:
-  // - check(A, B) -> upperAddrA < lowerAddrB || upperAddrB < lowerAddrA
-  bool tryInstrumentDependencies(Region *r);
+  // Collects, for each memory access instruction in the region, its base
+  // pointers, access function, and pointers that need to be checked against it
+  // so it can be considered alias-free.
+  bool collectDependencyData(InstrumentationContext &context);
 
   // Get the value that represents the base pointer of the given memory access
   // instruction in the given region. The pointer must be region invariant.
-  Value *getBasePtrValue(Instruction &inst, Region *r);
+  Value *getBasePtrValue(Instruction &inst, Region &r);
+
+  // Tries to generate dynamic checks that compare the access range of every
+  // pair of pointers in the region at run-time, thus finding if there is true
+  // aliasing. Returns true if checks could be generated for all dependencies.
+  // For every pair (A,B) of pointers in the region that may alias, we generate:
+  // - check(A, B) -> upperAddrA < lowerAddrB || upperAddrB < lowerAddrA
+  bool instrumentDependencies(InstrumentationContext &context);
+
+  // Tries to compute the bounds for the addresses accessed over each base
+  // pointer in the region, using SCEV.
+  bool buildSCEVBounds(InstrumentationContext &context,
+                       SCEVRangeBuilder &rangeBuilder);
 
   // Inserts a dynamic test to guarantee that accesses to two pointers do not
-  // overlap, given their access ranges.
-  Value *insertCheck(std::pair<Value *, Value *> boundsA,
-                     std::pair<Value *, Value *> boundsB,
-                     BuilderType &builder, SCEVRangeAnalyser &rangeAnalyser);
+  // overlap in a specific region, given their access ranges.
+  // E.g.: %pair-no-alias = upper(A) < lower(B) || upper(B) < lower(A)
+  Value *buildPtrPairCheck(std::pair<Value *, Value *> boundsA,
+                           std::pair<Value *, Value *> boundsB,
+                           BuilderType &builder,
+                           SCEVRangeBuilder &rangeBuilder);
 
   // Chain the checks that compare different pairs of pointers to a single
   // result value using "and" operations.
+  // E.g.: %region-no-alias = %pair-no-alias1 && %pair-no-alias2 && %pair-no-alias3
   Value *chainChecks(std::vector<Value *> checks, BuilderType &builder);
-
-  // The structure of a region can't be changed while instrumenting it. This
-  // method fix the structure of the instrumented regions by simplifying them
-  // and isolating the checks in a new entering block.
-  //       |    |              ____\|/___
-  //     _\|/__\|/_           | dy_check |
-  //    | Region:  |          '-----.----'
-  //    | dy_check |           ____\|/___
-  //    |   ...    |    =>    | Region:  |
-  //    '---|---|--'          |    ...   |
-  //       \|/ \|/            '-----.----'
-  //                               \|/
-  void fixInstrumentedRegions();
-
-  // Checks if a region can be simplified to have single entry and exit EDGES
-  // without breaking the sinlge entry and exit BLOCKS property.
-  bool isSafeToSimplify(Region *r);
 
   // Produce two versions of each instrumented region: one with the original
   // alias info, if the run-time alias check fails, and one set to ignore 
@@ -155,6 +173,30 @@ class AliasInstrumenter : public FunctionPass {
   //                                    \|/
   void cloneInstrumentedRegions();
 
+  // The structure of a region can't be changed while instrumenting it, so the
+  // checks were inserted in the entry block. This method fix the structure of
+  // the instrumented regions by simplifying them and moving the checks to the
+  // entering block, so we can clone the region without cloning the checks.
+  // NOTE: checks that can't be hoisted will e aliminated.
+  //       |    |              ____\|/___
+  //     _\|/__\|/_           | dy_check |
+  //    | Region:  |          '-----.----'
+  //    | dy_check |           ____\|/___
+  //    |   ...    |    =>    | Region:  |
+  //    '---|---|--'          |    ...   |
+  //       \|/ \|/            '-----.----'
+  //                               \|/
+  void hoistChecks();
+
+  // Create single entry and exit EDGES in a region (thus creating entering and
+  // exiting blocks).
+  bool simplifyRegion(Region *r);
+
+  // Checks if a region can be simplified to have single entry and exit EDGES
+  // without breaking the sinlge entry and exit BLOCKS property. This can happen
+  // when edges from within the region point to its entry or exit.
+  bool isSafeToSimplify(Region *r);
+
   // Use scoped alias tags to tell the compiler that cloned regions are free of
   // dependencies. Basically creates a separate alias scope for each base
   // pointer in the region. Each load/store instruction is then associated with
@@ -163,18 +205,13 @@ class AliasInstrumenter : public FunctionPass {
 
   // DEBUG - compute the lower and upper access bounds for the base pointer in
   // the given region. Also inserts instructions to print the computed bounds at
-  // runtime. Returns true if the bounds can be computed, false otherwise.
-  bool computeAndPrintBounds(Value *pointer, Region *r);
-
-  // DEBUG - calls runtime to print the expected and the real array bounds of a
-  // value.
-  void printArrayBounds(Value *v, Value *l, Value *u, Region *r,
-                        BuilderType &builder,
-                        SCEVRangeAnalyser& rangeAnalyser);
+  // runtime, in the region entry. Returns true if the bounds can be computed,
+  // false otherwis..
+  bool computeAndPrintPtrBounds(Value *pointer, Region *r);
 
 public:
   static char ID;
-  explicit AliasInstrumenter() : FunctionPass(ID) {}
+  explicit SCEVAliasInstrumenter() : FunctionPass(ID) {}
 
   // FunctionPass interface.
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
@@ -185,7 +222,7 @@ public:
 
 namespace llvm {
 class PassRegistry;
-void initializeAliasInstrumenterPass(llvm::PassRegistry &);
+void initializeSCEVAliasInstrumenterPass(llvm::PassRegistry &);
 }
 
 #endif

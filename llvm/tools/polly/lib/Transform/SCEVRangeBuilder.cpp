@@ -1,4 +1,4 @@
-//===------------- SCEVRangeAnalyser.h --------------------------*- C++ -*-===//
+//===------------- SCEVRangeBuilder.cpp -------------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -13,7 +13,8 @@
 #include "llvm/IR/TypeBuilder.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
-#include "polly/AliasInstrumenter.h"
+#include "polly/SCEVAliasInstrumenter.h"
+#include "polly/ScopDetection.h"
 #include "polly/Support/ScopHelper.h"
 #include "polly/CloneRegion.h"
 
@@ -22,7 +23,7 @@ using namespace polly;
 
 #define DEBUG_TYPE "polly-scev-range-analyser"
 
-Value* SCEVRangeAnalyser::getSavedExpression(const SCEV *S,
+Value* SCEVRangeBuilder::getSavedExpression(const SCEV *S,
                                              Instruction *InsertPt, bool upper) {
   std::map<std::tuple<const SCEV *, Instruction *, bool>, TrackingVH<Value> >::iterator
     I = InsertedExpressions.find(std::make_tuple(S, InsertPt, upper));
@@ -32,14 +33,12 @@ Value* SCEVRangeAnalyser::getSavedExpression(const SCEV *S,
   return NULL;
 }
 
-void SCEVRangeAnalyser::rememberExpression(const SCEV *S, Instruction *InsertPt,
+void SCEVRangeBuilder::rememberExpression(const SCEV *S, Instruction *InsertPt,
                                            bool upper, Value *V) {
   InsertedExpressions[std::make_tuple(S, InsertPt, upper)] = V;
 }
 
-// TODO: like in SCEVExpander, here should come insertion-point computation.
-// Main entry point for expansion.
-Value *SCEVRangeAnalyser::expand(const SCEV *s, bool upper) {
+Value *SCEVRangeBuilder::expand(const SCEV *s, bool upper) {
   // Check expression cache before expansion.
   Instruction *insertPt = getInsertPoint();
   Value *v = getSavedExpression(s, insertPt, upper);
@@ -58,7 +57,7 @@ Value *SCEVRangeAnalyser::expand(const SCEV *s, bool upper) {
   return v;
 }
 
-Value *SCEVRangeAnalyser::visitConstant(const SCEVConstant *constant,
+Value *SCEVRangeBuilder::visitConstant(const SCEVConstant *constant,
                                         bool upper) {
   return constant->getValue();
 }
@@ -68,7 +67,7 @@ Value *SCEVRangeAnalyser::visitConstant(const SCEVConstant *constant,
 // value the destination bitwidth can assume. The overflow-free range is
 // defined as the greatest lower bound and least upper pound among the types
 // that the destination bitwidth can represent.
-Value *SCEVRangeAnalyser::visitTruncateExpr(const SCEVTruncateExpr *expr,
+Value *SCEVRangeBuilder::visitTruncateExpr(const SCEVTruncateExpr *expr,
                                             bool upper) {
   Type *dstTy = se->getEffectiveSCEVType(expr->getType());
   Type *srcTy = se->getEffectiveSCEVType(expr->getOperand()->getType());
@@ -104,7 +103,7 @@ Value *SCEVRangeAnalyser::visitTruncateExpr(const SCEVTruncateExpr *expr,
 // invloke the expander visitor to generate the actual code.
 // - upper_bound: zero_extend (upper_bound(op))
 // - lower_bound: zero_extend (lower_bound(op))
-Value *SCEVRangeAnalyser::visitZeroExtendExpr(const SCEVZeroExtendExpr *expr,
+Value *SCEVRangeBuilder::visitZeroExtendExpr(const SCEVZeroExtendExpr *expr,
                                               bool upper) {
   if (!expand(expr->getOperand()))
      return nullptr;
@@ -116,7 +115,7 @@ Value *SCEVRangeAnalyser::visitZeroExtendExpr(const SCEVZeroExtendExpr *expr,
 // call the expander visitor to generate the actual code.
 // - upper_bound: sext(upper_bound(op))
 // - lower_bound: sext(lower_bound(op))
-Value *SCEVRangeAnalyser::visitSignExtendExpr(const SCEVSignExtendExpr *expr,
+Value *SCEVRangeBuilder::visitSignExtendExpr(const SCEVSignExtendExpr *expr,
                                               bool upper) {
   if (!expand(expr->getOperand()))
     return nullptr;
@@ -128,7 +127,7 @@ Value *SCEVRangeAnalyser::visitSignExtendExpr(const SCEVSignExtendExpr *expr,
 // the actual instructions.
 // - upper_bound: upper_bound(op) + upper_bound(op)
 // - lower_bound: lower_bound(op) + lower_bound(op)
-Value *SCEVRangeAnalyser::visitAddExpr(const SCEVAddExpr *expr, bool upper) {
+Value *SCEVRangeBuilder::visitAddExpr(const SCEVAddExpr *expr, bool upper) {
   for (unsigned i = 0, e = expr->getNumOperands(); i < e; ++i) {
     if (!expand(expr->getOperand(i)))
       return nullptr;
@@ -146,7 +145,7 @@ Value *SCEVRangeAnalyser::visitAddExpr(const SCEVAddExpr *expr, bool upper) {
 // - if C < 0:
 //   . upper_bound: C * lower_bound(op2)
 //   . lower_bound: C * upper_bound(op2)
-Value *SCEVRangeAnalyser::visitMulExpr(const SCEVMulExpr *expr, bool upper) {
+Value *SCEVRangeBuilder::visitMulExpr(const SCEVMulExpr *expr, bool upper) {
   if (expr->getNumOperands() != 2)
     return nullptr;
 
@@ -173,7 +172,7 @@ Value *SCEVRangeAnalyser::visitMulExpr(const SCEVMulExpr *expr, bool upper) {
 // single bound.
 // - upper_bound: upper_bound(lhs) / lower_bound(rhs)
 // - lower_bound: lower_bound(lhs) / upper_bound(rhs)
-Value *SCEVRangeAnalyser::visitUDivExpr(const SCEVUDivExpr *expr, bool upper) {
+Value *SCEVRangeBuilder::visitUDivExpr(const SCEVUDivExpr *expr, bool upper) {
   Type *ty = se->getEffectiveSCEVType(expr->getType());
   Value *lhs = expand(expr->getLHS(), upper);
 
@@ -202,11 +201,11 @@ Value *SCEVRangeAnalyser::visitUDivExpr(const SCEVUDivExpr *expr, bool upper) {
 // Compute bounds for an expression of the type {%start, +, %step}<%loop>.
 // - upper: upper(%start) + upper(%step) * upper(backedge_taken(%loop))
 // - lower_bound: lower_bound(%start)
-Value *SCEVRangeAnalyser::visitAddRecExpr(const SCEVAddRecExpr *expr,
+Value *SCEVRangeBuilder::visitAddRecExpr(const SCEVAddRecExpr *expr,
                                           bool upper) {
   // lower.
   if (!upper)
-    return expand(expr->getStart(), upper);
+    return expand(expr->getStart(), /*upper*/ false);
 
   // upper.
   // Cast all values to the effective start value type.
@@ -241,7 +240,7 @@ Value *SCEVRangeAnalyser::visitAddRecExpr(const SCEVAddRecExpr *expr,
 // actual instructions.
 // - upper_bound: umax(upper_bound(op_1), ... upper_bound(op_N))
 // - lower_bound: umax(lower_bound(op_1), ... lower_bound(op_N))
-Value *SCEVRangeAnalyser::visitUMaxExpr(const SCEVUMaxExpr *expr, bool upper) {
+Value *SCEVRangeBuilder::visitUMaxExpr(const SCEVUMaxExpr *expr, bool upper) {
   for (unsigned i = 0, e = expr->getNumOperands(); i < e; ++i) {
     if (!expand(expr->getOperand(i)))
       return nullptr;
@@ -256,7 +255,7 @@ Value *SCEVRangeAnalyser::visitUMaxExpr(const SCEVUMaxExpr *expr, bool upper) {
 // actual instructions.
 // - upper_bound: max(upper_bound(op_1), ... upper_bound(op_N))
 // - lower_bound: max(lower_bound(op_1), ... lower_bound(op_N))
-Value *SCEVRangeAnalyser::visitSMaxExpr(const SCEVSMaxExpr *expr, bool upper) {
+Value *SCEVRangeBuilder::visitSMaxExpr(const SCEVSMaxExpr *expr, bool upper) {
   for (unsigned i = 0, e = expr->getNumOperands(); i < e; ++i) {
     if (!expand(expr->getOperand(i)))
       return nullptr;
@@ -267,17 +266,16 @@ Value *SCEVRangeAnalyser::visitSMaxExpr(const SCEVSMaxExpr *expr, bool upper) {
 
 // The bounds of a generic value are the value itself, if it is region
 // invariant, i.e., a region parameter.
-Value *SCEVRangeAnalyser::visitUnknown(const SCEVUnknown *expr, bool upper) {
+Value *SCEVRangeBuilder::visitUnknown(const SCEVUnknown *expr, bool upper) {
   Value *val = expr->getValue();
 
-  if (!isInvariant(*val, *r))
+  if (!ScopDetection::isInvariant(*val, *r, li, aa))
     return nullptr;
 
   return val;
 }
 
-// Insert a printf call to print the specified value in a pointer format.
-void SCEVRangeAnalyser::insertPtrPrintf(Value *val) {
+void SCEVRangeBuilder::insertPtrPrintf(Value *val) {
   Module *module = r->getEntry()->getParent()->getParent();
   LLVMContext& ctx = module->getContext();
   Twine formatVarName = Twine("pointer_format.str");
@@ -313,7 +311,7 @@ void SCEVRangeAnalyser::insertPtrPrintf(Value *val) {
 // operations on the bounds of each expression in the list.
 // - lower_bound: umin(exprN, umin(exprN-1, ... umin(expr2, expr1)))
 // - upper_bound: umax(exprN, umax(exprN-1, ... umax(expr2, expr1)))
-Value *SCEVRangeAnalyser::getULowerOrUpperBound(std::set<const SCEV *> &exprList,
+Value *SCEVRangeBuilder::getULowerOrUpperBound(std::set<const SCEV *> &exprList,
                                                 bool upper) {
   if (exprList.size() < 1)
     return nullptr;
@@ -351,51 +349,10 @@ Value *SCEVRangeAnalyser::getULowerOrUpperBound(std::set<const SCEV *> &exprList
   return bestBound;
 }
 
-Value *SCEVRangeAnalyser::getULowerBound(std::set<const SCEV *> &exprList) {
+Value *SCEVRangeBuilder::getULowerBound(std::set<const SCEV *> &exprList) {
   return getULowerOrUpperBound(exprList, /*upper*/false);
 }
 
-Value *SCEVRangeAnalyser::getUUpperBound(std::set<const SCEV *> &exprList) {
+Value *SCEVRangeBuilder::getUUpperBound(std::set<const SCEV *> &exprList) {
   return getULowerOrUpperBound(exprList, /*upper*/true);
-}
-
-bool SCEVRangeAnalyser::isInvariant(const Value &val, const Region &reg) {
-  // A reference to function argument or constant value is invariant.
-  if (isa<Argument>(val) || isa<Constant>(val))
-    return true;
-
-  const Instruction *i = dyn_cast<Instruction>(&val);
-  if (!i)
-    return false;
-
-  if (!reg.contains(i))
-    return true;
-
-  if (i->mayHaveSideEffects())
-    return false;
-
-  // When Val is a Phi node, it is likely not invariant. We do not check whether
-  // Phi nodes are actually invariant, we assume that Phi nodes are usually not
-  // invariant. Recursively checking the operators of Phi nodes would lead to
-  // infinite recursion.
-  if (isa<PHINode>(*i))
-    return false;
-
-  for (const Use &operand : i->operands())
-    if (!isInvariant(*operand, reg))
-      return false;
-
-  // When the instruction is a load instruction, check that no write to memory
-  // in the region aliases with the load.
-  if (const LoadInst *li = dyn_cast<LoadInst>(i)) {
-    AliasAnalysis::Location loc = aa->getLocation(li);
-    const Region::const_block_iterator be = reg.block_end();
-    // Check if any basic block in the region can modify the location pointed to
-    // by 'Loc'.  If so, 'Val' is (likely) not invariant in the region.
-    for (const BasicBlock *bb : reg.blocks())
-      if (aa->canBasicBlockModify(*bb, loc))
-        return false;
-  }
-
-  return true;
 }
