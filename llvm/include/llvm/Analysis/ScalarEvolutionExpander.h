@@ -97,6 +97,8 @@ namespace llvm {
 #endif
     }
 
+    virtual ~SCEVExpander() {}
+
 #ifndef NDEBUG
     void setDebugType(const char* s) { DebugType = s; }
 #endif
