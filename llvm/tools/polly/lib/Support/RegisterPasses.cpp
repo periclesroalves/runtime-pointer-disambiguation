@@ -177,6 +177,9 @@ void initializePollyPasses(PassRegistry &Registry) {
   initializeTempScopInfoPass(Registry);
 
   initializeCloneRegionPass(Registry);
+  initializeAliasAnalysisAnalysisGroup(Registry);
+  initializeProfilingFeedbackSpecAAPass(Registry);
+  initializeNoSpecAAPass(Registry);
 }
 
 /// @brief Register Polly passes such that they form a polyhedral optimizer.
