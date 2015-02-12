@@ -265,7 +265,7 @@ namespace llvm {
                           const SCEV *const *op_end,
                           PointerType *PTy, Type *Ty, Value *V);
 
-    Value *expand(const SCEV *S);
+    virtual Value *expand(const SCEV *S);
 
     /// getRelevantLoop - Determine the most "relevant" loop for the given SCEV.
     const Loop *getRelevantLoop(const SCEV *);
