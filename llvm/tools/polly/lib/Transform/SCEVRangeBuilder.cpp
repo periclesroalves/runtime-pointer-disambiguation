@@ -213,6 +213,12 @@ Value *SCEVRangeBuilder::visitAddRecExpr(const SCEVAddRecExpr *expr,
   const SCEV *startSCEV = se->getTruncateOrSignExtend(expr->getStart(), opTy);
   const SCEV *stepSCEV = se->getTruncateOrSignExtend(expr->getStepRecurrence(*se),
                                              opTy);
+
+  // If we can't calculate how many times the loop iterates, then we can't fix a
+  // bound for a recurrence over it.
+  if (!se->hasLoopInvariantBackedgeTakenCount(expr->getLoop()))
+    return nullptr;
+
   const SCEV *bEdgeCountSCEV =
     se->getTruncateOrSignExtend(se->getBackedgeTakenCount(expr->getLoop()), opTy);
 
