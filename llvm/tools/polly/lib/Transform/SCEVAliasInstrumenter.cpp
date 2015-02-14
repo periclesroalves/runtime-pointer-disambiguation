@@ -247,7 +247,7 @@ bool SCEVAliasInstrumenter::instrumentDependencies(
   // Set instruction insertion context. We'll temporarily insert the run-time
   // tests in the region entry.
   Instruction *insertPt = r.getEntry()->getFirstNonPHI();
-  SCEVRangeBuilder rangeBuilder(se, aa, li, &r, insertPt);
+  SCEVRangeBuilder rangeBuilder(se, aa, li, dt, &r, insertPt);
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(insertPt);
 
@@ -445,7 +445,7 @@ bool SCEVAliasInstrumenter::computeAndPrintPtrBounds(Value *pointer,
 
   // Set instruction insertion context.
   Instruction *insertPt = r->getEntry()->begin();
-  SCEVRangeBuilder rangeBuilder(se, aa, li, r, insertPt);
+  SCEVRangeBuilder rangeBuilder(se, aa, li, dt, r, insertPt);
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(insertPt);
 

@@ -27,6 +27,7 @@
 namespace llvm {
 class ScalarEvolution;
 class AliasAnalysis;
+class DominatorTree;
 class SCEV;
 class Value;
 class Region;
@@ -46,6 +47,7 @@ class SCEVRangeBuilder : private SCEVExpander {
   ScalarEvolution *se;
   AliasAnalysis *aa;
   LoopInfo *li;
+  DominatorTree *dt;
   Region *r;
   bool currentUpper; // Which bound is currently being extracted. Used mainly
                       // by methods of SCEVExpander, which are not aware of
@@ -121,8 +123,8 @@ class SCEVRangeBuilder : private SCEVExpander {
 
 public:
   SCEVRangeBuilder(ScalarEvolution *se, AliasAnalysis *aa, LoopInfo *li,
-      Region *r, Instruction *insertPtr)
-    : SCEVExpander(*se, "scevrange"), se(se), aa(aa), li(li), r(r),
+      DominatorTree *dt, Region *r, Instruction *insertPtr)
+    : SCEVExpander(*se, "scevrange"), se(se), aa(aa), li(li), dt(dt), r(r),
       currentUpper(true) {
     SetInsertPoint(insertPtr);
   }

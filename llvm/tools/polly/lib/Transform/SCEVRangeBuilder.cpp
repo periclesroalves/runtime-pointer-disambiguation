@@ -270,12 +270,19 @@ Value *SCEVRangeBuilder::visitSMaxExpr(const SCEVSMaxExpr *expr, bool upper) {
   return SCEVExpander::visitSMaxExpr(expr);
 }
 
-// The bounds of a generic value are the value itself, if it is region
-// invariant, i.e., a region parameter.
+// The bounds of a generic value are the value itself.
 Value *SCEVRangeBuilder::visitUnknown(const SCEVUnknown *expr, bool upper) {
   Value *val = expr->getValue();
+  Instruction *inst = dyn_cast<Instruction>(val);
+  BasicBlock::iterator insertPt = Builder.GetInsertPoint();
 
+  // The value must be a region parameter.
   if (!ScopDetection::isInvariant(*val, *r, li, aa))
+    return nullptr;
+
+  // To be used in range computation, the instruction must be available at the
+  // insertion point.
+  if (inst && !dt->dominates(inst, insertPt))
     return nullptr;
 
   return val;
