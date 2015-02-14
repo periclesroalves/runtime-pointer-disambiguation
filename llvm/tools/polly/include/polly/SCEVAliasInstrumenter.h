@@ -40,6 +40,8 @@
 #include "llvm/IR/Module.h"
 #include "polly/SCEVRangeBuilder.h"
 #include <map>
+#include <set>
+#include <list>
 
 namespace llvm {
 class ScalarEvolution;
@@ -60,6 +62,26 @@ using namespace llvm;
 
 class ScopDetection;
 class DetectionContext;
+class AliasProfilingFeedback;
+class SpeculativeAliasAnalysis;
+enum class SpeculativeAliasResult;
+
+class MustAliasSets {
+public:
+  using Set            = std::list<std::set<Value*>>;
+  using iterator       = Set::iterator;
+  using const_iterator = Set::const_iterator;
+
+  std::set<Value*>& getSetFor(Value *v);
+
+  iterator begin() { return sets.begin(); }
+  iterator end() { return sets.end(); }
+
+  const_iterator begin() const { return sets.begin(); }
+  const_iterator end() const { return sets.end(); }
+private:
+  Set sets;
+};
 
 class SCEVAliasInstrumenter : public FunctionPass {
   typedef IRBuilder<true, TargetFolder> BuilderType;
@@ -77,11 +99,18 @@ class SCEVAliasInstrumenter : public FunctionPass {
     // - memAccesses: {a: (i,i+5), b: (i+j)}
     std::map<Value *, std::set<const SCEV *> > memAccesses;
 
+    //@{
     // Stores all pairs of base pointers that need to be dynamically checked
     // against each other, for the region to be considered free of aliasing.
     // If the pointers a, b, and c may alias in the region, we'd have:
     // - pairsToCheck: (<a,b>, <b,c>, <a,c>)
-    std::set<std::pair<Value *, Value *> > pairsToCheck;
+    std::set<std::pair<Value *, Value *>> rangeChecks;
+    std::set<std::pair<Value *, Value *>> heapChecks;
+    //@}
+
+    // pointers that we will check for equality to establish a must alias
+    // relationship    
+    MustAliasSets equalityChecks;
 
     // Holds the lower and upper bounds for each base pointer in the region,
     // represented by the bounds of the smallest and largest access expressions.
@@ -93,6 +122,7 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Analyses used.
   ScalarEvolution *se;
   AliasAnalysis *aa;
+  SpeculativeAliasAnalysis *saa;
   LoopInfo *li;
   RegionInfo *ri;
   DominatorTree *dt;
@@ -148,7 +178,7 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Inserts a dynamic test to guarantee that accesses to two pointers do not
   // overlap in a specific region, given their access ranges.
   // E.g.: %pair-no-alias = upper(A) < lower(B) || upper(B) < lower(A)
-  Value *buildPtrPairCheck(std::pair<Value *, Value *> boundsA,
+  Value *buildRangeCheck(std::pair<Value *, Value *> boundsA,
                            std::pair<Value *, Value *> boundsB,
                            BuilderType &builder,
                            SCEVRangeBuilder &rangeBuilder);

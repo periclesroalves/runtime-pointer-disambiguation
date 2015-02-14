@@ -15,6 +15,7 @@
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
 #include "polly/SCEVAliasInstrumenter.h"
+#include "polly/SpeculativeAliasAnalysis.h"
 #include "polly/LinkAllPasses.h"
 #include "polly/ScopDetection.h"
 #include "polly/Support/ScopHelper.h"
@@ -26,6 +27,11 @@ using namespace llvm;
 using namespace polly;
 
 #define DEBUG_TYPE "polly-alias-instrumenter"
+
+template<typename T>
+std::pair<T,T> make_ordered_pair(const T& t1, const T& t2) {
+  return (t1 < t2) ? std::make_pair(t1,t2) : std::make_pair(t2,t1);
+}
 
 void SCEVAliasInstrumenter::fixAliasInfo(Region *r) {
   std::map<const Value *, std::set<Instruction *> > memAccesses;
@@ -204,7 +210,7 @@ Value *SCEVAliasInstrumenter::chainChecks(std::vector<Value *> checks,
   return rhs;
 }
 
-Value *SCEVAliasInstrumenter::buildPtrPairCheck(
+Value *SCEVAliasInstrumenter::buildRangeCheck(
                               std::pair<Value *, Value *> boundsA,
                               std::pair<Value *, Value *> boundsB,
                               BuilderType &builder,
@@ -258,12 +264,12 @@ bool SCEVAliasInstrumenter::instrumentDependencies(
 
   // Insert comparison expressions for every pair of pointers that need to be
   // checked in the region.
-  for (auto& pair : context.pairsToCheck) {
+  for (auto& pair : context.rangeChecks) {
     assert(context.pointerBounds.count(pair.first) &&
            context.pointerBounds.count(pair.second) &&
            "SCEV bounds should be available at this point.");
 
-    Value *check = buildPtrPairCheck(context.pointerBounds[pair.first],
+    Value *check = buildRangeCheck(context.pointerBounds[pair.first],
                                      context.pointerBounds[pair.second],
                                      builder, rangeBuilder);
     pairChecks.push_back(check);
@@ -302,8 +308,16 @@ Value *SCEVAliasInstrumenter::getBasePtrValue(Instruction &inst, Region &r) {
 bool SCEVAliasInstrumenter::collectDependencyData(
                             InstrumentationContext &context) {
   Region &r = context.r;
+
   AliasSetTracker ast(*aa);
 
+  // build alias sets
+  // TODO: this does yet another pass over the blocks of the region,
+  //       can we reuse context.memAccesses, or something like it?
+  for (BasicBlock *bb : r.blocks())
+    ast.add(*bb);
+
+  // find which checks we need to insert
   for (BasicBlock *bb : r.blocks()) {
     for (BasicBlock::iterator i = bb->begin(), e = --bb->end(); i != e; ++i) {
       Instruction &inst = *i;
@@ -342,10 +356,24 @@ bool SCEVAliasInstrumenter::collectDependencyData(
             continue;
 
           // Guarantees ordered pairs (avoids repetition).
-          if (basePtrValue <= aliasValue)
-            context.pairsToCheck.insert(std::make_pair(basePtrValue, aliasValue));
-          else
-            context.pairsToCheck.insert(std::make_pair(aliasValue, basePtrValue));
+          auto pair = make_ordered_pair(basePtrValue, aliasValue);
+
+          switch (saa->speculativeAlias(basePtrValue, aliasValue)) {
+            case SpeculativeAliasResult::NoRangeOverlap:
+            // TODO: decide which check to use for these cases
+            case SpeculativeAliasResult::NoAlias:
+            case SpeculativeAliasResult::DontKnow:
+            // TODO: implement heap checks
+            case SpeculativeAliasResult::NoHeapAlias:
+            // TODO: don't insert checks for these cases
+            case SpeculativeAliasResult::ProbablyAlias:
+              context.rangeChecks.insert(pair);
+              break;
+            case SpeculativeAliasResult::ExactAlias:
+              auto& set = context.equalityChecks.getSetFor(pair.first);
+              set.insert(pair.second);
+              break;
+          }
         }
       }
     }
@@ -424,6 +452,7 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   li = &getAnalysis<LoopInfo>();
   ri = &getAnalysis<RegionInfoPass>().getRegionInfo();
   aa = &getAnalysis<AliasAnalysis>();
+  saa = &getAnalysis<SpeculativeAliasAnalysis>();
   se = &getAnalysis<ScalarEvolution>();
   dt = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
   pdt = &getAnalysis<PostDominatorTree>();
@@ -488,11 +517,26 @@ void SCEVAliasInstrumenter::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequired<LoopInfo>();
   AU.addRequired<ScalarEvolution>();
   AU.addRequired<AliasAnalysis>();
+  AU.addRequired<SpeculativeAliasAnalysis>();
   AU.addRequired<RegionInfoPass>();
 
   // Changing the CFG like we do doesn't preserve anything.
   AU.addPreserved<AliasAnalysis>();
 }
+
+std::set<Value*>& MustAliasSets::getSetFor(Value *v) {
+  for (auto& set : sets) {
+    if (set.count(v))
+      return set;
+  }
+
+  iterator set = sets.emplace(sets.end());
+
+  set->insert(v);
+
+  return *set;
+}
+
 
 char SCEVAliasInstrumenter::ID = 0;
 

@@ -54,6 +54,10 @@ llvm::Pass *createIslCodeGenerationPass();
 llvm::Pass *createIslScheduleOptimizerPass();
 llvm::Pass *createTempScopInfoPass();
 
+// create speculative AA that just falls back to normal static AA.
+llvm::Pass *createNoSpecAAPass();
+llvm::Pass *createProfilingFeedbackSpecAAPass();
+
 llvm::Pass *createRegionCloningPass();
 
 extern char &IndependentBlocksID;
@@ -98,6 +102,8 @@ struct PollyForcePassLinking {
     polly::createIslScheduleOptimizerPass();
     polly::createTempScopInfoPass();
     polly::createRegionCloningPass();
+    polly::createNoSpecAAPass();
+    polly::createProfilingFeedbackSpecAAPass();
   }
 } PollyForcePassLinking; // Force link by creating a global definition.
 }
@@ -122,6 +128,9 @@ void initializePlutoOptimizerPass(llvm::PassRegistry &);
 void initializePollyCanonicalizePass(llvm::PassRegistry &);
 void initializePollyIndVarSimplifyPass(llvm::PassRegistry &);
 
+void initializeSpeculativeAliasAnalysisAnalysisGroup(llvm::PassRegistry&);
+void initializeNoSpecAAPass(llvm::PassRegistry&);
+void initializeProfilingFeedbackSpecAAPass(llvm::PassRegistry&);
 void initializeCloneRegionPass(llvm::PassRegistry&);
 }
 
