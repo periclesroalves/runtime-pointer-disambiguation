@@ -13,7 +13,7 @@
 #include "llvm/IR/TypeBuilder.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
-#include "polly/SCEVAliasInstrumenter.h"
+#include "polly/SCEVRangeBuilder.h"
 #include "polly/ScopDetection.h"
 #include "polly/Support/ScopHelper.h"
 #include "polly/CloneRegion.h"
@@ -324,8 +324,9 @@ void SCEVRangeBuilder::insertPtrPrintf(Value *val) {
 // operations on the bounds of each expression in the list.
 // - lower_bound: umin(exprN, umin(exprN-1, ... umin(expr2, expr1)))
 // - upper_bound: umax(exprN, umax(exprN-1, ... umax(expr2, expr1)))
-Value *SCEVRangeBuilder::getULowerOrUpperBound(std::set<const SCEV *> &exprList,
-                                                bool upper) {
+Value *SCEVRangeBuilder::getULowerOrUpperBound(
+                                         const std::set<const SCEV *> &exprList,
+                                         bool upper) {
   if (exprList.size() < 1)
     return nullptr;
 
@@ -362,10 +363,12 @@ Value *SCEVRangeBuilder::getULowerOrUpperBound(std::set<const SCEV *> &exprList,
   return bestBound;
 }
 
-Value *SCEVRangeBuilder::getULowerBound(std::set<const SCEV *> &exprList) {
+Value *SCEVRangeBuilder::getULowerBound(
+                                       const std::set<const SCEV *> &exprList) {
   return getULowerOrUpperBound(exprList, /*upper*/false);
 }
 
-Value *SCEVRangeBuilder::getUUpperBound(std::set<const SCEV *> &exprList) {
+Value *SCEVRangeBuilder::getUUpperBound(
+                                       const std::set<const SCEV *> &exprList) {
   return getULowerOrUpperBound(exprList, /*upper*/true);
 }

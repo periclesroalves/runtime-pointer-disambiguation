@@ -139,7 +139,7 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // this list is a boolean that indicates, at runtime, if the corresponding
   // region is free of true dependencies. This value usually lives right before
   // the region entry.
-  std::vector<std::pair<Value *, Region *> > insertedChecks;
+  std::vector<std::pair<Instruction *, Region *> > insertedChecks;
 
   // Walks the region tree, trying to insert dynamic checks for the greatest
   // possible regions.
@@ -161,7 +161,7 @@ class SCEVAliasInstrumenter : public FunctionPass {
 
   // Get the value that represents the base pointer of the given memory access
   // instruction in the given region. The pointer must be region invariant.
-  Value *getBasePtrValue(Instruction &inst, Region &r);
+  Value *getBasePtrValue(Instruction &inst, const Region &r);
 
   // Tries to generate dynamic checks that compare the access range of every
   // pair of pointers in the region at run-time, thus finding if there is true
@@ -178,15 +178,16 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Inserts a dynamic test to guarantee that accesses to two pointers do not
   // overlap in a specific region, given their access ranges.
   // E.g.: %pair-no-alias = upper(A) < lower(B) || upper(B) < lower(A)
-  Value *buildRangeCheck(std::pair<Value *, Value *> boundsA,
-                           std::pair<Value *, Value *> boundsB,
-                           BuilderType &builder,
-                           SCEVRangeBuilder &rangeBuilder);
+  Instruction *buildRangeCheck(std::pair<Value *, Value *> boundsA,
+                               std::pair<Value *, Value *> boundsB,
+                               BuilderType &builder,
+                               SCEVRangeBuilder &rangeBuilder);
 
   // Chain the checks that compare different pairs of pointers to a single
   // result value using "and" operations.
   // E.g.: %region-no-alias = %pair-no-alias1 && %pair-no-alias2 && %pair-no-alias3
-  Value *chainChecks(std::vector<Value *> checks, BuilderType &builder);
+  Instruction
+  *chainChecks(std::vector<Instruction *> checks, BuilderType &builder);
 
   // Produce two versions of each instrumented region: one with the original
   // alias info, if the run-time alias check fails, and one set to ignore 

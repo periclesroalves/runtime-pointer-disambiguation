@@ -23,6 +23,7 @@
 #include "llvm/Analysis/ScalarEvolutionExpander.h"
 #include "llvm/IR/Module.h"
 #include <map>
+#include <set>
 
 namespace llvm {
 class ScalarEvolution;
@@ -115,7 +116,8 @@ class SCEVRangeBuilder : private SCEVExpander {
 
   // Generates the lower or upper bound for a set of unsigned expressions. More
   // details in the method implementation header.
-  Value *getULowerOrUpperBound(std::set<const SCEV *> &exprList, bool upper);
+  Value *getULowerOrUpperBound(const std::set<const SCEV *> &exprList,
+                              bool upper);
 
   // DEBUG - generates a printf instruction for the given value at the current
   // insertion point. Uses pointer format.
@@ -142,8 +144,8 @@ public:
   // Generate the smallest lower bound and greatest upper bound for a set of
   // expressions. All expressions are assumed to be type consistent (all of the
   // same type) and produce an unsigned result.
-  Value *getULowerBound(std::set<const SCEV *> &exprList);
-  Value *getUUpperBound(std::set<const SCEV *> &exprList);
+  Value *getULowerBound(const std::set<const SCEV *> &exprList);
+  Value *getUUpperBound(const std::set<const SCEV *> &exprList);
 };
 
 } // end namespace polly

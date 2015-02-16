@@ -134,11 +134,11 @@ bool SCEVAliasInstrumenter::simplifyRegion(Region *r) {
 
 void SCEVAliasInstrumenter::hoistChecks() {
   // NOTE: checks that can't be hoisted will be eliminated.
-  std::vector<std::pair<Value *, Region *> > oldChecks(insertedChecks);
+  std::vector<std::pair<Instruction *, Region *> > oldChecks(insertedChecks);
   insertedChecks.clear();
 
   for (auto &check : oldChecks) {
-    Instruction *dyResult = dyn_cast<Instruction>(check.first);
+    Instruction *dyResult = check.first;
     BasicBlock *entry = dyResult->getParent();
     Region *r = check.second;
 
@@ -150,12 +150,12 @@ void SCEVAliasInstrumenter::hoistChecks() {
 
     // The check expressions live between the entry blocks phis and the final
     // result.
-    Instruction *inst;
     BasicBlock::iterator it = dyResult->getParent()->getFirstNonPHI();
     Instruction *insertPt = &r->getEnteringBlock()->back();
 
     // Move the check expressions to the entering block, one instruction at a
     // time.
+    Instruction *inst;
     do {
       inst = it;
       it++;
@@ -164,7 +164,7 @@ void SCEVAliasInstrumenter::hoistChecks() {
     } while (inst != dyResult);
 
     // Register the new check location.
-    insertedChecks.push_back(std::make_pair(check.first, r));
+    insertedChecks.push_back(std::make_pair(check.first, r)); //TODO
   }
 }
 
@@ -180,7 +180,7 @@ void SCEVAliasInstrumenter::cloneInstrumentedRegions() {
 
   // Clone each instrumented region.
   for (auto &check : insertedChecks) {
-    Instruction *dyResult = dyn_cast<Instruction>(check.first);
+    Instruction *dyResult = check.first;
     Region *r = check.second;
     Region *clonedRegion = cloneRegion(r, nullptr, ri, dt, df);
 
@@ -196,7 +196,8 @@ void SCEVAliasInstrumenter::cloneInstrumentedRegions() {
   }
 }
 
-Value *SCEVAliasInstrumenter::chainChecks(std::vector<Value *> checks,
+Instruction *SCEVAliasInstrumenter::chainChecks(
+                                          std::vector<Instruction *> checks,
                                           BuilderType &builder) {
   if (checks.size() < 1)
     return nullptr;
@@ -207,10 +208,11 @@ Value *SCEVAliasInstrumenter::chainChecks(std::vector<Value *> checks,
     rhs = builder.CreateAnd(checks[i], rhs, "region-no-alias");
   }
 
-  return rhs;
+  // ugly but safe, since `and' of instructions always produces an instruction
+  return cast<Instruction>(rhs);
 }
 
-Value *SCEVAliasInstrumenter::buildRangeCheck(
+Instruction *SCEVAliasInstrumenter::buildRangeCheck(
                               std::pair<Value *, Value *> boundsA,
                               std::pair<Value *, Value *> boundsB,
                               BuilderType &builder,
@@ -226,7 +228,14 @@ Value *SCEVAliasInstrumenter::buildRangeCheck(
   // Build actual interval comparisons.
   Value *aIsBeforeB = builder.CreateICmpULT(upperA, lowerB);
   Value *bIsBeforeA = builder.CreateICmpULT(upperB, lowerA);
-  return builder.CreateOr(aIsBeforeB, bIsBeforeA, "pair-no-alias");
+
+  Value *check = builder.CreateOr(aIsBeforeB, bIsBeforeA, "pair-no-alias");
+
+  // the hoisting code, etc., assume that the check is an instruction,
+  // not a constant.
+  // I hope the SCEV range builder does not produce constant expressions that
+  // can be folded away
+  return cast<Instruction>(check);
 }
 
 bool SCEVAliasInstrumenter::buildSCEVBounds(InstrumentationContext &context,
@@ -260,7 +269,7 @@ bool SCEVAliasInstrumenter::instrumentDependencies(
   if (!buildSCEVBounds(context, rangeBuilder))
     return false;
 
-  std::vector<Value *> pairChecks;
+  std::vector<Instruction *> pairChecks;
 
   // Insert comparison expressions for every pair of pointers that need to be
   // checked in the region.
@@ -269,25 +278,27 @@ bool SCEVAliasInstrumenter::instrumentDependencies(
            context.pointerBounds.count(pair.second) &&
            "SCEV bounds should be available at this point.");
 
-    Value *check = buildRangeCheck(context.pointerBounds[pair.first],
-                                     context.pointerBounds[pair.second],
-                                     builder, rangeBuilder);
+    auto check = buildRangeCheck(context.pointerBounds[pair.first],
+                                 context.pointerBounds[pair.second],
+                                 builder,
+                                 rangeBuilder);
     pairChecks.push_back(check);
   }
 
   // Combine all checks into a single boolean result using AND.
-  if (Value *checkResult = chainChecks(pairChecks, builder))
+  if (auto checkResult = chainChecks(pairChecks, builder))
     insertedChecks.push_back(std::make_pair(checkResult, &r));
 
   return true;
 }
 
-Value *SCEVAliasInstrumenter::getBasePtrValue(Instruction &inst, Region &r) {
+Value *SCEVAliasInstrumenter::getBasePtrValue(Instruction &inst, 
+                                              const Region &r) {
   Value *ptr = getPointerOperand(inst);
   Loop *l = li->getLoopFor(inst.getParent());
   const SCEV *accessFunction = se->getSCEVAtScope(ptr, l);
   const SCEVUnknown *basePointer =
-    dyn_cast<SCEVUnknown>(se->getPointerBase(accessFunction));
+    cast<SCEVUnknown>(se->getPointerBase(accessFunction));
 
   if (!basePointer)
     return nullptr;
@@ -295,7 +306,7 @@ Value *SCEVAliasInstrumenter::getBasePtrValue(Instruction &inst, Region &r) {
   Value *basePtrValue = basePointer->getValue();
 
   // We can't handle direct address manipulation.
-  if (isa<UndefValue>(basePtrValue) || dyn_cast<IntToPtrInst>(basePtrValue))
+  if (isa<UndefValue>(basePtrValue) || isa<IntToPtrInst>(basePtrValue))
     return nullptr;
 
   // The base pointer can vary within the given region.
@@ -307,7 +318,7 @@ Value *SCEVAliasInstrumenter::getBasePtrValue(Instruction &inst, Region &r) {
 
 bool SCEVAliasInstrumenter::collectDependencyData(
                             InstrumentationContext &context) {
-  Region &r = context.r;
+  const Region &r = context.r;
 
   AliasSetTracker ast(*aa);
 
@@ -465,7 +476,7 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   findAndInstrumentRegions(*topRegion);
   cloneInstrumentedRegions();
   
-  return false;
+  return true;
 }
 
 bool SCEVAliasInstrumenter::computeAndPrintPtrBounds(Value *pointer,

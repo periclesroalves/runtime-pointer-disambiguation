@@ -12,8 +12,11 @@
 
 #include "polly/SpeculativeAliasAnalysis.h"
 #include "polly/LinkAllPasses.h"
+#include <llvm/Support/CommandLine.h>
 using namespace polly;
 using namespace llvm;
+
+cl::OptionCategory category("Speculative alias analysis");
 
 // Register the AliasAnalysis interface, providing a nice name to refer to.
 char SpeculativeAliasAnalysis::ID = 0;
@@ -66,8 +69,8 @@ Pass *polly::createProfilingFeedbackSpecAAPass() { return new ProfilingFeedbackS
 //===----------------------------------------------------------------------===//
 
 namespace {
-  /// This class implements the -no-specaa pass, which just falls back to LLVMs
-  /// static alias analysis.
+  /// This class implements the -no-specaa pass which always returns don't know
+  /// for any alias query.
   struct NoSpecAA : public ImmutablePass, public SpeculativeAliasAnalysis {
     static char ID; // Class identification, replacement for typeinfo
     NoSpecAA() : ImmutablePass(ID) {
