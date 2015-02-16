@@ -292,6 +292,19 @@ bool SCEVAliasInstrumenter::instrumentDependencies(
   return true;
 }
 
+bool SCEVAliasInstrumenter::canInstrumentDependencies(
+                            InstrumentationContext &context) {
+  ScevRangeChecker checker{se, aa, li, dt, &context.r};
+
+  // Compute access bounds for each base pointer in the region.
+  for (auto& pair : context.memAccesses)
+    if (!checker.canComputeBoundsFor(pair.second))
+      return false;
+
+  return true;
+}
+
+
 Value *SCEVAliasInstrumenter::getBasePtrValue(Instruction &inst, 
                                               const Region &r) {
   Value *ptr = getPointerOperand(inst);
@@ -445,6 +458,25 @@ bool SCEVAliasInstrumenter::canInstrument(InstrumentationContext &context) {
 
   return true;
 } 
+
+// TODO: for now this method duplicates a lot of code.
+//       Eventually get rid of findAndInstrumentRegions.
+void SCEVAliasInstrumenter::findInstrumentableRegions(
+  Region &r,
+  std::vector<InstrumentationContext>& out
+) {
+  InstrumentationContext context(r);
+
+  // If the whole region was successfully instrumented, stop the search.
+  if (canInstrument(context) && canInstrumentDependencies(context)) {
+    out.push_back(std::move(context));
+    return;
+  }
+
+  // If the region can't be instrumented, look at smaller regions.
+  for (auto &subRegion : r)
+    findInstrumentableRegions(*subRegion, out);
+}
 
 void SCEVAliasInstrumenter::findAndInstrumentRegions(Region &r) {
   InstrumentationContext context(r);

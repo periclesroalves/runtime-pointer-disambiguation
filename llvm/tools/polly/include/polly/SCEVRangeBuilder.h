@@ -131,29 +131,6 @@ public:
     SetInsertPoint(insertPtr);
   }
 
-  static bool canComputeBoundFor(
-      const std::set<const SCEV *> &exprList,
-      ScalarEvolution              *se,
-      AliasAnalysis                *aa,
-      LoopInfo                     *li,
-      DominatorTree                *dt,
-      Region                       *r
-  ) {
-    for (auto expr : exprList)
-      if (!canComputeBoundFor(expr, se, aa, li, dt, r))
-        return false;
-    return true;
-  }
-
-  static bool canComputeBoundFor(
-     const SCEV      *expr,
-     ScalarEvolution *se,
-     AliasAnalysis   *aa,
-     LoopInfo        *li,
-     DominatorTree   *dt,
-     Region          *r
-  );
-
   // Returns the minimum value an SCEV can assume.
   Value *getLowerBound(const SCEV *s) {
     return expand(s, /*upper*/false);
@@ -169,6 +146,59 @@ public:
   // same type) and produce an unsigned result.
   Value *getULowerBound(const std::set<const SCEV *> &exprList);
   Value *getUUpperBound(const std::set<const SCEV *> &exprList);
+};
+
+
+/// Checks if we can compute a bound for a given SCEV
+class ScevRangeChecker : public SCEVVisitor<ScevRangeChecker, bool> {
+public:
+  ScevRangeChecker(
+      ScalarEvolution *se,
+      AliasAnalysis   *aa,
+      LoopInfo        *li,
+      DominatorTree   *dt,
+      Region          *r)
+  : se(se), aa(aa), li(li), dt(dt), r(r) {}
+
+  bool canComputeBoundsFor(const std::set<const SCEV *> &exprList) {
+    for (auto expr : exprList)
+      if (!canComputeBoundsFor(expr))
+        return false;
+    return true;
+  }
+
+  bool canComputeBoundsFor(const SCEV *expr);
+
+  bool visitConstant(const SCEVConstant *constant);
+  bool visitTruncateExpr(const SCEVTruncateExpr *expr);
+  bool visitZeroExtendExpr(const SCEVZeroExtendExpr *expr);
+  bool visitSignExtendExpr(const SCEVSignExtendExpr *expr);
+  bool visitAddExpr(const SCEVAddExpr *expr);
+  bool visitMulExpr(const SCEVMulExpr *expr);
+  bool visitUDivExpr(const SCEVUDivExpr *expr);
+  bool visitAddRecExpr(const SCEVAddRecExpr *expr);
+  bool visitUMaxExpr(const SCEVUMaxExpr *expr);
+  bool visitSMaxExpr(const SCEVSMaxExpr *expr);
+  bool visitUnknown(const SCEVUnknown *expr);
+private:
+  bool visitAddRecExprUpper(const SCEVAddRecExpr *expr);
+  bool visitAddRecExprLower(const SCEVAddRecExpr *expr);
+
+  template<typename Expr>
+  bool visitOperands(const Expr *expr) {
+    for (unsigned i = 0, e = expr->getNumOperands(); i < e; ++i) {
+      if (!visit(expr->getOperand(i)))
+        return false;
+    }
+
+    return true;
+  }
+
+  ScalarEvolution *se;
+  AliasAnalysis *aa;
+  LoopInfo *li;
+  DominatorTree *dt;
+  Region *r;
 };
 
 } // end namespace polly

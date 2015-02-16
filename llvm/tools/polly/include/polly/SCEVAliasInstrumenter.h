@@ -145,9 +145,18 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // possible regions.
   void findAndInstrumentRegions(Region &r);
 
+  // Walks the region tree, collecting the maximum regions that we can
+  // instrument (this does not yet try to simplify them)
+  void findInstrumentableRegions(Region &r, 
+    std::vector<InstrumentationContext>& out);
+
   // Checks if the given region has all the properties needed for
   // instrumentation.
   bool canInstrument(InstrumentationContext &context);
+
+  // Some more checks if the given region has all the properties needed for
+  // instrumentation (TODO: fold into canInstrument)
+  bool canInstrumentDependencies(InstrumentationContext &context);
 
   // Checks if the given instruction doesn't break the properties needed for
   // instrumentation (basically checks if it doesn't access memory in an
