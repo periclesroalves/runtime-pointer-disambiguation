@@ -1,13 +1,21 @@
+//===--- SpeculativeAliasAnalysis.h - Speculative alias analysis *- C++ -*-===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
 
-#ifndef POLLY_SPECULATIVEALIASANALYSIS_H
-#define POLLY_SPECULATIVEALIASANALYSIS_H
+#ifndef POLLY_SPECULATIVE_ALIAS_ANALYSIS_H
+#define POLLY_SPECULATIVE_ALIAS_ANALYSIS_H
 
-#include "llvm/ADT/DenseMap.h"
-#include "llvm/IR/CallSite.h"
-#include "llvm/IR/Metadata.h"
+#include <llvm/Pass.h>
+#include <assert.h>
 
 namespace llvm {
-	class Value;
+	class AliasAnalysis;
+  class Value;
 }
 
 namespace polly {
@@ -15,24 +23,36 @@ namespace polly {
 using namespace llvm;
 
 enum class SpeculativeAliasResult {
-	NoRangeOverlap = 1,
-	NoHeapAlias    = 2,
-	NoAlias        = NoRangeOverlap | NoHeapAlias,
-	ExactAlias     = 4,
-	ProbablyAlias  = 8,
-	DontKnow       = 0,
+  /// speculative no alias
+  NoHeapAlias = 1, /// pointers to different parts of the heap,
+                   /// or one points to the heap and the other to the stack or
+                   /// a global.
+  NoRangeOverlap = 2, /// semi-static range check shows no aliasing.
+
+  /// all of the above
+  NoAlias = NoHeapAlias | NoRangeOverlap,
+
+  /// speculative must alias
+  ExactAlias = 4, /// base pointers of the queried pointers point to exactly the
+                  /// same address in memory.
+
+  ProbablyAlias = 8, /// speculate that the two pointers are likely to alias
+
+  /// speculative may alias
+  DontKnow = 0,
 };
 
 class SpeculativeAliasAnalysis {
 public:
-	static char ID;
-	virtual ~SpeculativeAliasAnalysis() {}
+  static char ID; // Class identification, replacement for typeinfo
+  virtual ~SpeculativeAliasAnalysis() {}
 
-	virtual SpeculativeAliasResult speculativeAlias(const Value *, const Value *) = 0;
+  SpeculativeAliasResult
+  virtual speculativeAlias(const Value *a, const Value *b) = 0;
 private:
-	virtual void anchor();
+  virtual void anchor();
 };
 
-} // End polly namespace
+} // end namespace polly
 
-#endif // #if POLLY_SPECULATIVEALIASANALYSIS_H
+#endif // #if POLLY_SPECULATIVE_ALIAS_ANALYSIS_H
