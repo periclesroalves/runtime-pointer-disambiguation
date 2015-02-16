@@ -288,6 +288,131 @@ Value *SCEVRangeBuilder::visitUnknown(const SCEVUnknown *expr, bool upper) {
   return val;
 }
 
+/// Checks if we can compute a bound for a given SCEV
+struct ScevRangeChecker : public SCEVVisitor<ScevRangeChecker, bool> {
+  bool visitConstant(const SCEVConstant *constant) {
+    return true;
+  }
+  bool visitTruncateExpr(const SCEVTruncateExpr *expr) {
+    return visit(expr->getOperand());
+  }
+  bool visitZeroExtendExpr(const SCEVZeroExtendExpr *expr) {
+    return visit(expr->getOperand());
+  }
+  bool visitSignExtendExpr(const SCEVSignExtendExpr *expr) {
+    return visit(expr->getOperand());
+  }
+  bool visitAddExpr(const SCEVAddExpr *expr) {
+    return visitOperands(expr);
+  }
+  bool visitMulExpr(const SCEVMulExpr *expr) {
+    if (expr->getNumOperands() != 2)
+      return false;
+
+    if (!isa<SCEVConstant>(expr->getOperand(0)))
+     return false;
+
+    return visit(expr->getOperand(1));
+  }
+  bool visitUDivExpr(const SCEVUDivExpr *expr) {
+    return visit(expr->getLHS()) && visit(expr->getRHS());
+  }
+  bool visitAddRecExpr(const SCEVAddRecExpr *expr) {
+    return visitAddRecExprUpper(expr)
+        && visitAddRecExprLower(expr);
+  }
+
+  bool visitAddRecExprUpper(const SCEVAddRecExpr *expr) {
+    // Cast all values to the effective start value type.
+    // TODO: is this necessary here? We only care about if we *can* compute
+    //       the bound, not it's actual value.
+    Type *opTy = se->getEffectiveSCEVType(expr->getStart()->getType());
+    const SCEV *startSCEV = se->getTruncateOrSignExtend(expr->getStart(), opTy);
+    const SCEV *stepSCEV  = se->getTruncateOrSignExtend(expr->getStepRecurrence(*se),
+                                               opTy);
+
+    // If we can't calculate how many times the loop iterates, then we can't fix a
+    // bound for a recurrence over it.
+    if (!se->hasLoopInvariantBackedgeTakenCount(expr->getLoop()))
+      return false;
+
+    const SCEV *bEdgeCountSCEV = se->getTruncateOrSignExtend(
+      se->getBackedgeTakenCount(expr->getLoop()), opTy
+    );
+
+    // TODO: currently we visit startSCEV twice,
+    //       once with truncation for the upper bound
+    //       and once without for the lower bound.
+    //       This is probably unnecessary.
+    return visit(startSCEV)
+        && visit(stepSCEV)
+        && visit(bEdgeCountSCEV);
+  }
+
+  bool visitAddRecExprLower(const SCEVAddRecExpr *expr) {
+      return visit(expr->getStart());
+  }
+
+  bool visitUMaxExpr(const SCEVUMaxExpr *expr) {
+    return visitOperands(expr);
+  }
+  bool visitSMaxExpr(const SCEVSMaxExpr *expr) {
+    return visitOperands(expr);
+  }
+
+  bool visitUnknown(const SCEVUnknown *expr) {
+    auto val = expr->getValue();
+
+    // The value must be a region parameter.
+    if (!ScopDetection::isInvariant(*val, *r, li, aa))
+      return false;
+
+    // To be used in range computation, the instruction must be available 
+    // at the insertion point.
+    if (auto inst = dyn_cast<Instruction>(val))
+      return dt->dominates(inst, r->getEntry());
+
+    return val;
+  }
+
+  template<typename Expr>
+  bool visitOperands(const Expr *expr) {
+    for (unsigned i = 0, e = expr->getNumOperands(); i < e; ++i) {
+      if (!visit(expr->getOperand(i)))
+        return false;
+    }
+
+    return true;
+  }
+
+  ScevRangeChecker(
+      ScalarEvolution *se,
+      AliasAnalysis   *aa,
+      LoopInfo        *li,
+      DominatorTree   *dt,
+      Region          *r)
+  : se(se), aa(aa), li(li), dt(dt), r(r) {}
+
+  ScalarEvolution *se;
+  AliasAnalysis *aa;
+  LoopInfo *li;
+  DominatorTree *dt;
+  Region *r;
+};
+
+bool SCEVRangeBuilder::canComputeBoundFor(
+      const SCEV      *expr,
+      ScalarEvolution *se,
+      AliasAnalysis   *aa,
+      LoopInfo        *li,
+      DominatorTree   *dt,
+      Region          *r) {
+
+  ScevRangeChecker checker{se, aa, li, dt, r};
+
+  return checker.visit(expr);
+}
+
 void SCEVRangeBuilder::insertPtrPrintf(Value *val) {
   Module *module = r->getEntry()->getParent()->getParent();
   LLVMContext& ctx = module->getContext();

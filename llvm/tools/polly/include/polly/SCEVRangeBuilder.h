@@ -131,6 +131,29 @@ public:
     SetInsertPoint(insertPtr);
   }
 
+  static bool canComputeBoundFor(
+      const std::set<const SCEV *> &exprList,
+      ScalarEvolution              *se,
+      AliasAnalysis                *aa,
+      LoopInfo                     *li,
+      DominatorTree                *dt,
+      Region                       *r
+  ) {
+    for (auto expr : exprList)
+      if (!canComputeBoundFor(expr, se, aa, li, dt, r))
+        return false;
+    return true;
+  }
+
+  static bool canComputeBoundFor(
+     const SCEV      *expr,
+     ScalarEvolution *se,
+     AliasAnalysis   *aa,
+     LoopInfo        *li,
+     DominatorTree   *dt,
+     Region          *r
+  );
+
   // Returns the minimum value an SCEV can assume.
   Value *getLowerBound(const SCEV *s) {
     return expand(s, /*upper*/false);
