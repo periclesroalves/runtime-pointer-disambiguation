@@ -17,6 +17,8 @@
 #ifndef POLLY_SCEV_RANGE_ANALYSER_H
 #define POLLY_SCEV_RANGE_ANALYSER_H 1
 
+#define DUMMY_VAL ((Value*)0x1)
+
 #include "llvm/Transforms/Utils/FullInstNamer.h"
 #include "llvm/Analysis/AliasSetTracker.h"
 #include "llvm/Analysis/RegionInfo.h"
@@ -51,10 +53,15 @@ class SCEVRangeBuilder : private SCEVExpander {
   DominatorTree *dt;
   Region *r;
   bool currentUpper; // Which bound is currently being extracted. Used mainly
-                      // by methods of SCEVExpander, which are not aware of
-                      // bounds computation.
+                     // by methods of SCEVExpander, which are not aware of
+                     // bounds computation.
+  bool analysisMode; // When set, instructions are not inserted in the CFG.
+                     // Every function that generates instructions simply return
+                     // a dummy not-null value.
   std::map<std::tuple<const SCEV *, Instruction *, bool>, TrackingVH<Value> >
     InsertedExpressions; // Saved expressions for reuse.
+
+  void setAnalysisMode(bool val) { analysisMode = val; }
 
   // If the caller doesn't specify which bound to compute, we assume the same of
   // the last expanded expression. Usually called by methods defined in
@@ -114,20 +121,29 @@ class SCEVRangeBuilder : private SCEVExpander {
   Value *visitSMaxExpr(const SCEVSMaxExpr *expr, bool upper);
   Value *visitUnknown(const SCEVUnknown *expr, bool upper);
 
+  // Interceptors for SCEVExpander methods, so we can avoid actual instruction
+  // generation during analysis mode.
+  Value *expandAddExpr(const SCEVAddExpr *expr);
+  Value *expandZeroExtendExpr(const SCEVZeroExtendExpr *expr);
+  Value *expandSignExtendExpr(const SCEVSignExtendExpr *expr);
+  Value *expandSMaxExpr(const SCEVSMaxExpr *expr);
+  Value *expandUMaxExpr(const SCEVUMaxExpr *expr);
+  Value *InsertBinop(Instruction::BinaryOps op, Value *lhs, Value *rhs);
+  Value *InsertCast(Instruction::CastOps op, Value *v, Type *sestTy);
+  Value *InsertICmp(CmpInst::Predicate p, Value *lhs, Value *rhs);
+  Value *InsertSelect(Value *v, Value *_true, Value *_false, const Twine &name = "");
+  Value *InsertNoopCastOfTo(Value *v, Type *ty);
+
   // Generates the lower or upper bound for a set of unsigned expressions. More
   // details in the method implementation header.
   Value *getULowerOrUpperBound(const std::set<const SCEV *> &exprList,
                               bool upper);
 
-  // DEBUG - generates a printf instruction for the given value at the current
-  // insertion point. Uses pointer format.
-  void insertPtrPrintf(Value *val);
-
 public:
   SCEVRangeBuilder(ScalarEvolution *se, AliasAnalysis *aa, LoopInfo *li,
       DominatorTree *dt, Region *r, Instruction *insertPtr)
     : SCEVExpander(*se, "scevrange"), se(se), aa(aa), li(li), dt(dt), r(r),
-      currentUpper(true) {
+      currentUpper(true), analysisMode(false) {
     SetInsertPoint(insertPtr);
   }
 
@@ -146,61 +162,11 @@ public:
   // same type) and produce an unsigned result.
   Value *getULowerBound(const std::set<const SCEV *> &exprList);
   Value *getUUpperBound(const std::set<const SCEV *> &exprList);
+
+  // Given a set of SCEVs, verify if bounds can be generated for all of them,
+  // without actually inserting bounds computation instructions.
+  bool canComputeBoundsFor(const std::set<const SCEV *> &exprList);
 };
-
-
-/// Checks if we can compute a bound for a given SCEV
-class ScevRangeChecker : public SCEVVisitor<ScevRangeChecker, bool> {
-public:
-  ScevRangeChecker(
-      ScalarEvolution *se,
-      AliasAnalysis   *aa,
-      LoopInfo        *li,
-      DominatorTree   *dt,
-      Region          *r)
-  : se(se), aa(aa), li(li), dt(dt), r(r) {}
-
-  bool canComputeBoundsFor(const std::set<const SCEV *> &exprList) {
-    for (auto expr : exprList)
-      if (!canComputeBoundsFor(expr))
-        return false;
-    return true;
-  }
-
-  bool canComputeBoundsFor(const SCEV *expr);
-
-  bool visitConstant(const SCEVConstant *constant);
-  bool visitTruncateExpr(const SCEVTruncateExpr *expr);
-  bool visitZeroExtendExpr(const SCEVZeroExtendExpr *expr);
-  bool visitSignExtendExpr(const SCEVSignExtendExpr *expr);
-  bool visitAddExpr(const SCEVAddExpr *expr);
-  bool visitMulExpr(const SCEVMulExpr *expr);
-  bool visitUDivExpr(const SCEVUDivExpr *expr);
-  bool visitAddRecExpr(const SCEVAddRecExpr *expr);
-  bool visitUMaxExpr(const SCEVUMaxExpr *expr);
-  bool visitSMaxExpr(const SCEVSMaxExpr *expr);
-  bool visitUnknown(const SCEVUnknown *expr);
-private:
-  bool visitAddRecExprUpper(const SCEVAddRecExpr *expr);
-  bool visitAddRecExprLower(const SCEVAddRecExpr *expr);
-
-  template<typename Expr>
-  bool visitOperands(const Expr *expr) {
-    for (unsigned i = 0, e = expr->getNumOperands(); i < e; ++i) {
-      if (!visit(expr->getOperand(i)))
-        return false;
-    }
-
-    return true;
-  }
-
-  ScalarEvolution *se;
-  AliasAnalysis *aa;
-  LoopInfo *li;
-  DominatorTree *dt;
-  Region *r;
-};
-
 } // end namespace polly
 
 #endif // POLLY_SCEV_RANGE_ANALYSER_H

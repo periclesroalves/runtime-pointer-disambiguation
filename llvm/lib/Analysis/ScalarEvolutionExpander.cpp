@@ -197,6 +197,21 @@ Value *SCEVExpander::InsertBinop(Instruction::BinaryOps Opcode,
   return BO;
 }
 
+Value *SCEVExpander::InsertCast(Instruction::CastOps Op, Value *V,
+                                Type *DestTy) {
+  return Builder.CreateCast(Op, V, DestTy);
+}
+
+Value *SCEVExpander::InsertICmp(CmpInst::Predicate P, Value *LHS,
+                                Value *RHS) {
+  return Builder.CreateICmp(P, LHS, RHS);
+}
+
+Value *SCEVExpander::InsertSelect(Value *C, Value *True, Value *False,
+                                  const Twine &Name) {
+  return Builder.CreateSelect(C, True, False, Name);
+}
+
 /// FactorOutConstant - Test if S is divisible by Factor, using signed
 /// division. If so, update S with Factor divided out and return true.
 /// S need not be evenly divisible if a reasonable remainder can be

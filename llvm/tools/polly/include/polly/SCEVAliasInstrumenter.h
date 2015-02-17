@@ -243,12 +243,6 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // it's base pointer scope, generating disjoint alias sets in the region.
   void fixAliasInfo(Region *r);
 
-  // DEBUG - compute the lower and upper access bounds for the base pointer in
-  // the given region. Also inserts instructions to print the computed bounds at
-  // runtime, in the region entry. Returns true if the bounds can be computed,
-  // false otherwis..
-  bool computeAndPrintPtrBounds(Value *pointer, Region *r);
-
 public:
   static char ID;
   explicit SCEVAliasInstrumenter() : FunctionPass(ID) {}

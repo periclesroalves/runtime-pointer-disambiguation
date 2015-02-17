@@ -213,6 +213,11 @@ namespace llvm {
     /// of work to avoid inserting an obviously redundant operation.
     Value *InsertBinop(Instruction::BinaryOps Opcode, Value *LHS, Value *RHS);
 
+    // Simple builder interface.
+    Value *InsertCast(Instruction::CastOps Op, Value *V, Type *DestTy);
+    Value *InsertICmp(CmpInst::Predicate P, Value *LHS, Value *RHS);
+    Value *InsertSelect(Value *C, Value *True, Value *False, const Twine &Name = "");
+
     /// InsertNoopCastOfTo - Insert a cast of V to the specified type,
     /// which must be possible with a noop cast, doing what we can to
     /// share the casts.

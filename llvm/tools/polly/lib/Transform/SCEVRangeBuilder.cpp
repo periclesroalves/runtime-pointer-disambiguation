@@ -51,7 +51,11 @@ Value *SCEVRangeBuilder::expand(const SCEV *s, bool upper) {
 
   currentUpper = upper;
   v = visit(s, upper);
-  rememberExpression(s, insertPt, upper, v);
+
+  // In analysis mode, the returned value is not valid.
+  if (!analysisMode)
+    rememberExpression(s, insertPt, upper, v);
+
   currentUpper = oldUpper;
 
   return v;
@@ -87,14 +91,14 @@ Value *SCEVRangeBuilder::visitTruncateExpr(const SCEVTruncateExpr *expr,
                             APInt::getSignedMinValue(dstBW));
 
   // Build actual bound selection.
-  Value *noOFLimit = Builder.CreateSExt(ConstantInt::get(dstTy, APnoOFLimit),
-                                        srcTy);
-  Value *tyLimit = Builder.CreateSExt(ConstantInt::get(dstTy, APTyLimit),
-                                      srcTy);
-  Value *icmp = (upper ? Builder.CreateICmpSGT(bound, noOFLimit) :
-                 Builder.CreateICmpSLT(bound, noOFLimit));
-  Value *sel = Builder.CreateSelect(icmp, tyLimit, bound, "sbound");
-  Value *inst = Builder.CreateTrunc(sel, dstTy);
+  Value *noOFLimit = InsertCast(Instruction::SExt,
+                                ConstantInt::get(dstTy, APnoOFLimit), srcTy);
+  Value *tyLimit = InsertCast(Instruction::SExt,
+                              ConstantInt::get(dstTy, APTyLimit), srcTy);
+  Value *icmp = (upper ? InsertICmp(ICmpInst::ICMP_SGT, bound, noOFLimit) :
+                 InsertICmp(ICmpInst::ICMP_SLT, bound, noOFLimit));
+  Value *sel = InsertSelect(icmp, tyLimit, bound, "sbound");
+  Value *inst = InsertCast(Instruction::Trunc, sel, dstTy);
 
   return inst;
 }
@@ -108,7 +112,7 @@ Value *SCEVRangeBuilder::visitZeroExtendExpr(const SCEVZeroExtendExpr *expr,
   if (!expand(expr->getOperand()))
      return nullptr;
 
-  return SCEVExpander::visitZeroExtendExpr(expr);
+  return expandZeroExtendExpr(expr);
 }
 
 // Expand operands here first, to check the existence of their bounds, then
@@ -120,7 +124,7 @@ Value *SCEVRangeBuilder::visitSignExtendExpr(const SCEVSignExtendExpr *expr,
   if (!expand(expr->getOperand()))
     return nullptr;
 
-  return SCEVExpander::visitSignExtendExpr(expr);
+  return expandSignExtendExpr(expr);
 }
 
 // Simply put all operands on the expression cache and let the expander insert
@@ -133,7 +137,7 @@ Value *SCEVRangeBuilder::visitAddExpr(const SCEVAddExpr *expr, bool upper) {
       return nullptr;
   }
 
-  return SCEVExpander::visitAddExpr(expr);
+  return expandAddExpr(expr);
 }
 
 // We only handle the case where one of the operands is a constant (C * %v).
@@ -231,8 +235,12 @@ Value *SCEVRangeBuilder::visitAddRecExpr(const SCEVAddRecExpr *expr,
 
   // Build the actual computation.
   start = InsertNoopCastOfTo(start, opTy);
-  Value *mul = Builder.CreateMul(step, bEdgeCount);
-  Value *bound = Builder.CreateAdd(start, mul);
+  Value *mul = InsertBinop(Instruction::Mul, step, bEdgeCount);
+  Value *bound = InsertBinop(Instruction::Add, start, mul);
+
+  // From this point on, we already know this bound can be computed.
+  if (analysisMode)
+    return DUMMY_VAL;
 
   // Convert the result back to the original type if needed.
   Type *ty = se->getEffectiveSCEVType(expr->getType());
@@ -252,7 +260,7 @@ Value *SCEVRangeBuilder::visitUMaxExpr(const SCEVUMaxExpr *expr, bool upper) {
       return nullptr;
   }
 
-  return SCEVExpander::visitUMaxExpr(expr);
+  return expandUMaxExpr(expr);
 }
 
 // Simply expand all operands and save them on the expression cache. We then
@@ -267,14 +275,14 @@ Value *SCEVRangeBuilder::visitSMaxExpr(const SCEVSMaxExpr *expr, bool upper) {
       return nullptr;
   }
 
-  return SCEVExpander::visitSMaxExpr(expr);
+  return expandSMaxExpr(expr);
 }
 
 // The bounds of a generic value are the value itself.
 Value *SCEVRangeBuilder::visitUnknown(const SCEVUnknown *expr, bool upper) {
   Value *val = expr->getValue();
   Instruction *inst = dyn_cast<Instruction>(val);
-  BasicBlock::iterator insertPt = Builder.GetInsertPoint();
+  BasicBlock::iterator insertPt = getInsertPoint();
 
   // The value must be a region parameter.
   if (!ScopDetection::isInvariant(*val, *r, li, aa))
@@ -288,36 +296,49 @@ Value *SCEVRangeBuilder::visitUnknown(const SCEVUnknown *expr, bool upper) {
   return val;
 }
 
-void SCEVRangeBuilder::insertPtrPrintf(Value *val) {
-  Module *module = r->getEntry()->getParent()->getParent();
-  LLVMContext& ctx = module->getContext();
-  Twine formatVarName = Twine("pointer_format.str");
-  GlobalVariable *formatVar = module->getNamedGlobal(formatVarName.str());
+Value *SCEVRangeBuilder::expandAddExpr(const SCEVAddExpr *expr) {
+  return analysisMode ? DUMMY_VAL : SCEVExpander::visitAddExpr(expr);
+}
 
-  // Declare the format string if it doesn't exist.
-  if (!formatVar) {
-    Twine formatStr = Twine("%p\n");
-    Constant *formatConst = ConstantDataArray::getString(ctx, formatStr.str());
-    ArrayType *varTy = ArrayType::get(IntegerType::getInt8Ty(ctx),
-                                      formatStr.str().size()+1);
-    formatVar = new GlobalVariable(*module, varTy, true,
-                                   GlobalValue::PrivateLinkage, formatConst,
-                                   formatVarName);
-  }
+Value *SCEVRangeBuilder::expandZeroExtendExpr(const SCEVZeroExtendExpr *expr) {
+  return analysisMode ? DUMMY_VAL : SCEVExpander::visitZeroExtendExpr(expr);
+}
 
-  std::vector<llvm::Constant*> indices;
-  Constant *zero = Constant::getNullValue(IntegerType::getInt32Ty(ctx));
-  indices.push_back(zero);
-  indices.push_back(zero);
-  Constant *formatVarRef = ConstantExpr::getGetElementPtr(formatVar, indices);
+Value *SCEVRangeBuilder::expandSignExtendExpr(const SCEVSignExtendExpr *expr) {
+  return analysisMode ? DUMMY_VAL : SCEVExpander::visitSignExtendExpr(expr);
+}
 
-  // Build the actual call.
-  std::vector<Type*> argTypes;
-  argTypes.push_back(Type::getInt8PtrTy(ctx));
-  FunctionType *fTy = FunctionType::get(Type::getInt32Ty(ctx), argTypes, true);
-  Constant *fun = module->getOrInsertFunction("printf", fTy);
+Value *SCEVRangeBuilder::expandSMaxExpr(const SCEVSMaxExpr *expr) {
+  return analysisMode ? DUMMY_VAL : SCEVExpander::visitSMaxExpr(expr);
+}
 
-  Builder.CreateCall2(cast<Function>(fun), formatVarRef, val, "printf");
+Value *SCEVRangeBuilder::expandUMaxExpr(const SCEVUMaxExpr *expr) {
+  return analysisMode ? DUMMY_VAL : SCEVExpander::visitUMaxExpr(expr);;
+}
+
+Value *SCEVRangeBuilder::InsertBinop(Instruction::BinaryOps op, Value *lhs,
+                                     Value *rhs) {
+  return analysisMode ? DUMMY_VAL : SCEVExpander::InsertBinop(op, lhs, rhs);
+}
+
+Value *SCEVRangeBuilder::InsertCast(Instruction::CastOps op, Value *v,
+                                    Type *destTy) {
+  return analysisMode ? DUMMY_VAL : SCEVExpander::InsertCast(op, v, destTy);
+}
+
+Value *SCEVRangeBuilder::InsertICmp(CmpInst::Predicate p, Value *lhs,
+                                    Value *rhs) {
+  return analysisMode ? DUMMY_VAL : SCEVExpander::InsertICmp(p, lhs, rhs);
+}
+
+Value *SCEVRangeBuilder::InsertSelect(Value *v, Value *_true, Value *_false,
+                                      const Twine &name) {
+  return analysisMode ? DUMMY_VAL : SCEVExpander::InsertSelect(v, _true, _false,
+                                                               name);
+}
+
+Value *SCEVRangeBuilder::InsertNoopCastOfTo(Value *v, Type *ty) {
+  return analysisMode ? DUMMY_VAL : SCEVExpander::InsertNoopCastOfTo(v, ty);
 }
 
 // Generates the final bound by building a chain of either UMin or UMax
@@ -351,11 +372,11 @@ Value *SCEVRangeBuilder::getULowerOrUpperBound(
       bestBound = InsertNoopCastOfTo(bestBound, newBound->getType());
 
     if (upper)
-      cmp = Builder.CreateICmpUGT(newBound, bestBound);
+      cmp = InsertICmp(ICmpInst::ICMP_UGT, newBound, bestBound);
     else
-      cmp = Builder.CreateICmpULT(newBound, bestBound);
+      cmp = InsertICmp(ICmpInst::ICMP_ULT, newBound, bestBound);
 
-    bestBound = Builder.CreateSelect(cmp, newBound, bestBound,
+    bestBound = InsertSelect(cmp, newBound, bestBound,
       (upper ? "umax" : "umin"));
     ++it;
   }
@@ -373,98 +394,22 @@ Value *SCEVRangeBuilder::getUUpperBound(
   return getULowerOrUpperBound(exprList, /*upper*/true);
 }
 
+bool SCEVRangeBuilder::canComputeBoundsFor(const std::set<const SCEV *>
+                                           &exprList) {
+  bool canComputeBounds = true;
 
-//------------------------------------------------------------------------------
-// ScevRangeChecker
-//------------------------------------------------------------------------------
+  // Avoid instruction insertion.
+  setAnalysisMode(true);
 
-bool ScevRangeChecker::canComputeBoundsFor(const SCEV *expr) {
-  return visit(expr);
-}
+  // Try to compute both bounds for each expression.
+  for (auto expr : exprList) {
+    if (!expand(expr, /*upper*/false) || !expand(expr, /*upper*/true)) {
+      canComputeBounds = false;
+      break;
+    }
+  }
 
-bool ScevRangeChecker::visitConstant(const SCEVConstant *constant) {
-  return true;
-}
-bool ScevRangeChecker::visitTruncateExpr(const SCEVTruncateExpr *expr) {
-  return visit(expr->getOperand());
-}
-bool ScevRangeChecker::visitZeroExtendExpr(const SCEVZeroExtendExpr *expr) {
-  return visit(expr->getOperand());
-}
-bool ScevRangeChecker::visitSignExtendExpr(const SCEVSignExtendExpr *expr) {
-  return visit(expr->getOperand());
-}
-bool ScevRangeChecker::visitAddExpr(const SCEVAddExpr *expr) {
-  return visitOperands(expr);
-}
-bool ScevRangeChecker::visitMulExpr(const SCEVMulExpr *expr) {
-  if (expr->getNumOperands() != 2)
-    return false;
-
-  if (!isa<SCEVConstant>(expr->getOperand(0)))
-   return false;
-
-  return visit(expr->getOperand(1));
-}
-bool ScevRangeChecker::visitUDivExpr(const SCEVUDivExpr *expr) {
-  return visit(expr->getLHS()) && visit(expr->getRHS());
-}
-bool ScevRangeChecker::visitAddRecExpr(const SCEVAddRecExpr *expr) {
-  return visitAddRecExprUpper(expr)
-      && visitAddRecExprLower(expr);
-}
-
-bool ScevRangeChecker::visitAddRecExprUpper(const SCEVAddRecExpr *expr) {
-  // Cast all values to the effective start value type.
-  // TODO: is this necessary here? We only care about if we *can* compute
-  //       the bound, not it's actual value.
-  Type *opTy = se->getEffectiveSCEVType(expr->getStart()->getType());
-  const SCEV *startSCEV = se->getTruncateOrSignExtend(expr->getStart(), opTy);
-  const SCEV *stepSCEV  = se->getTruncateOrSignExtend(
-                            expr->getStepRecurrence(*se),
-                            opTy);
-
-  // If we can't calculate how many times the loop iterates, then we can't fix a
-  // bound for a recurrence over it.
-  if (!se->hasLoopInvariantBackedgeTakenCount(expr->getLoop()))
-    return false;
-
-  const SCEV *bEdgeCountSCEV = se->getTruncateOrSignExtend(
-    se->getBackedgeTakenCount(expr->getLoop()), opTy
-  );
-
-  // TODO: currently we visit startSCEV twice,
-  //       once with truncation for the upper bound
-  //       and once without for the lower bound.
-  //       This is probably unnecessary.
-  return visit(startSCEV)
-      && visit(stepSCEV)
-      && visit(bEdgeCountSCEV);
-}
-
-bool ScevRangeChecker::visitAddRecExprLower(const SCEVAddRecExpr *expr) {
-    return visit(expr->getStart());
-}
-
-bool ScevRangeChecker::visitUMaxExpr(const SCEVUMaxExpr *expr) {
-  return visitOperands(expr);
-}
-bool ScevRangeChecker::visitSMaxExpr(const SCEVSMaxExpr *expr) {
-  return visitOperands(expr);
-}
-
-bool ScevRangeChecker::visitUnknown(const SCEVUnknown *expr) {
-  auto val = expr->getValue();
-
-  // The value must be a region parameter.
-  if (!ScopDetection::isInvariant(*val, *r, li, aa))
-    return false;
-
-  // To be used in range computation, the instruction must be available 
-  // at the insertion point.
-  if (auto inst = dyn_cast<Instruction>(val))
-    return dt->dominates(inst, r->getEntry());
-
-  return val;
+  setAnalysisMode(false);
+  return canComputeBounds;
 }
 

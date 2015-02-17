@@ -294,11 +294,13 @@ bool SCEVAliasInstrumenter::instrumentDependencies(
 
 bool SCEVAliasInstrumenter::canInstrumentDependencies(
                             InstrumentationContext &context) {
-  ScevRangeChecker checker{se, aa, li, dt, &context.r};
+  Region &r = context.r;
+  Instruction *insertPt = r.getEntry()->getFirstNonPHI();
+  SCEVRangeBuilder rangeBuilder(se, aa, li, dt, &r, insertPt);
 
   // Compute access bounds for each base pointer in the region.
   for (auto& pair : context.memAccesses)
-    if (!checker.canComputeBoundsFor(pair.second))
+    if (!rangeBuilder.canComputeBoundsFor(pair.second))
       return false;
 
   return true;
@@ -508,48 +510,6 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   findAndInstrumentRegions(*topRegion);
   cloneInstrumentedRegions();
   
-  return true;
-}
-
-bool SCEVAliasInstrumenter::computeAndPrintPtrBounds(Value *pointer,
-                                                     Region *r) {
-  std::set<const SCEV *>  memAccesses;
-
-  // Set instruction insertion context.
-  Instruction *insertPt = r->getEntry()->begin();
-  SCEVRangeBuilder rangeBuilder(se, aa, li, dt, r, insertPt);
-  BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
-  builder.SetInsertPoint(insertPt);
-
-  // Collect all access functions to to the pointer in the region.
-  for (BasicBlock *bb : r->blocks())
-    for (BasicBlock::iterator i = bb->begin(), e = --bb->end(); i != e; ++i) {
-      Instruction &inst = *i;
-
-      if (!isa<LoadInst>(inst) && !isa<StoreInst>(inst))
-        continue;
-
-      Value *basePtrValue = getBasePtrValue(inst, *r);
-
-      if (basePtrValue != pointer)
-        continue;
-
-      Value *ptr = getPointerOperand(inst);
-      Loop *l = li->getLoopFor(inst.getParent());
-      const SCEV *accessFunction = se->getSCEVAtScope(ptr, l);  
-      memAccesses.insert(accessFunction);
-    }
-
-  // Compute the lowest lower and greatest access bounds.
-  Value *low = rangeBuilder.getULowerBound(memAccesses);
-  Value *up = rangeBuilder.getUUpperBound(memAccesses);
-
-  if (!low || !up)
-    return false;
-
-  rangeBuilder.insertPtrPrintf(low);
-  rangeBuilder.insertPtrPrintf(up);
-
   return true;
 }
 
