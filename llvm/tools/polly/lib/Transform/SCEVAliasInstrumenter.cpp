@@ -113,9 +113,8 @@ bool SCEVAliasInstrumenter::isSafeToSimplify(Region *r) {
   return safeToSimplify;
 }
 
-bool SCEVAliasInstrumenter::simplifyRegion(Region *r) {
-  if (!isSafeToSimplify(r))
-    return false;
+void SCEVAliasInstrumenter::simplifyRegion(Region *r) {
+  assert (isSafeToSimplify(r) && "Can't simplify unsafe regions");
 
   // Create a new entering block to host the checks, even if we already had one.
   BasicBlock *entry = r->getEntry();
@@ -128,72 +127,25 @@ bool SCEVAliasInstrumenter::simplifyRegion(Region *r) {
     for (auto &&subRegion : *r)
       subRegion->replaceExitRecursive(newExit);
   }
-
-  return true;
 }
 
-void SCEVAliasInstrumenter::hoistChecks() {
-  // NOTE: checks that can't be hoisted will be eliminated.
-  std::vector<std::pair<Instruction *, Region *> > oldChecks(insertedChecks);
-  insertedChecks.clear();
-
-  for (auto &check : oldChecks) {
-    Instruction *dyResult = check.first;
-    BasicBlock *entry = dyResult->getParent();
-    Region *r = check.second;
-
-    assert((dyResult && entry == r->getEntry()) && "Malformed dynamic check.");
-
-    // Only simple regions can be cloned. Skip regions that can't be simplified.
-    if (!simplifyRegion(r))
-      continue;
-
-    // The check expressions live between the entry blocks phis and the final
-    // result.
-    BasicBlock::iterator it = dyResult->getParent()->getFirstNonPHI();
-    Instruction *insertPt = &r->getEnteringBlock()->back();
-
-    // Move the check expressions to the entering block, one instruction at a
-    // time.
-    Instruction *inst;
-    do {
-      inst = it;
-      it++;
-      inst->removeFromParent();
-      inst->insertBefore(insertPt);
-    } while (inst != dyResult);
-
-    // Register the new check location.
-    insertedChecks.push_back(std::make_pair(check.first, r)); //TODO
-  }
-}
-
-void SCEVAliasInstrumenter::cloneInstrumentedRegions() {
-  if (insertedChecks.size() <= 0)
+void SCEVAliasInstrumenter::buildNoAliasClone(InstrumentationContext &context,
+                                              Instruction *checkResult) {
+  if (!checkResult)
     return;
 
-  // Reverse "insertedChecks", so that sub-regions are always modified first.
-  std::reverse(insertedChecks.begin(), insertedChecks.end());
+  Region &r = context.r;
+  Region *clonedRegion = cloneRegion(&r, nullptr, ri, dt, df);
 
-  // Take the checks outside the regions before cloning them.
-  hoistChecks();
+  // Build the conditional brach based on the dynamic test result.
+  Instruction *br = &r.getEnteringBlock()->back();
+  BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
+  builder.SetInsertPoint(br);
+  builder.CreateCondBr(checkResult, clonedRegion->getEntry(), r.getEntry());
+  br->eraseFromParent();
 
-  // Clone each instrumented region.
-  for (auto &check : insertedChecks) {
-    Instruction *dyResult = check.first;
-    Region *r = check.second;
-    Region *clonedRegion = cloneRegion(r, nullptr, ri, dt, df);
-
-    // Build the conditional brach based on the test result.
-    Instruction *br = &r->getEnteringBlock()->back();
-    BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
-    builder.SetInsertPoint(br);
-    builder.CreateCondBr(dyResult, clonedRegion->getEntry(), r->getEntry());
-    br->eraseFromParent();
-
-    // Mark the cloned region as free of dependencies.
-    fixAliasInfo(clonedRegion);
-  }
+  // Mark the cloned region as free of dependencies.
+  fixAliasInfo(clonedRegion);
 }
 
 Instruction *SCEVAliasInstrumenter::chainChecks(
@@ -238,42 +190,41 @@ Instruction *SCEVAliasInstrumenter::buildRangeCheck(
   return cast<Instruction>(check);
 }
 
-bool SCEVAliasInstrumenter::buildSCEVBounds(InstrumentationContext &context,
+void SCEVAliasInstrumenter::buildSCEVBounds(InstrumentationContext &context,
                                             SCEVRangeBuilder &rangeBuilder) {
   // Compute access bounds for each base pointer in the region.
   for (auto& pair : context.memAccesses) {
     Value *low = rangeBuilder.getULowerBound(pair.second);
     Value *up = rangeBuilder.getUUpperBound(pair.second);
 
-    // Check if both bounds could be comuted.
-    if (!low || !up)
-      return false;
+    assert((low && up) &&
+      "All access expressions should have computable SCEV bounds by now");
 
     context.pointerBounds[pair.first] = std::make_pair(low, up);
   }
-
-  return true;
 }
 
-bool SCEVAliasInstrumenter::instrumentDependencies(
+Instruction *SCEVAliasInstrumenter::insertDynamicChecks(
                             InstrumentationContext &context) {
   Region &r = context.r;
 
-  // Set instruction insertion context. We'll temporarily insert the run-time
-  // tests in the region entry.
-  Instruction *insertPt = r.getEntry()->getFirstNonPHI();
+  // Create an entering block to receive the checks.
+  simplifyRegion(&r);
+
+  // Set instruction insertion context. We'll insert the run-time tests in the
+  // region entering block.
+  Instruction *insertPt = r.getEnteringBlock()->getFirstNonPHI();
   SCEVRangeBuilder rangeBuilder(se, aa, li, dt, &r, insertPt);
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(insertPt);
 
-  if (!buildSCEVBounds(context, rangeBuilder))
-    return false;
+  buildSCEVBounds(context, rangeBuilder);
 
   std::vector<Instruction *> pairChecks;
 
   // Insert comparison expressions for every pair of pointers that need to be
   // checked in the region.
-  for (auto& pair : context.rangeChecks) {
+  for (auto& pair : context.ptrPairsToCheckOnRange) {
     assert(context.pointerBounds.count(pair.first) &&
            context.pointerBounds.count(pair.second) &&
            "SCEV bounds should be available at this point.");
@@ -286,26 +237,8 @@ bool SCEVAliasInstrumenter::instrumentDependencies(
   }
 
   // Combine all checks into a single boolean result using AND.
-  if (auto checkResult = chainChecks(pairChecks, builder))
-    insertedChecks.push_back(std::make_pair(checkResult, &r));
-
-  return true;
+  return chainChecks(pairChecks, builder);
 }
-
-bool SCEVAliasInstrumenter::canInstrumentDependencies(
-                            InstrumentationContext &context) {
-  Region &r = context.r;
-  Instruction *insertPt = r.getEntry()->getFirstNonPHI();
-  SCEVRangeBuilder rangeBuilder(se, aa, li, dt, &r, insertPt);
-
-  // Compute access bounds for each base pointer in the region.
-  for (auto& pair : context.memAccesses)
-    if (!rangeBuilder.canComputeBoundsFor(pair.second))
-      return false;
-
-  return true;
-}
-
 
 Value *SCEVAliasInstrumenter::getBasePtrValue(Instruction &inst, 
                                               const Region &r) {
@@ -393,7 +326,7 @@ bool SCEVAliasInstrumenter::collectDependencyData(
             case SpeculativeAliasResult::NoHeapAlias:
             // TODO: don't insert checks for these cases
             case SpeculativeAliasResult::ProbablyAlias:
-              context.rangeChecks.insert(pair);
+              context.ptrPairsToCheckOnRange.insert(pair);
               break;
             case SpeculativeAliasResult::ExactAlias:
               auto& set = context.equalityChecks.getSetFor(pair.first);
@@ -458,38 +391,35 @@ bool SCEVAliasInstrumenter::canInstrument(InstrumentationContext &context) {
   if (!collectDependencyData(context))
     return false;
 
+  // We need an entering block to insert the dynamic checks, so if a region
+  // can't simplified, it can't be instrumented.
+  if (!isSafeToSimplify(&r))
+    return false;
+
+  Instruction *insertPt = r.getEntry()->getFirstNonPHI();
+  SCEVRangeBuilder rangeBuilder(se, aa, li, dt, &r, insertPt);
+
+  // Make sure that access bounds can be computed for every access expression
+  // within the region.
+  for (auto& pair : context.memAccesses)
+    if (!rangeBuilder.canComputeBoundsFor(pair.second))
+      return false;
+
   return true;
 } 
 
-// TODO: for now this method duplicates a lot of code.
-//       Eventually get rid of findAndInstrumentRegions.
-void SCEVAliasInstrumenter::findInstrumentableRegions(
-  Region &r,
-  std::vector<InstrumentationContext>& out
-) {
+void SCEVAliasInstrumenter::findTargetRegions(Region &r) {
   InstrumentationContext context(r);
 
-  // If the whole region was successfully instrumented, stop the search.
-  if (canInstrument(context) && canInstrumentDependencies(context)) {
-    out.push_back(std::move(context));
+  // If the whole region can be instrumented, stop the search.
+  if (canInstrument(context)) {
+    targetRegions.push_back(context);
     return;
   }
 
   // If the region can't be instrumented, look at smaller regions.
   for (auto &subRegion : r)
-    findInstrumentableRegions(*subRegion, out);
-}
-
-void SCEVAliasInstrumenter::findAndInstrumentRegions(Region &r) {
-  InstrumentationContext context(r);
-
-  // If the whole region was successfully instrumented, stop the search.
-  if (canInstrument(context) && instrumentDependencies(context))
-    return;
-
-  // If the region can't be instrumented, look at smaller regions.
-  for (auto &subRegion : r)
-    findAndInstrumentRegions(*subRegion);
+    findTargetRegions(*subRegion);
 }
 
 bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
@@ -507,8 +437,13 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   Region *topRegion = ri->getTopLevelRegion();
 
   releaseMemory();
-  findAndInstrumentRegions(*topRegion);
-  cloneInstrumentedRegions();
+  findTargetRegions(*topRegion);
+
+  // Instrument and clone each target region.
+  for (auto context : targetRegions) {
+    Instruction *checkResult = insertDynamicChecks(context);
+    buildNoAliasClone(context, checkResult);
+  }
   
   return true;
 }

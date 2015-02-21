@@ -104,8 +104,8 @@ class SCEVAliasInstrumenter : public FunctionPass {
     // against each other, for the region to be considered free of aliasing.
     // If the pointers a, b, and c may alias in the region, we'd have:
     // - pairsToCheck: (<a,b>, <b,c>, <a,c>)
-    std::set<std::pair<Value *, Value *>> rangeChecks;
-    std::set<std::pair<Value *, Value *>> heapChecks;
+    std::set<std::pair<Value *, Value *>> ptrPairsToCheckOnRange;
+    std::set<std::pair<Value *, Value *>> ptrPairsToCheckOnHeap;
     //@}
 
     // pointers that we will check for equality to establish a must alias
@@ -135,28 +135,16 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Metadata domain to be used by alias metadata.
   MDNode *mdDomain = nullptr;
 
-  // List of dynamic checks generated while instrumenting regions. Each value in
-  // this list is a boolean that indicates, at runtime, if the corresponding
-  // region is free of true dependencies. This value usually lives right before
-  // the region entry.
-  std::vector<std::pair<Instruction *, Region *> > insertedChecks;
+  // Set of regions that will be instrumented.
+  std::vector<InstrumentationContext> targetRegions;
 
-  // Walks the region tree, trying to insert dynamic checks for the greatest
-  // possible regions.
-  void findAndInstrumentRegions(Region &r);
-
-  // Walks the region tree, collecting the maximum regions that we can
-  // instrument (this does not yet try to simplify them)
-  void findInstrumentableRegions(Region &r, 
-    std::vector<InstrumentationContext>& out);
+  // Walks the region tree, collecting the greatest possible regions that can be
+  // safely instrumented.
+  void findTargetRegions(Region &r);
 
   // Checks if the given region has all the properties needed for
   // instrumentation.
   bool canInstrument(InstrumentationContext &context);
-
-  // Some more checks if the given region has all the properties needed for
-  // instrumentation (TODO: fold into canInstrument)
-  bool canInstrumentDependencies(InstrumentationContext &context);
 
   // Checks if the given instruction doesn't break the properties needed for
   // instrumentation (basically checks if it doesn't access memory in an
@@ -172,16 +160,19 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // instruction in the given region. The pointer must be region invariant.
   Value *getBasePtrValue(Instruction &inst, const Region &r);
 
-  // Tries to generate dynamic checks that compare the access range of every
-  // pair of pointers in the region at run-time, thus finding if there is true
-  // aliasing. Returns true if checks could be generated for all dependencies.
+  // Generates dynamic checks that compare the access range of every pair of
+  // pointers in the region at run-time, thus finding if there is true aliasing.
   // For every pair (A,B) of pointers in the region that may alias, we generate:
   // - check(A, B) -> upperAddrA < lowerAddrB || upperAddrB < lowerAddrA
-  bool instrumentDependencies(InstrumentationContext &context);
+  // The instructions needed for the checks compuation are inserted in the
+  // entering block of the target region, which works as a pre-header. The
+  // returned Instruction produces a boolean value that, at run-time, indicates
+  // if the region is free of dependencies.
+  Instruction *insertDynamicChecks(InstrumentationContext &context);
 
-  // Tries to compute the bounds for the addresses accessed over each base
-  // pointer in the region, using SCEV.
-  bool buildSCEVBounds(InstrumentationContext &context,
+  // Computes the bounds for the addresses accessed over each base pointer in
+  // the region, using SCEV.
+  void buildSCEVBounds(InstrumentationContext &context,
                        SCEVRangeBuilder &rangeBuilder);
 
   // Inserts a dynamic test to guarantee that accesses to two pointers do not
@@ -195,10 +186,9 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Chain the checks that compare different pairs of pointers to a single
   // result value using "and" operations.
   // E.g.: %region-no-alias = %pair-no-alias1 && %pair-no-alias2 && %pair-no-alias3
-  Instruction
-  *chainChecks(std::vector<Instruction *> checks, BuilderType &builder);
+  Instruction *chainChecks(std::vector<Instruction *> checks, BuilderType &builder);
 
-  // Produce two versions of each instrumented region: one with the original
+  // Produce two versions of an instrumented region: one with the original
   // alias info, if the run-time alias check fails, and one set to ignore 
   // dependencies, in case the check passes.
   //     ____\|/___                 ____\|/___ 
@@ -211,26 +201,12 @@ class SCEVAliasInstrumenter : public FunctionPass {
   //         \|/            '-----.---'  '------.-----'
   //                              '------.------'
   //                                    \|/
-  void cloneInstrumentedRegions();
-
-  // The structure of a region can't be changed while instrumenting it, so the
-  // checks were inserted in the entry block. This method fix the structure of
-  // the instrumented regions by simplifying them and moving the checks to the
-  // entering block, so we can clone the region without cloning the checks.
-  // NOTE: checks that can't be hoisted will e aliminated.
-  //       |    |              ____\|/___
-  //     _\|/__\|/_           | dy_check |
-  //    | Region:  |          '-----.----'
-  //    | dy_check |           ____\|/___
-  //    |   ...    |    =>    | Region:  |
-  //    '---|---|--'          |    ...   |
-  //       \|/ \|/            '-----.----'
-  //                               \|/
-  void hoistChecks();
+  void buildNoAliasClone(InstrumentationContext &context,
+                         Instruction *checkResult);
 
   // Create single entry and exit EDGES in a region (thus creating entering and
   // exiting blocks).
-  bool simplifyRegion(Region *r);
+  void simplifyRegion(Region *r);
 
   // Checks if a region can be simplified to have single entry and exit EDGES
   // without breaking the sinlge entry and exit BLOCKS property. This can happen
@@ -250,7 +226,7 @@ public:
   // FunctionPass interface.
   virtual void getAnalysisUsage(AnalysisUsage &AU) const;
   virtual bool runOnFunction(Function &F);
-  void releaseMemory() { insertedChecks.clear(); }
+  void releaseMemory() { targetRegions.clear(); }
 };
 } // end namespace polly
 

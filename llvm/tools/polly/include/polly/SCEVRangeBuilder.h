@@ -123,11 +123,11 @@ class SCEVRangeBuilder : private SCEVExpander {
 
   // Interceptors for SCEVExpander methods, so we can avoid actual instruction
   // generation during analysis mode.
-  Value *expandAddExpr(const SCEVAddExpr *expr);
-  Value *expandZeroExtendExpr(const SCEVZeroExtendExpr *expr);
-  Value *expandSignExtendExpr(const SCEVSignExtendExpr *expr);
-  Value *expandSMaxExpr(const SCEVSMaxExpr *expr);
-  Value *expandUMaxExpr(const SCEVUMaxExpr *expr);
+  Value *generateCodeForAdd(const SCEVAddExpr *expr);
+  Value *generateCodeForZeroExtend(const SCEVZeroExtendExpr *expr);
+  Value *generateCodeForSignExtend(const SCEVSignExtendExpr *expr);
+  Value *generateCodeForSMax(const SCEVSMaxExpr *expr);
+  Value *generateCodeForUMax(const SCEVUMaxExpr *expr);
   Value *InsertBinop(Instruction::BinaryOps op, Value *lhs, Value *rhs);
   Value *InsertCast(Instruction::CastOps op, Value *v, Type *sestTy);
   Value *InsertICmp(CmpInst::Predicate p, Value *lhs, Value *rhs);

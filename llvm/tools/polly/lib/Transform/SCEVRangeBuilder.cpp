@@ -52,7 +52,7 @@ Value *SCEVRangeBuilder::expand(const SCEV *s, bool upper) {
   currentUpper = upper;
   v = visit(s, upper);
 
-  // In analysis mode, the returned value is not valid.
+  // In analysis mode, V is just a dummy value.
   if (!analysisMode)
     rememberExpression(s, insertPt, upper, v);
 
@@ -112,7 +112,7 @@ Value *SCEVRangeBuilder::visitZeroExtendExpr(const SCEVZeroExtendExpr *expr,
   if (!expand(expr->getOperand()))
      return nullptr;
 
-  return expandZeroExtendExpr(expr);
+  return generateCodeForZeroExtend(expr);
 }
 
 // Expand operands here first, to check the existence of their bounds, then
@@ -124,7 +124,7 @@ Value *SCEVRangeBuilder::visitSignExtendExpr(const SCEVSignExtendExpr *expr,
   if (!expand(expr->getOperand()))
     return nullptr;
 
-  return expandSignExtendExpr(expr);
+  return generateCodeForSignExtend(expr);
 }
 
 // Simply put all operands on the expression cache and let the expander insert
@@ -137,7 +137,7 @@ Value *SCEVRangeBuilder::visitAddExpr(const SCEVAddExpr *expr, bool upper) {
       return nullptr;
   }
 
-  return expandAddExpr(expr);
+  return generateCodeForAdd(expr);
 }
 
 // We only handle the case where one of the operands is a constant (C * %v).
@@ -260,7 +260,7 @@ Value *SCEVRangeBuilder::visitUMaxExpr(const SCEVUMaxExpr *expr, bool upper) {
       return nullptr;
   }
 
-  return expandUMaxExpr(expr);
+  return generateCodeForUMax(expr);
 }
 
 // Simply expand all operands and save them on the expression cache. We then
@@ -275,7 +275,7 @@ Value *SCEVRangeBuilder::visitSMaxExpr(const SCEVSMaxExpr *expr, bool upper) {
       return nullptr;
   }
 
-  return expandSMaxExpr(expr);
+  return generateCodeForSMax(expr);
 }
 
 // The bounds of a generic value are the value itself.
@@ -296,23 +296,23 @@ Value *SCEVRangeBuilder::visitUnknown(const SCEVUnknown *expr, bool upper) {
   return val;
 }
 
-Value *SCEVRangeBuilder::expandAddExpr(const SCEVAddExpr *expr) {
+Value *SCEVRangeBuilder::generateCodeForAdd(const SCEVAddExpr *expr) {
   return analysisMode ? DUMMY_VAL : SCEVExpander::visitAddExpr(expr);
 }
 
-Value *SCEVRangeBuilder::expandZeroExtendExpr(const SCEVZeroExtendExpr *expr) {
+Value *SCEVRangeBuilder::generateCodeForZeroExtend(const SCEVZeroExtendExpr *expr) {
   return analysisMode ? DUMMY_VAL : SCEVExpander::visitZeroExtendExpr(expr);
 }
 
-Value *SCEVRangeBuilder::expandSignExtendExpr(const SCEVSignExtendExpr *expr) {
+Value *SCEVRangeBuilder::generateCodeForSignExtend(const SCEVSignExtendExpr *expr) {
   return analysisMode ? DUMMY_VAL : SCEVExpander::visitSignExtendExpr(expr);
 }
 
-Value *SCEVRangeBuilder::expandSMaxExpr(const SCEVSMaxExpr *expr) {
+Value *SCEVRangeBuilder::generateCodeForSMax(const SCEVSMaxExpr *expr) {
   return analysisMode ? DUMMY_VAL : SCEVExpander::visitSMaxExpr(expr);
 }
 
-Value *SCEVRangeBuilder::expandUMaxExpr(const SCEVUMaxExpr *expr) {
+Value *SCEVRangeBuilder::generateCodeForUMax(const SCEVUMaxExpr *expr) {
   return analysisMode ? DUMMY_VAL : SCEVExpander::visitUMaxExpr(expr);;
 }
 
