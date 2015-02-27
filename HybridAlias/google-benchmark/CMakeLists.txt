@@ -53,7 +53,6 @@ endif()
 
 # C++ feature checks
 include(CXXFeatureCheck)
-cxx_feature_check(STD_REGEX)
 cxx_feature_check(GNU_POSIX_REGEX)
 cxx_feature_check(POSIX_REGEX)
 
