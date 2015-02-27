@@ -71,9 +71,11 @@ def main():
 
 		speedup = safe_div(original_time, speculative_time) - 1
 
-		print("LOOP %s SPEEDUP OF %.2f%% (%.2f vs %.2f) (want at least %s%%)" % (region, speedup * 100, original_time, speculative_time, SPEEDUP_THRESHOLD * 100))
+		dont_clone = speedup < SPEEDUP_THRESHOLD
 
-		if speedup < SPEEDUP_THRESHOLD:
+		print("LOOP %s %s; SPEEDUP OF %.2f%% (%.2f vs %.2f) (want at least %s%%)" % (region, 'NOT CLONED' if dont_clone else 'CLONED', speedup * 100, original_time, speculative_time, SPEEDUP_THRESHOLD * 100))
+
+		if dont_clone:
 			alias_data.pop(region)
 
 	# denormalize data (LLVMs YAML parser can't handle it normalized)
