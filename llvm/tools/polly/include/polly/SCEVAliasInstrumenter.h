@@ -86,6 +86,18 @@ private:
 class SCEVAliasInstrumenter : public FunctionPass {
   typedef IRBuilder<true, TargetFolder> BuilderType;
 
+  // Information regarding an artificial back edge count created for a loop.
+  struct ArtificialBECount {
+    Instruction *addr; // Address of the loaded loop bound.
+    Instruction *oldLoad; // Original loop-variant load.
+    Instruction *hoistedLoad; // Hoisted copy of the bound load.
+    const SCEV *count; // New artificial BE count.
+
+    ArtificialBECount(Instruction *addr, Instruction *oldLoad,
+                      Instruction *hoistedLoad, const SCEV *count)
+      : addr(addr), oldLoad(oldLoad), hoistedLoad(hoistedLoad), count(count) {}
+  };
+
   /**
    * Holds information about the region being instrumented, like memory
    * properties.
@@ -98,6 +110,12 @@ class SCEVAliasInstrumenter : public FunctionPass {
     // For the accesses a[i], a[i+5], and b[i+j], we'd have something like:
     // - memAccesses: {a: (i,i+5), b: (i+j)}
     std::map<Value *, std::set<const SCEV *> > memAccesses;
+
+    // All base pointers that are targets of store instructions in the region.
+    std::set<Value *> storeTargets;
+
+    // Artificial back-edge counts created for loops in this region.
+    std::map<Loop *, ArtificialBECount> artificialBECounts;
 
     //@{
     // Stores all pairs of base pointers that need to be dynamically checked
@@ -117,6 +135,16 @@ class SCEVAliasInstrumenter : public FunctionPass {
     std::map<Value *, std::pair<Value *, Value *> > pointerBounds;
 
     InstrumentationContext(Region &r) : r(r) {}
+
+    // Builds a map containing the artificially created BE counts.
+    std::map<const Loop *, const SCEV *> getBECountsMap() {
+      std::map<const Loop *, const SCEV *> counts;
+
+      for (auto &pair : artificialBECounts)
+        counts.emplace(pair.first, pair.second.count);
+
+      return counts;
+    }
   };
 
   // Analyses used.
@@ -145,6 +173,16 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Checks if the given region has all the properties needed for
   // instrumentation.
   bool canInstrument(InstrumentationContext &context);
+
+  // Tries to give the loop an invariant backedge taken count, by modifying the
+  // loop structure then inserting some checks that guarantee its correctness.
+  // We currently check if the loop bound comes from a loop variant load from
+  // an invariant address. If so, we try to hoist the load to outside the loop,
+  // thus making it possible to compute an invariant BE count. During check
+  // insertion, we generate a dynamic check that guarantees that no other store
+  // aliases the hoisted load.
+  bool createArtificialInvariantBECount(Loop *l,
+                                        InstrumentationContext &context);
 
   // Checks if the given instruction doesn't break the properties needed for
   // instrumentation (basically checks if it doesn't access memory in an
@@ -181,6 +219,14 @@ class SCEVAliasInstrumenter : public FunctionPass {
   Instruction *buildRangeCheck(std::pair<Value *, Value *> boundsA,
                                std::pair<Value *, Value *> boundsB,
                                BuilderType &builder,
+                               SCEVRangeBuilder &rangeBuilder);
+
+  // Inserts a dynamic test to guarantee that accesses to a pointer do not alias
+  // a specific address within the region, given the pointer range and the
+  // symbolic address.
+  // E.g.: %loc-no-alias = upper(A) < B || B < lower(A)
+  Instruction *buildRangeCheck(std::pair<Value *, Value *> boundsA,
+                               Value *addrB, BuilderType &builder,
                                SCEVRangeBuilder &rangeBuilder);
 
   // Chain the checks that compare different pairs of pointers to a single

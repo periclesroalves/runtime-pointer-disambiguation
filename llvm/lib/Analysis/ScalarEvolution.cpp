@@ -4497,11 +4497,9 @@ ScalarEvolution::ComputeBackedgeTakenCount(const Loop *L) {
   return BackedgeTakenInfo(ExitCounts, CouldComputeBECount, MaxBECount);
 }
 
-/// ComputeExitLimit - Compute the number of times the backedge of the specified
-/// loop will execute if it exits via the specified block.
-ScalarEvolution::ExitLimit
-ScalarEvolution::ComputeExitLimit(const Loop *L, BasicBlock *ExitingBlock) {
-
+bool
+ScalarEvolution::hasConsistentTerminator(const Loop *L,
+                                         BasicBlock *ExitingBlock) {
   // Okay, we've chosen an exiting block.  See what condition causes us to
   // exit at this block and remember the exit block and whether all other targets
   // lead to the loop header.
@@ -4511,7 +4509,7 @@ ScalarEvolution::ComputeExitLimit(const Loop *L, BasicBlock *ExitingBlock) {
        SI != SE; ++SI)
     if (!L->contains(*SI)) {
       if (Exit) // Multiple exit successors.
-        return getCouldNotCompute();
+        return false;
       Exit = *SI;
     } else if (*SI != L->getHeader()) {
       MustExecuteLoopHeader = false;
@@ -4541,7 +4539,7 @@ ScalarEvolution::ComputeExitLimit(const Loop *L, BasicBlock *ExitingBlock) {
     for (BasicBlock *BB = ExitingBlock; BB; ) {
       BasicBlock *Pred = BB->getUniquePredecessor();
       if (!Pred)
-        return getCouldNotCompute();
+        return false;
       TerminatorInst *PredTerm = Pred->getTerminator();
       for (unsigned i = 0, e = PredTerm->getNumSuccessors(); i != e; ++i) {
         BasicBlock *PredSucc = PredTerm->getSuccessor(i);
@@ -4550,7 +4548,7 @@ ScalarEvolution::ComputeExitLimit(const Loop *L, BasicBlock *ExitingBlock) {
         // If the predecessor has a successor that isn't BB and isn't
         // outside the loop, assume the worst.
         if (L->contains(PredSucc))
-          return getCouldNotCompute();
+          return false;
       }
       if (Pred == L->getHeader()) {
         Ok = true;
@@ -4559,10 +4557,21 @@ ScalarEvolution::ComputeExitLimit(const Loop *L, BasicBlock *ExitingBlock) {
       BB = Pred;
     }
     if (!Ok)
-      return getCouldNotCompute();
+      return false;
   }
 
+  return true;
+}
+
+/// ComputeExitLimit - Compute the number of times the backedge of the specified
+/// loop will execute if it exits via the specified block.
+ScalarEvolution::ExitLimit
+ScalarEvolution::ComputeExitLimit(const Loop *L, BasicBlock *ExitingBlock) {
+  if (!hasConsistentTerminator(L, ExitingBlock))
+    return getCouldNotCompute();
+
   TerminatorInst *Term = ExitingBlock->getTerminator();
+
   if (BranchInst *BI = dyn_cast<BranchInst>(Term)) {
     assert(BI->isConditional() && "If unconditional, it can't be in loop!");
     // Proceed to the next level to examine the exit condition expression.
@@ -4571,9 +4580,18 @@ ScalarEvolution::ComputeExitLimit(const Loop *L, BasicBlock *ExitingBlock) {
                                     /*IsSubExpr=*/false);
   }
 
-  if (SwitchInst *SI = dyn_cast<SwitchInst>(Term))
+  if (SwitchInst *SI = dyn_cast<SwitchInst>(Term)) {
+    BasicBlock *Exit = nullptr;
+    for (succ_iterator SI = succ_begin(ExitingBlock), SE = succ_end(ExitingBlock);
+         SI != SE; ++SI)
+      if (!L->contains(*SI)) {
+        Exit = *SI;
+        break;
+      }
+
     return ComputeExitLimitFromSingleExitSwitch(L, SI, Exit,
                                                 /*IsSubExpr=*/false);
+  }
 
   return getCouldNotCompute();
 }

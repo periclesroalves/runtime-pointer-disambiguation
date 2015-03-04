@@ -60,8 +60,16 @@ class SCEVRangeBuilder : private SCEVExpander {
                      // a dummy not-null value.
   std::map<std::tuple<const SCEV *, Instruction *, bool>, TrackingVH<Value> >
     InsertedExpressions; // Saved expressions for reuse.
+  std::map<const Loop *, const SCEV *> artificialBECounts; // Holds artificially
+                                                           // created back-edge
+                                                           // counts for loops.
 
   void setAnalysisMode(bool val) { analysisMode = val; }
+
+  void setArtificialBECounts(std::map<const Loop *,
+                             const SCEV *> artificialBECounts) {
+    this->artificialBECounts = artificialBECounts;
+  }
 
   // If the caller doesn't specify which bound to compute, we assume the same of
   // the last expanded expression. Usually called by methods defined in

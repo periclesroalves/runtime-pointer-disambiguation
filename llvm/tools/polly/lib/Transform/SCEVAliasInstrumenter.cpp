@@ -98,6 +98,9 @@ void SCEVAliasInstrumenter::fixAliasInfo(Region *r) {
 }
 
 bool SCEVAliasInstrumenter::isSafeToSimplify(Region *r) {
+  if (r->isSimple())
+    return true;
+
   bool safeToSimplify = true;
 
   // Check if a region edge's destination won't taken to outside the region.
@@ -116,9 +119,14 @@ bool SCEVAliasInstrumenter::isSafeToSimplify(Region *r) {
 void SCEVAliasInstrumenter::simplifyRegion(Region *r) {
   assert (isSafeToSimplify(r) && "Can't simplify unsafe regions");
 
-  // Create a new entering block to host the checks, even if we already had one.
-  BasicBlock *entry = r->getEntry();
-  r->replaceEntryRecursive(SplitBlock(entry, entry->begin(), li));
+  // Create a new entering block to host the checks. If an entering block
+  // already exists, just reuse it. If not, create one from the region entry.
+  if (BasicBlock *entering = r->getEnteringBlock()) {
+    SplitBlock(entering, entering->getTerminator(), li);
+  } else {
+    BasicBlock *entry = r->getEntry();
+    r->replaceEntryRecursive(SplitBlock(entry, entry->begin(), li));
+  }
 
   // Create exiting block.
   if (!r->getExitingBlock()) {
@@ -141,11 +149,18 @@ void SCEVAliasInstrumenter::buildNoAliasClone(InstrumentationContext &context,
   Instruction *br = &r.getEnteringBlock()->back();
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(br);
-  builder.CreateCondBr(checkResult, clonedRegion->getEntry(), r.getEntry());
+  builder.CreateCondBr(checkResult, r.getEntry(), clonedRegion->getEntry());
   br->eraseFromParent();
 
+  // Replace original loop bound loads by hoisted loads in the region, which is
+  // now guarded against true aliasing.
+  for (auto &pair : context.artificialBECounts) {
+    pair.second.oldLoad->replaceAllUsesWith(pair.second.hoistedLoad);
+    pair.second.oldLoad->eraseFromParent();
+  }
+
   // Mark the cloned region as free of dependencies.
-  fixAliasInfo(clonedRegion);
+  fixAliasInfo(&r);
 }
 
 Instruction *SCEVAliasInstrumenter::chainChecks(
@@ -169,7 +184,6 @@ Instruction *SCEVAliasInstrumenter::buildRangeCheck(
                               std::pair<Value *, Value *> boundsB,
                               BuilderType &builder,
                               SCEVRangeBuilder &rangeBuilder) {
-
   // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
   Type *i8PtrTy = builder.getInt8PtrTy();
   Value *lowerA = rangeBuilder.InsertNoopCastOfTo(boundsA.first, i8PtrTy);
@@ -183,10 +197,24 @@ Instruction *SCEVAliasInstrumenter::buildRangeCheck(
 
   Value *check = builder.CreateOr(aIsBeforeB, bIsBeforeA, "pair-no-alias");
 
-  // the hoisting code, etc., assume that the check is an instruction,
-  // not a constant.
-  // I hope the SCEV range builder does not produce constant expressions that
-  // can be folded away
+  return cast<Instruction>(check);
+}
+
+Instruction *SCEVAliasInstrumenter::buildRangeCheck(std::pair<Value *, Value *>
+                                    boundsA, Value *addrB, BuilderType &builder,
+                                    SCEVRangeBuilder &rangeBuilder) {
+  // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
+  Type *i8PtrTy = builder.getInt8PtrTy();
+  Value *lowerA = rangeBuilder.InsertNoopCastOfTo(boundsA.first, i8PtrTy);
+  Value *upperA = rangeBuilder.InsertNoopCastOfTo(boundsA.second, i8PtrTy);
+  Value *locB = rangeBuilder.InsertNoopCastOfTo(addrB, i8PtrTy);
+
+  // Build actual interval comparisons.
+  Value *aIsBeforeB = builder.CreateICmpULT(upperA, locB);
+  Value *bIsBeforeA = builder.CreateICmpULT(locB, lowerA);
+
+  Value *check = builder.CreateOr(aIsBeforeB, bIsBeforeA, "loc-no-alias");
+
   return cast<Instruction>(check);
 }
 
@@ -215,6 +243,7 @@ Instruction *SCEVAliasInstrumenter::insertDynamicChecks(
   // region entering block.
   Instruction *insertPt = r.getEnteringBlock()->getFirstNonPHI();
   SCEVRangeBuilder rangeBuilder(se, aa, li, dt, &r, insertPt);
+  rangeBuilder.setArtificialBECounts(context.getBECountsMap());
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(insertPt);
 
@@ -231,9 +260,18 @@ Instruction *SCEVAliasInstrumenter::insertDynamicChecks(
 
     auto check = buildRangeCheck(context.pointerBounds[pair.first],
                                  context.pointerBounds[pair.second],
-                                 builder,
-                                 rangeBuilder);
+                                 builder, rangeBuilder);
     pairChecks.push_back(check);
+  }
+
+  // Also, if we hoisted loop bound loads, insert tests to guarantee that no
+  // store in the region alises the hoisted loads.
+  for (auto &pair : context.artificialBECounts) {
+    for (auto &storeTarget : context.storeTargets) {
+      auto check = buildRangeCheck(context.pointerBounds[storeTarget],
+                                   pair.second.addr, builder, rangeBuilder);
+      pairChecks.push_back(check);
+    }
   }
 
   // Combine all checks into a single boolean result using AND.
@@ -296,6 +334,9 @@ bool SCEVAliasInstrumenter::collectDependencyData(
       Loop *l = li->getLoopFor(inst.getParent());
       const SCEV *accessFunction = se->getSCEVAtScope(ptr, l);
       context.memAccesses[basePtrValue].insert(accessFunction);
+
+      if (isa<StoreInst>(inst))
+        context.storeTargets.insert(basePtrValue);
 
       // We need checks against all pointers in the May Alias set.
       AliasSet &as =
@@ -365,8 +406,89 @@ bool SCEVAliasInstrumenter::isValidInstruction(Instruction &inst) {
   return false;
 }
 
+// TODO: insert checks for the load address.
+// TODO: after cloning, replace uses of the old load in the cloned region
+//       be the new load and eliminate the old load.
+bool SCEVAliasInstrumenter::createArtificialInvariantBECount(Loop *l,
+                            InstrumentationContext &context) {
+  SmallVector<BasicBlock *, 8> exitingBlocks;
+  l->getExitingBlocks(exitingBlocks);
+
+  // For simplicity, we only handle loops with one exit block, which must
+  // control all iterations.
+  if ((exitingBlocks.size() != 1) ||
+      !se->hasConsistentTerminator(l, exitingBlocks[0]))
+    return false;
+
+  // The counter must be controled by a branch instruction based on an ICmp.
+  BranchInst *br = dyn_cast<BranchInst>(exitingBlocks[0]->getTerminator());
+
+  if (!br || !isa<ICmpInst>(br->getCondition()))
+    return false;
+
+  ICmpInst *exitCond = dyn_cast<ICmpInst>(br->getCondition());
+
+  // If the condition is exit on true, convert it to exit on false.
+  ICmpInst::Predicate cond = !l->contains(/*false BB*/br->getSuccessor(1)) ?
+    exitCond->getPredicate() : exitCond->getInversePredicate();
+
+  const SCEV *lhsSCEV = se->getSCEVAtScope(exitCond->getOperand(0), l);
+  const SCEV *rhsSCEV = se->getSCEVAtScope(exitCond->getOperand(1), l);
+
+  // LHS must be an induction variable and RHS must be a loop-variant load.
+  if (!isa<SCEVAddRecExpr>(lhsSCEV) || !isa<LoadInst>(exitCond->getOperand(1)) ||
+      se->isLoopInvariant(rhsSCEV, l))
+    return false;
+
+  LoadInst *oldLoad = dyn_cast<LoadInst>(exitCond->getOperand(1));
+  Instruction *addr = dyn_cast<Instruction>(oldLoad->getPointerOperand());
+
+  // The loaded address must be loop-invariant.
+  if (!addr || !se->isLoopInvariant(se->getSCEVAtScope(addr, l), l))
+    return false;
+
+  // Create a hoisted copy of the load, creating a loop-invariant bound.
+  Instruction *newLoad = oldLoad->clone();
+  newLoad->setName((oldLoad->hasName() ? oldLoad->getName() + "." : "") +
+    "hoisted");
+  newLoad->insertAfter(addr);
+  const SCEV *newRhsSCEV = se->getSCEVAtScope(newLoad, l);
+  const SCEV *count;
+
+  // Compute the counter using the newly hoisted load as bound.
+  switch (cond) {
+    case ICmpInst::ICMP_SLT:
+    case ICmpInst::ICMP_ULT: {
+      bool isSign = (cond == ICmpInst::ICMP_SLT);
+      count = se->HowManyLessThans(lhsSCEV, newRhsSCEV, l, isSign,
+                                   /*IsSubExpr*/false).Exact;
+      if (count == se->getCouldNotCompute()) return false;
+      break;
+    }
+    case ICmpInst::ICMP_SGT:
+    case ICmpInst::ICMP_UGT: {
+      bool isSign = (cond == ICmpInst::ICMP_SGT);
+      count = se->HowManyGreaterThans(lhsSCEV, newRhsSCEV, l, isSign,
+                                      /*IsSubExpr*/false).Exact;
+      if (count == se->getCouldNotCompute()) return false;
+      break;
+    }
+    default:
+      return false;
+  }
+
+  context.artificialBECounts.emplace(l, ArtificialBECount(addr, oldLoad,
+                                                          newLoad, count));
+  return true;
+}
+
 bool SCEVAliasInstrumenter::canInstrument(InstrumentationContext &context) {
   Region &r = context.r;
+
+  // Top-level regions can't be instrumented.
+  if (r.isTopLevelRegion())
+    return false;
+
   bool hasLoop = false;
 
   // Do not instrument regions without loops.
@@ -377,9 +499,16 @@ bool SCEVAliasInstrumenter::canInstrument(InstrumentationContext &context) {
   if (!hasLoop)
     return false;
 
-  // Top-level regions can't be instrumented.
-  if (r.isTopLevelRegion())
-    return false;
+  // Make sure that all loops in the region have a symbolic limit.
+  for (BasicBlock *bb : r.blocks()) {
+    Loop *l = li->getLoopFor(bb);
+
+    // If a loop doesn't have a defined limit, try to create an artificial one.
+    if (l && (l->getHeader() == bb) &&
+        !se->hasLoopInvariantBackedgeTakenCount(l) &&
+        !createArtificialInvariantBECount(l, context))
+      return false;
+  }
 
   // Check that all instructions are valid.
   for (BasicBlock *bb : r.blocks())
@@ -398,6 +527,7 @@ bool SCEVAliasInstrumenter::canInstrument(InstrumentationContext &context) {
 
   Instruction *insertPt = r.getEntry()->getFirstNonPHI();
   SCEVRangeBuilder rangeBuilder(se, aa, li, dt, &r, insertPt);
+  rangeBuilder.setArtificialBECounts(context.getBECountsMap());
 
   // Make sure that access bounds can be computed for every access expression
   // within the region.

@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <algorithm>
 
 void foo (int *A, int *B, int n) {
   for (int i = 0; i < n; i++) {

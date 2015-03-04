@@ -503,15 +503,6 @@ namespace llvm {
     /// CouldNotCompute.
     ExitLimit HowFarToNonZero(const SCEV *V, const Loop *L);
 
-    /// HowManyLessThans - Return the number of times an exit condition
-    /// containing the specified less-than comparison will execute.  If not
-    /// computable, return CouldNotCompute. isSigned specifies whether the
-    /// less-than is signed.
-    ExitLimit HowManyLessThans(const SCEV *LHS, const SCEV *RHS,
-                               const Loop *L, bool isSigned, bool IsSubExpr);
-    ExitLimit HowManyGreaterThans(const SCEV *LHS, const SCEV *RHS,
-                                  const Loop *L, bool isSigned, bool IsSubExpr);
-
     /// getPredecessorWithUniqueSuccessorForBB - Return a predecessor of BB
     /// (which may not be an immediate predecessor) which has exactly one
     /// successor from which BB is reachable, or null if no such block is
@@ -772,6 +763,16 @@ namespace llvm {
     // return SCEVCouldNotCompute.
     const SCEV *getExitCount(Loop *L, BasicBlock *ExitingBlock);
 
+    /// HowManyLessThans - Return the number of times an exit condition
+    /// containing the specified less-than comparison will execute.  If not
+    /// computable, return CouldNotCompute. isSigned specifies whether the
+    /// less-than is signed.
+    ExitLimit HowManyLessThans(const SCEV *LHS, const SCEV *RHS,
+                               const Loop *L, bool isSigned, bool IsSubExpr);
+    ExitLimit HowManyGreaterThans(const SCEV *LHS, const SCEV *RHS,
+                                  const Loop *L, bool isSigned, bool IsSubExpr);
+
+
     /// getBackedgeTakenCount - If the specified loop has a predictable
     /// backedge-taken count, return it, otherwise return a SCEVCouldNotCompute
     /// object. The backedge-taken count is the number of times the loop header
@@ -793,6 +794,10 @@ namespace llvm {
     /// hasLoopInvariantBackedgeTakenCount - Return true if the specified loop
     /// has an analyzable loop-invariant backedge-taken count.
     bool hasLoopInvariantBackedgeTakenCount(const Loop *L);
+
+    /// Determines if the terminator of a given exiting block consistently
+    /// controls the exit count of a loop.
+    static bool hasConsistentTerminator(const Loop *L, BasicBlock *ExitingBlock);   
 
     /// forgetLoop - This method should be called by the client when it has
     /// changed a loop in a way that may effect ScalarEvolution's ability to
