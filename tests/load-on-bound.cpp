@@ -1,24 +1,18 @@
 #include <stdio.h>
 
 typedef struct {
-  int a[10000];
-  int b[10000];
+  int a[100];
   int size;
 } S;
 
 void foo(S s) {
   for (int i = 0; i < s.size; i++)
-    s.a[i] = i;
-
-  for (int i = 0; i < s.size; i++)
-    s.b[i] = i * s.a[i];
-
-  printf("%d", s.b[3]);
+    s.a[i] = 0;
 }
 
 int main() {
   S s;
-  s.size = 10000;
+  s.size = 100;
 
   foo(s);
 }

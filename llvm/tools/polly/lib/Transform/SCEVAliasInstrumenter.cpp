@@ -119,9 +119,11 @@ bool SCEVAliasInstrumenter::isSafeToSimplify(Region *r) {
 void SCEVAliasInstrumenter::simplifyRegion(Region *r) {
   assert (isSafeToSimplify(r) && "Can't simplify unsafe regions");
 
+  BasicBlock *entering = r->getEnteringBlock();
+
   // Create a new entering block to host the checks. If an entering block
   // already exists, just reuse it. If not, create one from the region entry.
-  if (BasicBlock *entering = r->getEnteringBlock()) {
+  if (entering && (entering != &(entering->getParent()->getEntryBlock()))) {
     SplitBlock(entering, entering->getTerminator(), li);
   } else {
     BasicBlock *entry = r->getEntry();
@@ -241,7 +243,7 @@ Instruction *SCEVAliasInstrumenter::insertDynamicChecks(
 
   // Set instruction insertion context. We'll insert the run-time tests in the
   // region entering block.
-  Instruction *insertPt = r.getEnteringBlock()->getFirstNonPHI();
+  Instruction *insertPt = r.getEnteringBlock()->getTerminator();
   SCEVRangeBuilder rangeBuilder(se, aa, li, dt, &r, insertPt);
   rangeBuilder.setArtificialBECounts(context.getBECountsMap());
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
@@ -411,6 +413,14 @@ bool SCEVAliasInstrumenter::isValidInstruction(Instruction &inst) {
 //       be the new load and eliminate the old load.
 bool SCEVAliasInstrumenter::createArtificialInvariantBECount(Loop *l,
                             InstrumentationContext &context) {
+  Region &r = context.r;
+  BasicBlock *entering = r.getEnteringBlock();
+
+  // We need an entering block to put the hoisted load, which cannot be the
+  // function entry block.
+  if (!entering || (entering ==  &(entering->getParent()->getEntryBlock())))
+    return false;
+
   SmallVector<BasicBlock *, 8> exitingBlocks;
   l->getExitingBlocks(exitingBlocks);
 
@@ -451,7 +461,7 @@ bool SCEVAliasInstrumenter::createArtificialInvariantBECount(Loop *l,
   Instruction *newLoad = oldLoad->clone();
   newLoad->setName((oldLoad->hasName() ? oldLoad->getName() + "." : "") +
     "hoisted");
-  newLoad->insertAfter(addr);
+  newLoad->insertBefore(entering->getTerminator());
   const SCEV *newRhsSCEV = se->getSCEVAtScope(newLoad, l);
   const SCEV *count;
 
