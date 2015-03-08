@@ -72,6 +72,7 @@
 #include <string.h>
 #include <limits.h>
 #include <math.h>
+#include <time.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include "getopt.h"
@@ -195,9 +196,11 @@ int main(int argc, char **argv) {
     }
   
     nloops = 1;	
-	printf("I/O completed\n");
 
 	memcpy(attributes[0], buf, numObjects*numAttributes*sizeof(float));
+
+  clock_t t;
+  t = clock();
 
     for (i=0; i<nloops; i++) {
         		
@@ -213,8 +216,9 @@ int main(int argc, char **argv) {
      
     }
 
-	printf("number of Clusters %d\n",nclusters); 
-	printf("number of Attributes %d\n\n",numAttributes); 
+  t = (clock() - t);
+  printf ("Elapsed time: %f\n", (((float)t)/CLOCKS_PER_SEC));
+
     /*printf("Cluster Centers Output\n"); 
 	printf("The first number is cluster number and the following data is arribute value\n");
 	printf("=============================================================================\n\n");

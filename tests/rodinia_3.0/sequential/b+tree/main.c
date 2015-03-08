@@ -742,7 +742,6 @@ transform_to_cuda(	node * root,
 	double oneD = one.tv_sec + (double)one.tv_usec * .000001;
 	double twoD = two.tv_sec + (double)two.tv_usec * .000001;
 	time = twoD-oneD;
-	printf("Tree transformation took %f\n", time);
 
 	return mem_used;
 
@@ -1907,8 +1906,6 @@ main(	int argc,
 	    printf("Usage: ./b+tree file input_file command command_list\n");
 
 	  // For debug
-	  printf("Input File: %s \n", input_file);
-	  printf("Command File: %s \n", command_file);
 
      FILE * commandFile;
      long lSize;
@@ -1938,8 +1935,6 @@ main(	int argc,
 
      // For Debug
      char *sPointer=commandBuffer;
-     printf("Command Buffer: \n");
-     printf("%s",commandBuffer);
      //
 
 
@@ -1972,7 +1967,6 @@ main(	int argc,
 
 	if (input_file != NULL) {
 
-		printf("Getting input from file %s...\n", argv[1]);
 
 		// open input file
 		file_pointer = fopen(input_file, "r");
@@ -2006,7 +2000,6 @@ main(	int argc,
 	// get tree statistics
 	// ------------------------------------------------------------60
 
-	printf("Transforming data to a GPU suitable structure...\n");
 	long mem_used = transform_to_cuda(root,0);
 	maxheight = height(root);
 	long rootLoc = (long)knodes - (long)mem;
@@ -2016,8 +2009,6 @@ main(	int argc,
 	// ------------------------------------------------------------60
 	char *commandPointer=commandBuffer;
 
-	printf("Waiting for command\n");
-	printf("> ");
 	while (sscanf(commandPointer, "%c", &instruction) != EOF) {
 	  commandPointer++;
 		switch (instruction) {
@@ -2139,7 +2130,6 @@ main(	int argc,
 				while(*commandPointer!=32 && commandPointer!='\n')
 				  commandPointer++;
 
-				printf("\n ******command: k count=%d \n",count);
 
 				if(count > 65535){
 					printf("ERROR: Number of requested querries should be 65,535 at most. (limited by # of CUDA blocks)\n");
@@ -2218,7 +2208,6 @@ main(	int argc,
 				    fputs ("Fail to open %s !\n",output);
 				  }
 				
-				fprintf(pFile,"\n ******command: k count=%d \n",count);
 				for(i = 0; i < count; i++){
 				  fprintf(pFile, "%d    %d\n",i, ans[i].value);
 				}
@@ -2277,7 +2266,6 @@ main(	int argc,
 				while(*commandPointer!=32 && commandPointer!='\n')
 				  commandPointer++;
 
-				printf("\n******command: j count=%d, rSize=%d \n",count, rSize);
 
 				if(rSize > size || rSize < 0) {
 					printf("Search range size is larger than data set size %d.\n", (int)size);
@@ -2409,7 +2397,6 @@ main(	int argc,
 			}
 
 		}
-		printf("> ");
 
 	}
 	printf("\n");

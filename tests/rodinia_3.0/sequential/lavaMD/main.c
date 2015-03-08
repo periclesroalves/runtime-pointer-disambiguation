@@ -149,7 +149,6 @@ main(	int argc,
 	}
 
 	// Print configuration
-	printf("Configuration used: cores = %d, boxes1d = %d\n", dim_cpu.cores_arg, dim_cpu.boxes1d_arg);
 
 	time2 = get_time();
 

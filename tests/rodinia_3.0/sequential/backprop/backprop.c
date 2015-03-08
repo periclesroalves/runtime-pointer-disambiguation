@@ -129,7 +129,6 @@ int m, n;
 
 void bpnn_initialize(seed)
 {
-  printf("Random number generator seed: %d\n", seed);
   srand(seed);
 }
 

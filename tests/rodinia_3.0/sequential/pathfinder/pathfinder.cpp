@@ -12,7 +12,6 @@ void run(int argc, char** argv);
 #define pin_stats_pause(cycles)   stopCycle(cycles)
 #define pin_stats_dump(cycles)    printf("timer: %Lu\n", cycles)
 
-#define BENCH_PRINT
 
 int rows, cols;
 int* data;
@@ -91,6 +90,10 @@ void run(int argc, char** argv)
     src = new int[cols];
 
     pin_stats_reset();
+
+    clock_t t;
+    t = clock();
+
     for (int t = 0; t < rows-1; t++) {
         temp = src;
         src = dst;
@@ -105,8 +108,10 @@ void run(int argc, char** argv)
         }
     }
 
+    t = (clock() - t);
+    printf ("Elapsed time: %f\n", (((float)t)/CLOCKS_PER_SEC));
+
     pin_stats_pause(cycles);
-    pin_stats_dump(cycles);
 
 #ifdef BENCH_PRINT
     for (int i = 0; i < cols; i++)

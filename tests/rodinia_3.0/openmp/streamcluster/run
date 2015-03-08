@@ -1,1 +1,1 @@
-./sc_omp 10 20 256 65536 65536 1000 none output.txt 4
+./sco 10 20 10 59999 6553 1000 none output.txt 1
