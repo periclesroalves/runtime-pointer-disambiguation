@@ -472,6 +472,13 @@ bool ScopDetection::isValidMemoryAccess(Instruction &Inst,
   // any other pointer. This cannot be handled at the moment.
   AAMDNodes AATags;
   Inst.getAAMetadata(AATags);
+
+  // Prefer scoped alias info over type-based AA. This needs to be done because
+  // AliasSet tracker simply drops scoped alias info in the presence of
+  // conflicting TBAA info.
+  if (AATags.Scope && AATags.NoAlias)
+    AATags.TBAA = nullptr;
+
   AliasSet &AS =
       Context.AST.getAliasSetForPointer(BaseValue, AliasAnalysis::UnknownSize,
                                         AATags);
