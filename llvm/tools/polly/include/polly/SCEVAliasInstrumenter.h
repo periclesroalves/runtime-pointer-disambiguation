@@ -206,7 +206,7 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // entering block of the target region, which works as a pre-header. The
   // returned Instruction produces a boolean value that, at run-time, indicates
   // if the region is free of dependencies.
-  Instruction *insertDynamicChecks(InstrumentationContext &context);
+  Value *insertDynamicChecks(InstrumentationContext &context);
 
   // Computes the bounds for the addresses accessed over each base pointer in
   // the region, using SCEV.
@@ -216,7 +216,7 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Inserts a dynamic test to guarantee that accesses to two pointers do not
   // overlap in a specific region, given their access ranges.
   // E.g.: %pair-no-alias = upper(A) < lower(B) || upper(B) < lower(A)
-  Instruction *buildRangeCheck(std::pair<Value *, Value *> boundsA,
+  Value *buildRangeCheck(std::pair<Value *, Value *> boundsA,
                                std::pair<Value *, Value *> boundsB,
                                BuilderType &builder,
                                SCEVRangeBuilder &rangeBuilder);
@@ -225,19 +225,19 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // a specific address within the region, given the pointer range and the
   // symbolic address.
   // E.g.: %loc-no-alias = upper(A) < B || B < lower(A)
-  Instruction *buildRangeCheck(std::pair<Value *, Value *> boundsA,
+  Value *buildRangeCheck(std::pair<Value *, Value *> boundsA,
                                Value *addrB, BuilderType &builder,
                                SCEVRangeBuilder &rangeBuilder);
 
   // Chain the checks that compare different pairs of pointers to a single
   // result value using "and" operations.
   // E.g.: %region-no-alias = %pair-no-alias1 && %pair-no-alias2 && %pair-no-alias3
-  Instruction *chainChecks(std::vector<Instruction *> checks, BuilderType &builder);
+  Value *chainChecks(std::vector<Value *> checks, BuilderType &builder);
 
   // Produce two versions of an instrumented region: one with the original
-  // alias info, if the run-time alias check fails, and one set to ignore 
+  // alias info, if the run-time alias check fails, and one set to ignore
   // dependencies, in case the check passes.
-  //     ____\|/___                 ____\|/___ 
+  //     ____\|/___                 ____\|/___
   //    | dy_check |               | dy_check |
   //    '-----.----'               '-----.----'
   //     ____\|/___     =>      F .------'------. T
@@ -248,7 +248,7 @@ class SCEVAliasInstrumenter : public FunctionPass {
   //                              '------.------'
   //                                    \|/
   void buildNoAliasClone(InstrumentationContext &context,
-                         Instruction *checkResult);
+                         Value *checkResult);
 
   // Create single entry and exit EDGES in a region (thus creating entering and
   // exiting blocks).

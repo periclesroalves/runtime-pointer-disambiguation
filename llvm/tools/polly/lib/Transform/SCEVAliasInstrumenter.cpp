@@ -68,7 +68,7 @@ void SCEVAliasInstrumenter::fixAliasInfo(Region *r) {
     scopes.insert(std::make_pair(basePointer, scope));
   }
 
-  // Set the actual scoped alias tags for each memory instruction in the region. 
+  // Set the actual scoped alias tags for each memory instruction in the region.
   // A memory instruction always aliases its base pointer and never aliases
   // other pointers in the region.
   for (auto pair : memAccesses) {
@@ -140,7 +140,7 @@ void SCEVAliasInstrumenter::simplifyRegion(Region *r) {
 }
 
 void SCEVAliasInstrumenter::buildNoAliasClone(InstrumentationContext &context,
-                                              Instruction *checkResult) {
+                                              Value *checkResult) {
   if (!checkResult)
     return;
 
@@ -165,8 +165,7 @@ void SCEVAliasInstrumenter::buildNoAliasClone(InstrumentationContext &context,
   fixAliasInfo(&r);
 }
 
-Instruction *SCEVAliasInstrumenter::chainChecks(
-                                          std::vector<Instruction *> checks,
+Value *SCEVAliasInstrumenter::chainChecks(std::vector<Value *> checks,
                                           BuilderType &builder) {
   if (checks.size() < 1)
     return nullptr;
@@ -177,11 +176,10 @@ Instruction *SCEVAliasInstrumenter::chainChecks(
     rhs = builder.CreateAnd(checks[i], rhs, "region-no-alias");
   }
 
-  // ugly but safe, since `and' of instructions always produces an instruction
-  return cast<Instruction>(rhs);
+  return rhs;
 }
 
-Instruction *SCEVAliasInstrumenter::buildRangeCheck(
+Value *SCEVAliasInstrumenter::buildRangeCheck(
                               std::pair<Value *, Value *> boundsA,
                               std::pair<Value *, Value *> boundsB,
                               BuilderType &builder,
@@ -199,10 +197,10 @@ Instruction *SCEVAliasInstrumenter::buildRangeCheck(
 
   Value *check = builder.CreateOr(aIsBeforeB, bIsBeforeA, "pair-no-alias");
 
-  return cast<Instruction>(check);
+  return check;
 }
 
-Instruction *SCEVAliasInstrumenter::buildRangeCheck(std::pair<Value *, Value *>
+Value *SCEVAliasInstrumenter::buildRangeCheck(std::pair<Value *, Value *>
                                     boundsA, Value *addrB, BuilderType &builder,
                                     SCEVRangeBuilder &rangeBuilder) {
   // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
@@ -217,7 +215,7 @@ Instruction *SCEVAliasInstrumenter::buildRangeCheck(std::pair<Value *, Value *>
 
   Value *check = builder.CreateOr(aIsBeforeB, bIsBeforeA, "loc-no-alias");
 
-  return cast<Instruction>(check);
+  return check;
 }
 
 void SCEVAliasInstrumenter::buildSCEVBounds(InstrumentationContext &context,
@@ -234,7 +232,7 @@ void SCEVAliasInstrumenter::buildSCEVBounds(InstrumentationContext &context,
   }
 }
 
-Instruction *SCEVAliasInstrumenter::insertDynamicChecks(
+Value *SCEVAliasInstrumenter::insertDynamicChecks(
                             InstrumentationContext &context) {
   Region &r = context.r;
 
@@ -251,7 +249,7 @@ Instruction *SCEVAliasInstrumenter::insertDynamicChecks(
 
   buildSCEVBounds(context, rangeBuilder);
 
-  std::vector<Instruction *> pairChecks;
+  std::vector<Value *> pairChecks;
 
   // Insert comparison expressions for every pair of pointers that need to be
   // checked in the region.
@@ -280,7 +278,7 @@ Instruction *SCEVAliasInstrumenter::insertDynamicChecks(
   return chainChecks(pairChecks, builder);
 }
 
-Value *SCEVAliasInstrumenter::getBasePtrValue(Instruction &inst, 
+Value *SCEVAliasInstrumenter::getBasePtrValue(Instruction &inst,
                                               const Region &r) {
   Value *ptr = getPointerOperand(inst);
   Loop *l = li->getLoopFor(inst.getParent());
@@ -581,10 +579,10 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
 
   // Instrument and clone each target region.
   for (auto context : targetRegions) {
-    Instruction *checkResult = insertDynamicChecks(context);
+    auto checkResult = insertDynamicChecks(context);
     buildNoAliasClone(context, checkResult);
   }
-  
+
   return true;
 }
 
