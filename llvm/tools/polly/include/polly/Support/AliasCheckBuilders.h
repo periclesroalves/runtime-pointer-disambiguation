@@ -49,7 +49,7 @@ public:
   RangeCheckBuilder(
       SCEVRangeBuilder& rangeBuilder,
       BuilderType& builder,
-      AliasInstrumentationContext ctx)
+      AliasInstrumentationContext& ctx)
   : rangeBuilder(rangeBuilder)
   , builder(builder)
   , memAccesses(ctx.memAccesses)
@@ -79,19 +79,22 @@ class HeapCheckBuilder {
 public:
   typedef IRBuilder<true, TargetFolder> BuilderType;
 
-  HeapCheckBuilder(BuilderType& builder,
-                   BasicBlock*  enteringBlock,
-                   Function*    getBasePtr)
+  HeapCheckBuilder(BuilderType&   builder,
+                   BasicBlock*    enteringBlock,
+                   Function*      getPtrId)
   : builder(builder)
   , enteringBlock(enteringBlock)
-  , getBasePtr(getBasePtr)
+  , getPtrId(getPtrId)
   {}
 
   Value *buildCheck(Value *a, Value *b);
 private:
-  BuilderType& builder;
-  BasicBlock*  enteringBlock;
-  Function*    getBasePtr;
+  Value *buildGetPtrIdCall(Value *ptr);
+
+  BuilderType&     builder;
+  BasicBlock*      enteringBlock;
+  Function*        getPtrId;
+  std::map<Value*, Instruction*> ptrIdCache;
 };
 
 // Builds must-alias checks using pointer equality

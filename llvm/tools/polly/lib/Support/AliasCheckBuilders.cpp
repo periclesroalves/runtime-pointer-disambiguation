@@ -66,6 +66,49 @@ ValuePair RangeCheckBuilder::buildSCEVBounds(Value *basePtr) {
   return pair;
 }
 
+Value* HeapCheckBuilder::buildCheck(Value *a, Value *b) {
+    auto idA = buildGetPtrIdCall(a);
+    auto idB = buildGetPtrIdCall(b);
+
+    return builder.CreateICmpNE(idA, idB);
+}
+
+Value* HeapCheckBuilder::buildGetPtrIdCall(Value *ptr) {
+  assert(getPtrId);
+
+  // look up in cache
+  auto I = ptrIdCache.find(ptr);
+
+  if(I != ptrIdCache.end())
+      return I->second;
+
+  // we hoist the call ourselves since LLVM cannot see the effects of our
+  // function and isn't able to hoist it itself.
+
+  Instruction *insertBefore;
+
+  if (isa<Constant>(ptr) || isa<Argument>(ptr))
+    insertBefore = enteringBlock->getFirstInsertionPt();
+  else if (auto phi = dyn_cast<PHINode>(ptr))
+    // don't insert into the middle of a block of PHIs
+    insertBefore = phi->getParent()->getFirstInsertionPt();
+  else
+    insertBefore = cast<Instruction>(ptr)->getNextNode();
+
+  assert(insertBefore);
+
+  BuilderType IRB(builder);
+  IRB.SetInsertPoint(insertBefore);
+
+  auto operand  = IRB.CreatePointerCast(ptr, IRB.getInt8PtrTy());
+  auto magicNum = IRB.CreateCall(getPtrId, operand);
+
+  // update cache
+  ptrIdCache[ptr] = magicNum;
+
+  return magicNum;
+}
+
 Value *EqualityCheckBuilder::buildCheck(Value *a, Value *b) {
 	auto& set            = sets.getSetFor(a, b);
 	auto  representative = set.getSomePointer();

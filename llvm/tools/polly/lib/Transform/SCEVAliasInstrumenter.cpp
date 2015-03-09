@@ -146,7 +146,7 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
   scevRange.setArtificialBECounts(context.getBECountsMap());
 
   RangeCheckBuilder    rangeChecks{scevRange, builder, context};
-  HeapCheckBuilder     heapChecks{builder, region->getEnteringBlock(), nullptr};
+  HeapCheckBuilder     heapChecks{builder, region->getEnteringBlock(), getPtrId};
   EqualityCheckBuilder eqChecks{builder};
 
   // *** insert checks
@@ -237,6 +237,32 @@ void SCEVAliasInstrumenter::getAnalysisUsage(AnalysisUsage &AU) const {
 
   // Changing the CFG like we do doesn't preserve anything.
   AU.addPreserved<AliasAnalysis>();
+}
+
+bool SCEVAliasInstrumenter::doInitialization(Module& M) {
+  LLVMContext& ctx = M.getContext();
+
+  // ** declare external gcg_getBasePtr function
+
+  Type *void_ptr_type = Type::getInt8PtrTy(ctx);
+
+  Type *return_type = void_ptr_type;
+
+  std::vector<Type*> parameter_types{
+    void_ptr_type
+  };
+
+  getPtrId = Function::Create(
+    FunctionType::get(return_type, parameter_types, false),
+    GlobalValue::ExternalLinkage,
+    "gcg_getBasePtr",
+    &M
+  );
+
+  getPtrId->addAttribute(1, Attribute::ReadOnly);
+  getPtrId->addAttribute(1, Attribute::NoCapture);
+
+  return true;
 }
 
 char SCEVAliasInstrumenter::ID = 0;

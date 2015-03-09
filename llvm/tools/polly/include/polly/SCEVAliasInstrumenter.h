@@ -82,6 +82,9 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Function being analysed.
   Function *currFn;
 
+  // Function for getting heap id of pointee of a pointer
+  Function *getPtrId;
+
   // Metadata domain to be used by alias metadata.
   MDNode *mdDomain = nullptr;
 
@@ -126,13 +129,16 @@ class SCEVAliasInstrumenter : public FunctionPass {
 
 public:
   static char ID;
-  explicit SCEVAliasInstrumenter() : FunctionPass(ID) {}
+  explicit SCEVAliasInstrumenter() : FunctionPass(ID), getPtrId(nullptr) {}
 
   // FunctionPass interface.
-  virtual void getAnalysisUsage(AnalysisUsage &AU) const;
-  virtual bool runOnFunction(Function &F);
-  void releaseMemory() { targetRegions.clear(); }
+  virtual void getAnalysisUsage(AnalysisUsage &AU) const override;
+  virtual bool runOnFunction(Function &F) override;
+  void releaseMemory() override { targetRegions.clear(); }
+
+  bool doInitialization(Module &M) override;
 };
+
 } // end namespace polly
 
 namespace llvm {
