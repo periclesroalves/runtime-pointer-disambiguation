@@ -356,18 +356,15 @@ Value *SCEVRangeBuilder::getULowerOrUpperBound(
   if (exprList.size() < 1)
     return nullptr;
 
-  std::set<const SCEV *>::iterator it = exprList.begin();
-  const SCEV *expr = *it;
-  Value *bestBound = expand(expr, upper);
+  auto it = exprList.begin();
+  Value *bestBound = expand(*it, upper);
   ++it;
 
   if (!bestBound)
     return nullptr;
 
-  while (it != exprList.end()) {
-    expr = *it;
-    Value *newBound = expand(expr, upper);
-    Value *cmp;
+  for (auto end = exprList.end(); it != end; ++it) {
+    Value *newBound = expand(*it, upper);
 
     if (!newBound)
       return nullptr;
@@ -376,14 +373,12 @@ Value *SCEVRangeBuilder::getULowerOrUpperBound(
     if (bestBound->getType() != newBound->getType())
       bestBound = InsertNoopCastOfTo(bestBound, newBound->getType());
 
-    if (upper)
-      cmp = InsertICmp(ICmpInst::ICMP_UGT, newBound, bestBound);
-    else
-      cmp = InsertICmp(ICmpInst::ICMP_ULT, newBound, bestBound);
+    auto cmpKind = upper ? ICmpInst::ICMP_UGT : ICmpInst::ICMP_ULT;
+    auto name    = upper ? "umax" : "umin";
 
-    bestBound = InsertSelect(cmp, newBound, bestBound,
-      (upper ? "umax" : "umin"));
-    ++it;
+    auto cmp = InsertICmp(cmpKind, newBound, bestBound);
+
+    bestBound = InsertSelect(cmp, newBound, bestBound, name);
   }
 
   return bestBound;
