@@ -16,11 +16,15 @@
 
 /// we can't use libc's assert since that calls malloc
 #ifdef NDEBUG
-# define ASSERT(EXPR, FMT, ARGS...) static_cast<void>(0)
+# define ASSERT(EXPR, FMT, ...) static_cast<void>(0)
+# define ASSERT0(EXPR, MSG)     static_cast<void>(0)
 #else
-# define ASSERT(EXPR, FMT, ARGS...) \
+# define ASSERT(EXPR, FMT, ...) \
   ((EXPR) ? static_cast<void>(0) \
-          : _error(1, "Assertion failure: " #EXPR ": " FMT, ## ARGS))
+          : _error(1, "Assertion failure: " #EXPR ": " FMT, __VA_ARGS__))
+# define ASSERT0(EXPR, MSG) \
+  ((EXPR) ? static_cast<void>(0) \
+          : _error(1, "Assertion failure: " #EXPR ": " MSG))
 #endif
 
 static void _error(int exit_status, const char *msg, ...);
@@ -52,7 +56,7 @@ void gcg_trace_alias_pair(const char *loop, const char *name1, void *ptr1, const
 
 	sample_count = 0;
 
-	ASSERT(trace_file, "gcg_trace_alias_pair called before init_alias_tracer");
+	ASSERT0(trace_file, "gcg_trace_alias_pair called before init_alias_tracer");
 
 	fprintf(trace_file, "LOOP '%s' - '%s' vs '%s' - ", loop, name1, name2);
 
@@ -181,8 +185,8 @@ static inline size_t init_sampling_rate()
 __attribute__((constructor))
 static void init_alias_tracer()
 {
-  ASSERT(trace_file    == nullptr, "init_alias_tracer called twice");
-  ASSERT(sampling_rate == 0,       "init_alias_tracer called twice");
+  ASSERT0(trace_file    == nullptr, "init_alias_tracer called twice");
+  ASSERT0(sampling_rate == 0,       "init_alias_tracer called twice");
 
   /// must be done before `malloc', `free', etc., are called
 
@@ -199,7 +203,7 @@ static void init_alias_tracer()
 }
 
 void* malloc(size_t size) {
-  ASSERT(libc_malloc, "malloc called before init_alias_tracer");
+  ASSERT0(libc_malloc, "malloc called before init_alias_tracer");
 
   void *ptr = libc_malloc(size);
 
@@ -209,15 +213,15 @@ void* malloc(size_t size) {
 }
 
 void free(void *ptr) {
-  ASSERT(libc_free, "free called before init_alias_tracer");
- 
+  ASSERT0(libc_free, "free called before init_alias_tracer");
+
   libc_free(ptr);
 
   malloc_table().erase(ptr);
 }
 
 void *memalign(size_t alignment, size_t size) {
-  ASSERT(libc_memalign, "memalign called before init_alias_tracer");
+  ASSERT0(libc_memalign, "memalign called before init_alias_tracer");
 
   void *ptr = libc_memalign(alignment, size);
 

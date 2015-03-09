@@ -55,7 +55,7 @@ public:
 	BootstrapAllocator(void) /*throw()*/
 	{
 		long pageSize = sysconf(_SC_PAGESIZE);
-		ASSERT(pageSize > 0, "Could not get system page size");
+		ASSERT0(pageSize > 0, "Could not get system page size");
 
 		this->pageSize = pageSize;
 		freeList = nullptr;
@@ -83,8 +83,7 @@ public:
 			freeList = freeList->next;
 		}
 
-		/*if(nbFoundPages < nbAllocatedPages) throw std::runtime_error("BootstrapAllocator destruction : not everything was freed");*/
-		ASSERT(nbFoundPages == nbAllocatedPages, "");
+		ASSERT0(nbFoundPages == nbAllocatedPages, "~BootstrapAllocator: not everything was freed");
 
 		for(size_t i = 0; i < nbFoundPages; ++i) munmap(pages[i], pageSize);
 	}
