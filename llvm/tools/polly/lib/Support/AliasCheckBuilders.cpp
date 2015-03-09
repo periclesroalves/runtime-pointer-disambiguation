@@ -22,9 +22,7 @@ Value* RangeCheckBuilder::buildRangeCheck(Value *a, Value *b) {
   return builder.CreateOr(aIsBeforeB, bIsBeforeA, "pair-no-alias");
 }
 
-Value *RangeCheckBuilder::buildLocationCheck(Value *a
-                                    boundsA, Value *addrB, BuilderType &builder,
-                                    SCEVRangeBuilder &rangeBuilder) {
+Value *RangeCheckBuilder::buildLocationCheck(Value *a, Value *addrB) {
   auto boundsA = buildSCEVBounds(a);
 
   // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).

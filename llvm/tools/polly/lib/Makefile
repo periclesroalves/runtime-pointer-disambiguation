@@ -42,6 +42,7 @@ SOURCES= Polly.cpp \
 	 Support/SCEVValidator.cpp \
 	 Support/RegisterPasses.cpp \
 	 Support/ScopHelper.cpp \
+	 Support/AliasCheckBuilders.cpp \
 	 Analysis/Dependences.cpp \
 	 Analysis/ScopDetection.cpp \
 	 Analysis/ScopDetectionDiagnostic.cpp \

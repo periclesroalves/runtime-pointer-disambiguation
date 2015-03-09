@@ -49,6 +49,7 @@ add_polly_library(Polly
   Support/SCEVValidator.cpp
   Support/RegisterPasses.cpp
   Support/ScopHelper.cpp
+  Support/AliasCheckBuilders.cpp
   ${POLLY_JSON_FILES}
   Transform/SCEVAliasInstrumenter.cpp
   Transform/Canonicalization.cpp
