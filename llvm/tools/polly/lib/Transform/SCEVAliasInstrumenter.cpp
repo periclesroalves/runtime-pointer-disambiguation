@@ -34,7 +34,7 @@ std::pair<T,T> make_ordered_pair(const T& t1, const T& t2) {
 }
 
 void SCEVAliasInstrumenter::fixAliasInfo(AliasInstrumentationContext &ctx) {
-  std::map<const Value *, std::set<Instruction *> > memAccesses;
+  auto& memAccesses = ctx.memAccesses;
 
   MDBuilder MDB(currFn->getContext());
   if (!mdDomain)
@@ -60,7 +60,7 @@ void SCEVAliasInstrumenter::fixAliasInfo(AliasInstrumentationContext &ctx) {
     const Value *basePointer = pair.first;
 
     // Set the alias metadata for each memory access instruction in the region.
-    for (auto memInst : pair.second) {
+    for (auto memInst : pair.second.users) {
       // A memory instruction always aliases its base pointer.
       memInst->setMetadata(LLVMContext::MD_alias_scope, MDNode::concatenate(
         memInst->getMetadata(LLVMContext::MD_alias_scope),
