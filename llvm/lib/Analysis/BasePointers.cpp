@@ -9,9 +9,9 @@
 #include <llvm/IR/Dominators.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/Support/CorseCommon.h>
+#include <llvm/Support/Debug.h>
 #include <vector>
 
-//#define DEBUG(x) x
 #define DEBUG_TYPE "base-ptrs"
 
 using namespace llvm;
@@ -152,8 +152,9 @@ private:
       case Instruction::Load:
       case Instruction::Call:
       case Instruction::Invoke:
+      case Instruction::IntToPtr:
         // we cannot tell about indirections
-        outs() << ">> " << *ModRefVal << " is poison\n";
+        DEBUG(dbgs() << ">> " << *ModRefVal << " is poison\n");
         basePtrs.insert(nullptr);
         return;
       case Instruction::Store:
@@ -189,7 +190,8 @@ private:
         }
         return;
       default:
-        errs() << *ModRefInstr << "\n";
+        errs() << "Header: " << entry->getName() << "\n";
+        errs() << "   " << *ModRefInstr << "\n";
         llvm_unreachable("Unhandled type of instruction");
         assert(false);
     }
