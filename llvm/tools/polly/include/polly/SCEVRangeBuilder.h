@@ -174,6 +174,10 @@ public:
   // Given a set of SCEVs, verify if bounds can be generated for all of them,
   // without actually inserting bounds computation instructions.
   bool canComputeBoundsFor(const std::set<const SCEV *> &exprList);
+
+  Value* noopCast(Value *v, Type *ty) {
+    return SCEVExpander::InsertNoopCastOfTo(v, ty);
+  }
 };
 } // end namespace polly
 

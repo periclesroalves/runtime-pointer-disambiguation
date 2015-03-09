@@ -129,75 +129,6 @@ void SCEVAliasInstrumenter::buildNoAliasClone(AliasInstrumentationContext &conte
   fixAliasInfo(context);
 }
 
-Value *SCEVAliasInstrumenter::chainChecks(std::vector<Value *> checks,
-                                          BuilderType &builder) {
-  if (checks.size() < 1)
-    return nullptr;
-
-  Value *rhs = checks[0];
-
-  for (std::vector<Value *>::size_type i = 1; i != checks.size(); i++) {
-    rhs = builder.CreateAnd(checks[i], rhs, "region-no-alias");
-  }
-
-  return rhs;
-}
-
-Value *SCEVAliasInstrumenter::buildRangeCheck(
-                              std::pair<Value *, Value *> boundsA,
-                              std::pair<Value *, Value *> boundsB,
-                              BuilderType &builder,
-                              SCEVRangeBuilder &rangeBuilder) {
-  // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
-  Type *i8PtrTy = builder.getInt8PtrTy();
-  Value *lowerA = rangeBuilder.InsertNoopCastOfTo(boundsA.first, i8PtrTy);
-  Value *upperA = rangeBuilder.InsertNoopCastOfTo(boundsA.second, i8PtrTy);
-  Value *lowerB = rangeBuilder.InsertNoopCastOfTo(boundsB.first, i8PtrTy);
-  Value *upperB = rangeBuilder.InsertNoopCastOfTo(boundsB.second, i8PtrTy);
-
-  // Build actual interval comparisons.
-  Value *aIsBeforeB = builder.CreateICmpULT(upperA, lowerB);
-  Value *bIsBeforeA = builder.CreateICmpULT(upperB, lowerA);
-
-  Value *check = builder.CreateOr(aIsBeforeB, bIsBeforeA, "pair-no-alias");
-
-  return check;
-}
-
-Value *SCEVAliasInstrumenter::buildRangeCheck(std::pair<Value *, Value *>
-                                    boundsA, Value *addrB, BuilderType &builder,
-                                    SCEVRangeBuilder &rangeBuilder) {
-  // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
-  Type *i8PtrTy = builder.getInt8PtrTy();
-  Value *lowerA = rangeBuilder.InsertNoopCastOfTo(boundsA.first, i8PtrTy);
-  Value *upperA = rangeBuilder.InsertNoopCastOfTo(boundsA.second, i8PtrTy);
-  Value *locB = rangeBuilder.InsertNoopCastOfTo(addrB, i8PtrTy);
-
-  // Build actual interval comparisons.
-  Value *aIsBeforeB = builder.CreateICmpULT(upperA, locB);
-  Value *bIsBeforeA = builder.CreateICmpULT(locB, lowerA);
-
-  Value *check = builder.CreateOr(aIsBeforeB, bIsBeforeA, "loc-no-alias");
-
-  return check;
-}
-
-void SCEVAliasInstrumenter::buildSCEVBounds(AliasInstrumentationContext &context,
-                                            SCEVRangeBuilder &rangeBuilder) {
-  // Compute access bounds for each base pointer in the region.
-  for (auto& pair : context.memAccesses) {
-    auto& accessFunctions = pair.second.accessFunctions;
-
-    Value *low = rangeBuilder.getULowerBound(accessFunctions);
-    Value *up = rangeBuilder.getUUpperBound(accessFunctions);
-
-    assert((low && up) &&
-      "All access expressions should have computable SCEV bounds by now");
-
-    context.pointerBounds[pair.first] = std::make_pair(low, up);
-  }
-}
-
 Value *SCEVAliasInstrumenter::insertDynamicChecks(
                             AliasInstrumentationContext &context) {
   auto region = context.region;
@@ -208,40 +139,60 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
   // Set instruction insertion context. We'll insert the run-time tests in the
   // region entering block.
   Instruction *insertPt = region->getEnteringBlock()->getTerminator();
-  SCEVRangeBuilder rangeBuilder(se, aa, li, dt, region, insertPt);
-  rangeBuilder.setArtificialBECounts(context.getBECountsMap());
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(insertPt);
 
-  buildSCEVBounds(context, rangeBuilder);
+  SCEVRangeBuilder scevRange(se, aa, li, dt, region, insertPt);
+  scevRange.setArtificialBECounts(context.getBECountsMap());
 
-  std::vector<Value *> pairChecks;
+  RangeCheckBuilder    rangeChecks{scevRange, builder, context};
+  HeapCheckBuilder     heapChecks{builder, region->getEnteringBlock(), nullptr};
+  EqualityCheckBuilder eqChecks{builder};
+
+  // *** insert checks
+
+  Value *result = builder.getTrue();
 
   // Insert comparison expressions for every pair of pointers that need to be
   // checked in the region.
   for (auto& pair : context.ptrPairsToCheck) {
-    assert(context.pointerBounds.count(pair.first) &&
-           context.pointerBounds.count(pair.second) &&
-           "SCEV bounds should be available at this point.");
+    auto basePtr1 = pair.first;
+    auto basePtr2 = pair.second;
 
-    auto check = buildRangeCheck(context.pointerBounds[pair.first],
-                                 context.pointerBounds[pair.second],
-                                 builder, rangeBuilder);
-    pairChecks.push_back(check);
+    Value *check;
+
+    switch (saa->speculativeAlias(basePtr1, basePtr2)) {
+      // TODO: implement heap checks
+      case SpeculativeAliasResult::NoHeapAlias:
+        check = heapChecks.buildCheck(basePtr1, basePtr2);
+        break;
+      case SpeculativeAliasResult::ExactAlias:
+        check = eqChecks.buildCheck(basePtr1, basePtr2);
+        break;
+      // TODO: decide which check to use for these cases
+      case SpeculativeAliasResult::NoAlias:
+      case SpeculativeAliasResult::DontKnow:
+      // TODO: don't insert checks for these cases
+      case SpeculativeAliasResult::ProbablyAlias:
+      case SpeculativeAliasResult::NoRangeOverlap:
+        check = rangeChecks.buildRangeCheck(basePtr1, basePtr2);
+        break;
+    }
+
+    result = builder.CreateAnd(result, check);
   }
 
   // Also, if we hoisted loop bound loads, insert tests to guarantee that no
   // store in the region alises the hoisted loads.
   for (auto &pair : context.artificialBECounts) {
     for (auto &storeTarget : context.storeTargets) {
-      auto check = buildRangeCheck(context.pointerBounds[storeTarget],
-                                   pair.second.addr, builder, rangeBuilder);
-      pairChecks.push_back(check);
+      auto check = rangeChecks.buildLocationCheck(storeTarget, pair.second.addr);
+
+      result = builder.CreateAnd(result, check);
     }
   }
 
-  // Combine all checks into a single boolean result using AND.
-  return chainChecks(pairChecks, builder);
+  return result;
 }
 
 bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {

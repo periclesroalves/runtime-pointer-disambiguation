@@ -40,6 +40,7 @@
 #include "llvm/IR/Module.h"
 #include "polly/RegionAliasInfo.h"
 #include "polly/SCEVRangeBuilder.h"
+#include "polly/Support/AliasCheckBuilders.h"
 #include <map>
 #include <set>
 #include <list>
@@ -53,7 +54,6 @@ class DominanceFrontier;
 struct PostDominatorTree;
 class Value;
 class Region;
-class Instruction;
 class LoopInfo;
 }
 
@@ -65,7 +65,6 @@ class ScopDetection;
 class DetectionContext;
 class AliasProfilingFeedback;
 class SpeculativeAliasAnalysis;
-class RegionAliasInfo;
 
 class SCEVAliasInstrumenter : public FunctionPass {
   typedef IRBuilder<true, TargetFolder> BuilderType;
@@ -98,32 +97,6 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // returned Instruction produces a boolean value that, at run-time, indicates
   // if the region is free of dependencies.
   Value *insertDynamicChecks(AliasInstrumentationContext &context);
-
-  // Computes the bounds for the addresses accessed over each base pointer in
-  // the region, using SCEV.
-  void buildSCEVBounds(AliasInstrumentationContext &context,
-                       SCEVRangeBuilder &rangeBuilder);
-
-  // Inserts a dynamic test to guarantee that accesses to two pointers do not
-  // overlap in a specific region, given their access ranges.
-  // E.g.: %pair-no-alias = upper(A) < lower(B) || upper(B) < lower(A)
-  Value *buildRangeCheck(std::pair<Value *, Value *> boundsA,
-                               std::pair<Value *, Value *> boundsB,
-                               BuilderType &builder,
-                               SCEVRangeBuilder &rangeBuilder);
-
-  // Inserts a dynamic test to guarantee that accesses to a pointer do not alias
-  // a specific address within the region, given the pointer range and the
-  // symbolic address.
-  // E.g.: %loc-no-alias = upper(A) < B || B < lower(A)
-  Value *buildRangeCheck(std::pair<Value *, Value *> boundsA,
-                               Value *addrB, BuilderType &builder,
-                               SCEVRangeBuilder &rangeBuilder);
-
-  // Chain the checks that compare different pairs of pointers to a single
-  // result value using "and" operations.
-  // E.g.: %region-no-alias = %pair-no-alias1 && %pair-no-alias2 && %pair-no-alias3
-  Value *chainChecks(std::vector<Value *> checks, BuilderType &builder);
 
   // Produce two versions of an instrumented region: one with the original
   // alias info, if the run-time alias check fails, and one set to ignore

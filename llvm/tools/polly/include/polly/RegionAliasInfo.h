@@ -94,10 +94,6 @@ struct AliasInstrumentationContext {
   // - pairsToCheck: (<a,b>, <b,c>, <a,c>)
   std::set<std::pair<Value *, Value *>> ptrPairsToCheck;
 
-  // Holds the lower and upper bounds for each base pointer in the region,
-  // represented by the bounds of the smallest and largest access expressions.
-  std::map<Value *, std::pair<Value *, Value *> > pointerBounds;
-
   AliasInstrumentationContext(Region *r) : region(r) {}
 
   // Builds a map containing the artificially created BE counts.
