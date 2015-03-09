@@ -35,6 +35,7 @@ add_polly_library(Polly
   Analysis/ScopPass.cpp
   Analysis/TempScopInfo.cpp
   Analysis/SpeculativeAliasAnalysis.cpp
+  Analysis/RegionAliasInfo.cpp
   CodeGen/BlockGenerators.cpp
   ${CLOOG_FILES}
   ${ISL_CODEGEN_FILES}

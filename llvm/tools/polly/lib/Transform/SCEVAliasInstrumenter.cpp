@@ -33,23 +33,8 @@ std::pair<T,T> make_ordered_pair(const T& t1, const T& t2) {
   return (t1 < t2) ? std::make_pair(t1,t2) : std::make_pair(t2,t1);
 }
 
-void SCEVAliasInstrumenter::fixAliasInfo(Region *r) {
+void SCEVAliasInstrumenter::fixAliasInfo(AliasInstrumentationContext &ctx) {
   std::map<const Value *, std::set<Instruction *> > memAccesses;
-
-  // Build a map from base pointers to the instructions that can access them
-  // within the region.
-  for (BasicBlock *bb : r->blocks()) {
-    for (BasicBlock::iterator i = bb->begin(), e = --bb->end(); i != e; ++i) {
-      Instruction &inst = *i;
-
-      if (!isa<LoadInst>(inst) && !isa<StoreInst>(inst))
-        continue;
-
-      Value *basePtrValue = getBasePtrValue(inst, *r);
-      assert(basePtrValue && "Bad load/store in cloned region.");
-      memAccesses[basePtrValue].insert(i);
-    }
-  }
 
   MDBuilder MDB(currFn->getContext());
   if (!mdDomain)
@@ -97,28 +82,7 @@ void SCEVAliasInstrumenter::fixAliasInfo(Region *r) {
   }
 }
 
-bool SCEVAliasInstrumenter::isSafeToSimplify(Region *r) {
-  if (r->isSimple())
-    return true;
-
-  bool safeToSimplify = true;
-
-  // Check if a region edge's destination won't taken to outside the region.
-  for (auto *p : make_range(pred_begin(r->getEntry()), pred_end(r->getEntry())))
-    if (r->contains(p) && p != r->getExit())
-      safeToSimplify = false;
-
-  // Check if a region edge's source won't taken to outside the region.
-  for (auto *s : make_range(succ_begin(r->getExit()), succ_end(r->getExit())))
-    if (r->contains(s) && s != r->getEntry())
-      safeToSimplify = false;
-
-  return safeToSimplify;
-}
-
 void SCEVAliasInstrumenter::simplifyRegion(Region *r) {
-  assert (isSafeToSimplify(r) && "Can't simplify unsafe regions");
-
   BasicBlock *entering = r->getEnteringBlock();
 
   // Create a new entering block to host the checks. If an entering block
@@ -139,19 +103,19 @@ void SCEVAliasInstrumenter::simplifyRegion(Region *r) {
   }
 }
 
-void SCEVAliasInstrumenter::buildNoAliasClone(InstrumentationContext &context,
+void SCEVAliasInstrumenter::buildNoAliasClone(AliasInstrumentationContext &context,
                                               Value *checkResult) {
   if (!checkResult)
     return;
 
-  Region &r = context.r;
-  Region *clonedRegion = cloneRegion(&r, nullptr, ri, dt, df);
+  Region *region       = context.region;
+  Region *clonedRegion = cloneRegion(region, nullptr, ri, dt, df);
 
   // Build the conditional brach based on the dynamic test result.
-  Instruction *br = &r.getEnteringBlock()->back();
+  Instruction *br = &region->getEnteringBlock()->back();
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(br);
-  builder.CreateCondBr(checkResult, r.getEntry(), clonedRegion->getEntry());
+  builder.CreateCondBr(checkResult, region->getEntry(), clonedRegion->getEntry());
   br->eraseFromParent();
 
   // Replace original loop bound loads by hoisted loads in the region, which is
@@ -162,7 +126,7 @@ void SCEVAliasInstrumenter::buildNoAliasClone(InstrumentationContext &context,
   }
 
   // Mark the cloned region as free of dependencies.
-  fixAliasInfo(&r);
+  fixAliasInfo(context);
 }
 
 Value *SCEVAliasInstrumenter::chainChecks(std::vector<Value *> checks,
@@ -218,12 +182,14 @@ Value *SCEVAliasInstrumenter::buildRangeCheck(std::pair<Value *, Value *>
   return check;
 }
 
-void SCEVAliasInstrumenter::buildSCEVBounds(InstrumentationContext &context,
+void SCEVAliasInstrumenter::buildSCEVBounds(AliasInstrumentationContext &context,
                                             SCEVRangeBuilder &rangeBuilder) {
   // Compute access bounds for each base pointer in the region.
   for (auto& pair : context.memAccesses) {
-    Value *low = rangeBuilder.getULowerBound(pair.second);
-    Value *up = rangeBuilder.getUUpperBound(pair.second);
+    auto& accessFunctions = pair.second.accessFunctions;
+
+    Value *low = rangeBuilder.getULowerBound(accessFunctions);
+    Value *up = rangeBuilder.getUUpperBound(accessFunctions);
 
     assert((low && up) &&
       "All access expressions should have computable SCEV bounds by now");
@@ -233,16 +199,16 @@ void SCEVAliasInstrumenter::buildSCEVBounds(InstrumentationContext &context,
 }
 
 Value *SCEVAliasInstrumenter::insertDynamicChecks(
-                            InstrumentationContext &context) {
-  Region &r = context.r;
+                            AliasInstrumentationContext &context) {
+  auto region = context.region;
 
   // Create an entering block to receive the checks.
-  simplifyRegion(&r);
+  simplifyRegion(region);
 
   // Set instruction insertion context. We'll insert the run-time tests in the
   // region entering block.
-  Instruction *insertPt = r.getEnteringBlock()->getTerminator();
-  SCEVRangeBuilder rangeBuilder(se, aa, li, dt, &r, insertPt);
+  Instruction *insertPt = region->getEnteringBlock()->getTerminator();
+  SCEVRangeBuilder rangeBuilder(se, aa, li, dt, region, insertPt);
   rangeBuilder.setArtificialBECounts(context.getBECountsMap());
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(insertPt);
@@ -253,7 +219,7 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
 
   // Insert comparison expressions for every pair of pointers that need to be
   // checked in the region.
-  for (auto& pair : context.ptrPairsToCheckOnRange) {
+  for (auto& pair : context.ptrPairsToCheck) {
     assert(context.pointerBounds.count(pair.first) &&
            context.pointerBounds.count(pair.second) &&
            "SCEV bounds should be available at this point.");
@@ -278,288 +244,6 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
   return chainChecks(pairChecks, builder);
 }
 
-Value *SCEVAliasInstrumenter::getBasePtrValue(Instruction &inst,
-                                              const Region &r) {
-  Value *ptr = getPointerOperand(inst);
-  Loop *l = li->getLoopFor(inst.getParent());
-  const SCEV *accessFunction = se->getSCEVAtScope(ptr, l);
-  const SCEVUnknown *basePointer =
-    cast<SCEVUnknown>(se->getPointerBase(accessFunction));
-
-  if (!basePointer)
-    return nullptr;
-
-  Value *basePtrValue = basePointer->getValue();
-
-  // We can't handle direct address manipulation.
-  if (isa<UndefValue>(basePtrValue) || isa<IntToPtrInst>(basePtrValue))
-    return nullptr;
-
-  // The base pointer can vary within the given region.
-  if (!ScopDetection::isInvariant(*basePtrValue, r, li, aa))
-    return nullptr;
-
-  return basePtrValue;
-}
-
-bool SCEVAliasInstrumenter::collectDependencyData(
-                            InstrumentationContext &context) {
-  const Region &r = context.r;
-
-  AliasSetTracker ast(*aa);
-
-  // build alias sets
-  // TODO: this does yet another pass over the blocks of the region,
-  //       can we reuse context.memAccesses, or something like it?
-  for (BasicBlock *bb : r.blocks())
-    ast.add(*bb);
-
-  // find which checks we need to insert
-  for (BasicBlock *bb : r.blocks()) {
-    for (BasicBlock::iterator i = bb->begin(), e = --bb->end(); i != e; ++i) {
-      Instruction &inst = *i;
-
-      if (!isa<LoadInst>(inst) && !isa<StoreInst>(inst))
-        continue;
-
-      Value *basePtrValue = getBasePtrValue(inst, r);
-
-      // If we can't define the base pointer, then it's not possible to define
-      // the dependencies.
-      if (!basePtrValue)
-        return false;
-
-      // Store this access expression.
-      Value *ptr = getPointerOperand(inst);
-      Loop *l = li->getLoopFor(inst.getParent());
-      const SCEV *accessFunction = se->getSCEVAtScope(ptr, l);
-      context.memAccesses[basePtrValue].insert(accessFunction);
-
-      if (isa<StoreInst>(inst))
-        context.storeTargets.insert(basePtrValue);
-
-      // We need checks against all pointers in the May Alias set.
-      AliasSet &as =
-        ast.getAliasSetForPointer(basePtrValue, AliasAnalysis::UnknownSize,
-                                  inst.getMetadata(LLVMContext::MD_tbaa));
-
-      // Store all pointers that need to be tested agains the current one.
-      if (!as.isMustAlias()) {
-        for (const auto &aliasPointer : as) {
-          Value *aliasValue = aliasPointer.getValue();
-
-          if (basePtrValue == aliasValue)
-            continue;
-
-          // We only need to check against pointers accessed within the region.
-          if (!context.memAccesses.count(aliasValue))
-            continue;
-
-          // Guarantees ordered pairs (avoids repetition).
-          auto pair = make_ordered_pair(basePtrValue, aliasValue);
-
-          switch (saa->speculativeAlias(basePtrValue, aliasValue)) {
-            case SpeculativeAliasResult::NoRangeOverlap:
-            // TODO: decide which check to use for these cases
-            case SpeculativeAliasResult::NoAlias:
-            case SpeculativeAliasResult::DontKnow:
-            // TODO: implement heap checks
-            case SpeculativeAliasResult::NoHeapAlias:
-            // TODO: don't insert checks for these cases
-            case SpeculativeAliasResult::ProbablyAlias:
-              context.ptrPairsToCheckOnRange.insert(pair);
-              break;
-            case SpeculativeAliasResult::ExactAlias:
-              auto& set = context.equalityChecks.getSetFor(pair.first);
-              set.insert(pair.second);
-              break;
-          }
-        }
-      }
-    }
-  }
-
-  return true;
-}
-
-bool SCEVAliasInstrumenter::isValidInstruction(Instruction &inst) {
-  if (CallInst *CI = dyn_cast<CallInst>(&inst)) {
-    if (ScopDetection::isValidCallInst(*CI))
-      return true;
-
-    return false;
-  }
-
-  // Anything that doesn't access memory is valid.
-  if (!inst.mayWriteToMemory() && !inst.mayReadFromMemory()) {
-    if (!isa<AllocaInst>(inst))
-      return true;
-
-    return false;
-  }
-
-  // Loads and stores will be checked later, when building the dynamic tests.
-  if (isa<LoadInst>(inst) || isa<StoreInst>(inst))
-    return true;
-
-  // We do not know this instruction, therefore we assume it is invalid.
-  return false;
-}
-
-// TODO: insert checks for the load address.
-// TODO: after cloning, replace uses of the old load in the cloned region
-//       be the new load and eliminate the old load.
-bool SCEVAliasInstrumenter::createArtificialInvariantBECount(Loop *l,
-                            InstrumentationContext &context) {
-  Region &r = context.r;
-  BasicBlock *entering = r.getEnteringBlock();
-
-  // We need an entering block to put the hoisted load, which cannot be the
-  // function entry block.
-  if (!entering || (entering ==  &(entering->getParent()->getEntryBlock())))
-    return false;
-
-  SmallVector<BasicBlock *, 8> exitingBlocks;
-  l->getExitingBlocks(exitingBlocks);
-
-  // For simplicity, we only handle loops with one exit block, which must
-  // control all iterations.
-  if ((exitingBlocks.size() != 1) ||
-      !se->hasConsistentTerminator(l, exitingBlocks[0]))
-    return false;
-
-  // The counter must be controled by a branch instruction based on an ICmp.
-  BranchInst *br = dyn_cast<BranchInst>(exitingBlocks[0]->getTerminator());
-
-  if (!br || !isa<ICmpInst>(br->getCondition()))
-    return false;
-
-  ICmpInst *exitCond = dyn_cast<ICmpInst>(br->getCondition());
-
-  // If the condition is exit on true, convert it to exit on false.
-  ICmpInst::Predicate cond = !l->contains(/*false BB*/br->getSuccessor(1)) ?
-    exitCond->getPredicate() : exitCond->getInversePredicate();
-
-  const SCEV *lhsSCEV = se->getSCEVAtScope(exitCond->getOperand(0), l);
-  const SCEV *rhsSCEV = se->getSCEVAtScope(exitCond->getOperand(1), l);
-
-  // LHS must be an induction variable and RHS must be a loop-variant load.
-  if (!isa<SCEVAddRecExpr>(lhsSCEV) || !isa<LoadInst>(exitCond->getOperand(1)) ||
-      se->isLoopInvariant(rhsSCEV, l))
-    return false;
-
-  LoadInst *oldLoad = dyn_cast<LoadInst>(exitCond->getOperand(1));
-  Instruction *addr = dyn_cast<Instruction>(oldLoad->getPointerOperand());
-
-  // The loaded address must be loop-invariant.
-  if (!addr || !se->isLoopInvariant(se->getSCEVAtScope(addr, l), l))
-    return false;
-
-  // Create a hoisted copy of the load, creating a loop-invariant bound.
-  Instruction *newLoad = oldLoad->clone();
-  newLoad->setName((oldLoad->hasName() ? oldLoad->getName() + "." : "") +
-    "hoisted");
-  newLoad->insertBefore(entering->getTerminator());
-  const SCEV *newRhsSCEV = se->getSCEVAtScope(newLoad, l);
-  const SCEV *count;
-
-  // Compute the counter using the newly hoisted load as bound.
-  switch (cond) {
-    case ICmpInst::ICMP_SLT:
-    case ICmpInst::ICMP_ULT: {
-      bool isSign = (cond == ICmpInst::ICMP_SLT);
-      count = se->HowManyLessThans(lhsSCEV, newRhsSCEV, l, isSign,
-                                   /*IsSubExpr*/false).Exact;
-      if (count == se->getCouldNotCompute()) return false;
-      break;
-    }
-    case ICmpInst::ICMP_SGT:
-    case ICmpInst::ICMP_UGT: {
-      bool isSign = (cond == ICmpInst::ICMP_SGT);
-      count = se->HowManyGreaterThans(lhsSCEV, newRhsSCEV, l, isSign,
-                                      /*IsSubExpr*/false).Exact;
-      if (count == se->getCouldNotCompute()) return false;
-      break;
-    }
-    default:
-      return false;
-  }
-
-  context.artificialBECounts.emplace(l, ArtificialBECount(addr, oldLoad,
-                                                          newLoad, count));
-  return true;
-}
-
-bool SCEVAliasInstrumenter::canInstrument(InstrumentationContext &context) {
-  Region &r = context.r;
-
-  // Top-level regions can't be instrumented.
-  if (r.isTopLevelRegion())
-    return false;
-
-  bool hasLoop = false;
-
-  // Do not instrument regions without loops.
-  for (const BasicBlock *bb : r.blocks())
-    if (r.contains(li->getLoopFor(bb)))
-      hasLoop = true;
-
-  if (!hasLoop)
-    return false;
-
-  // Make sure that all loops in the region have a symbolic limit.
-  for (BasicBlock *bb : r.blocks()) {
-    Loop *l = li->getLoopFor(bb);
-
-    // If a loop doesn't have a defined limit, try to create an artificial one.
-    if (l && (l->getHeader() == bb) &&
-        !se->hasLoopInvariantBackedgeTakenCount(l) &&
-        !createArtificialInvariantBECount(l, context))
-      return false;
-  }
-
-  // Check that all instructions are valid.
-  for (BasicBlock *bb : r.blocks())
-    for (BasicBlock::iterator i = bb->begin(), e = --bb->end(); i != e; ++i)
-      if (!isValidInstruction(*i))
-        return false;
-
-  // If dependencies can't be fully defined, then we can't instrument.
-  if (!collectDependencyData(context))
-    return false;
-
-  // We need an entering block to insert the dynamic checks, so if a region
-  // can't simplified, it can't be instrumented.
-  if (!isSafeToSimplify(&r))
-    return false;
-
-  Instruction *insertPt = r.getEntry()->getFirstNonPHI();
-  SCEVRangeBuilder rangeBuilder(se, aa, li, dt, &r, insertPt);
-  rangeBuilder.setArtificialBECounts(context.getBECountsMap());
-
-  // Make sure that access bounds can be computed for every access expression
-  // within the region.
-  for (auto& pair : context.memAccesses)
-    if (!rangeBuilder.canComputeBoundsFor(pair.second))
-      return false;
-
-  return true;
-} 
-
-void SCEVAliasInstrumenter::findTargetRegions(Region &r) {
-  InstrumentationContext context(r);
-
-  // If the whole region can be instrumented, stop the search.
-  if (canInstrument(context)) {
-    targetRegions.push_back(context);
-    return;
-  }
-
-  // If the region can't be instrumented, look at smaller regions.
-  for (auto &subRegion : r)
-    findTargetRegions(*subRegion);
-}
-
 bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   // Collect all analyses needed for runtime check generation.
   li = &getAnalysis<LoopInfo>();
@@ -575,7 +259,11 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   Region *topRegion = ri->getTopLevelRegion();
 
   releaseMemory();
-  findTargetRegions(*topRegion);
+  findAliasInstrumentableRegions(
+    topRegion,
+    se, aa, li, dt, pdt, df,
+    targetRegions
+  );
 
   // Instrument and clone each target region.
   for (auto context : targetRegions) {
@@ -599,20 +287,6 @@ void SCEVAliasInstrumenter::getAnalysisUsage(AnalysisUsage &AU) const {
   // Changing the CFG like we do doesn't preserve anything.
   AU.addPreserved<AliasAnalysis>();
 }
-
-std::set<Value*>& MustAliasSets::getSetFor(Value *v) {
-  for (auto& set : sets) {
-    if (set.count(v))
-      return set;
-  }
-
-  iterator set = sets.emplace(sets.end());
-
-  set->insert(v);
-
-  return *set;
-}
-
 
 char SCEVAliasInstrumenter::ID = 0;
 

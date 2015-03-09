@@ -38,6 +38,7 @@
 #include "llvm/Analysis/RegionInfo.h"
 #include "llvm/Analysis/ScalarEvolutionExpander.h"
 #include "llvm/IR/Module.h"
+#include "polly/RegionAliasInfo.h"
 #include "polly/SCEVRangeBuilder.h"
 #include <map>
 #include <set>
@@ -64,88 +65,10 @@ class ScopDetection;
 class DetectionContext;
 class AliasProfilingFeedback;
 class SpeculativeAliasAnalysis;
-enum class SpeculativeAliasResult;
-
-class MustAliasSets {
-public:
-  using Set            = std::list<std::set<Value*>>;
-  using iterator       = Set::iterator;
-  using const_iterator = Set::const_iterator;
-
-  std::set<Value*>& getSetFor(Value *v);
-
-  iterator begin() { return sets.begin(); }
-  iterator end() { return sets.end(); }
-
-  const_iterator begin() const { return sets.begin(); }
-  const_iterator end() const { return sets.end(); }
-private:
-  Set sets;
-};
+class RegionAliasInfo;
 
 class SCEVAliasInstrumenter : public FunctionPass {
   typedef IRBuilder<true, TargetFolder> BuilderType;
-
-  // Information regarding an artificial back edge count created for a loop.
-  struct ArtificialBECount {
-    Instruction *addr; // Address of the loaded loop bound.
-    Instruction *oldLoad; // Original loop-variant load.
-    Instruction *hoistedLoad; // Hoisted copy of the bound load.
-    const SCEV *count; // New artificial BE count.
-
-    ArtificialBECount(Instruction *addr, Instruction *oldLoad,
-                      Instruction *hoistedLoad, const SCEV *count)
-      : addr(addr), oldLoad(oldLoad), hoistedLoad(hoistedLoad), count(count) {}
-  };
-
-  /**
-   * Holds information about the region being instrumented, like memory
-   * properties.
-   */
-  struct InstrumentationContext {
-    Region &r; // The region being instrumented.
-
-    // Stores, for each memory accesses instruction in the region, its
-    // respective base pointer and access function.
-    // For the accesses a[i], a[i+5], and b[i+j], we'd have something like:
-    // - memAccesses: {a: (i,i+5), b: (i+j)}
-    std::map<Value *, std::set<const SCEV *> > memAccesses;
-
-    // All base pointers that are targets of store instructions in the region.
-    std::set<Value *> storeTargets;
-
-    // Artificial back-edge counts created for loops in this region.
-    std::map<Loop *, ArtificialBECount> artificialBECounts;
-
-    //@{
-    // Stores all pairs of base pointers that need to be dynamically checked
-    // against each other, for the region to be considered free of aliasing.
-    // If the pointers a, b, and c may alias in the region, we'd have:
-    // - pairsToCheck: (<a,b>, <b,c>, <a,c>)
-    std::set<std::pair<Value *, Value *>> ptrPairsToCheckOnRange;
-    std::set<std::pair<Value *, Value *>> ptrPairsToCheckOnHeap;
-    //@}
-
-    // pointers that we will check for equality to establish a must alias
-    // relationship    
-    MustAliasSets equalityChecks;
-
-    // Holds the lower and upper bounds for each base pointer in the region,
-    // represented by the bounds of the smallest and largest access expressions.
-    std::map<Value *, std::pair<Value *, Value *> > pointerBounds;
-
-    InstrumentationContext(Region &r) : r(r) {}
-
-    // Builds a map containing the artificially created BE counts.
-    std::map<const Loop *, const SCEV *> getBECountsMap() {
-      std::map<const Loop *, const SCEV *> counts;
-
-      for (auto &pair : artificialBECounts)
-        counts.emplace(pair.first, pair.second.count);
-
-      return counts;
-    }
-  };
 
   // Analyses used.
   ScalarEvolution *se;
@@ -154,8 +77,8 @@ class SCEVAliasInstrumenter : public FunctionPass {
   LoopInfo *li;
   RegionInfo *ri;
   DominatorTree *dt;
-  PostDominatorTree *pdt;
   DominanceFrontier *df;
+  PostDominatorTree *pdt;
 
   // Function being analysed.
   Function *currFn;
@@ -164,39 +87,7 @@ class SCEVAliasInstrumenter : public FunctionPass {
   MDNode *mdDomain = nullptr;
 
   // Set of regions that will be instrumented.
-  std::vector<InstrumentationContext> targetRegions;
-
-  // Walks the region tree, collecting the greatest possible regions that can be
-  // safely instrumented.
-  void findTargetRegions(Region &r);
-
-  // Checks if the given region has all the properties needed for
-  // instrumentation.
-  bool canInstrument(InstrumentationContext &context);
-
-  // Tries to give the loop an invariant backedge taken count, by modifying the
-  // loop structure then inserting some checks that guarantee its correctness.
-  // We currently check if the loop bound comes from a loop variant load from
-  // an invariant address. If so, we try to hoist the load to outside the loop,
-  // thus making it possible to compute an invariant BE count. During check
-  // insertion, we generate a dynamic check that guarantees that no other store
-  // aliases the hoisted load.
-  bool createArtificialInvariantBECount(Loop *l,
-                                        InstrumentationContext &context);
-
-  // Checks if the given instruction doesn't break the properties needed for
-  // instrumentation (basically checks if it doesn't access memory in an
-  // unpredictable way).
-  bool isValidInstruction(Instruction &inst);
-
-  // Collects, for each memory access instruction in the region, its base
-  // pointers, access function, and pointers that need to be checked against it
-  // so it can be considered alias-free.
-  bool collectDependencyData(InstrumentationContext &context);
-
-  // Get the value that represents the base pointer of the given memory access
-  // instruction in the given region. The pointer must be region invariant.
-  Value *getBasePtrValue(Instruction &inst, const Region &r);
+  std::vector<AliasInstrumentationContext> targetRegions;
 
   // Generates dynamic checks that compare the access range of every pair of
   // pointers in the region at run-time, thus finding if there is true aliasing.
@@ -206,11 +97,11 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // entering block of the target region, which works as a pre-header. The
   // returned Instruction produces a boolean value that, at run-time, indicates
   // if the region is free of dependencies.
-  Value *insertDynamicChecks(InstrumentationContext &context);
+  Value *insertDynamicChecks(AliasInstrumentationContext &context);
 
   // Computes the bounds for the addresses accessed over each base pointer in
   // the region, using SCEV.
-  void buildSCEVBounds(InstrumentationContext &context,
+  void buildSCEVBounds(AliasInstrumentationContext &context,
                        SCEVRangeBuilder &rangeBuilder);
 
   // Inserts a dynamic test to guarantee that accesses to two pointers do not
@@ -247,23 +138,18 @@ class SCEVAliasInstrumenter : public FunctionPass {
   //         \|/            '-----.---'  '------.-----'
   //                              '------.------'
   //                                    \|/
-  void buildNoAliasClone(InstrumentationContext &context,
+  void buildNoAliasClone(AliasInstrumentationContext &context,
                          Value *checkResult);
 
   // Create single entry and exit EDGES in a region (thus creating entering and
   // exiting blocks).
   void simplifyRegion(Region *r);
 
-  // Checks if a region can be simplified to have single entry and exit EDGES
-  // without breaking the sinlge entry and exit BLOCKS property. This can happen
-  // when edges from within the region point to its entry or exit.
-  bool isSafeToSimplify(Region *r);
-
   // Use scoped alias tags to tell the compiler that cloned regions are free of
   // dependencies. Basically creates a separate alias scope for each base
   // pointer in the region. Each load/store instruction is then associated with
   // it's base pointer scope, generating disjoint alias sets in the region.
-  void fixAliasInfo(Region *r);
+  void fixAliasInfo(AliasInstrumentationContext&);
 
 public:
   static char ID;
