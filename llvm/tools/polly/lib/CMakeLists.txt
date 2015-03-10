@@ -35,6 +35,7 @@ add_polly_library(Polly
   Analysis/ScopPass.cpp
   Analysis/TempScopInfo.cpp
   Analysis/SpeculativeAliasAnalysis.cpp
+  Analysis/RegionAliasInfo.cpp
   CodeGen/BlockGenerators.cpp
   ${CLOOG_FILES}
   ${ISL_CODEGEN_FILES}
@@ -48,6 +49,7 @@ add_polly_library(Polly
   Support/SCEVValidator.cpp
   Support/RegisterPasses.cpp
   Support/ScopHelper.cpp
+  Support/AliasCheckBuilders.cpp
   ${POLLY_JSON_FILES}
   Transform/SCEVAliasInstrumenter.cpp
   Transform/Canonicalization.cpp

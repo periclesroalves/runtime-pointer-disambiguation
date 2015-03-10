@@ -6,7 +6,7 @@
 */
 
 #include "ilc/ILC.hpp"
-#include "ilc/BasePtrInfo.h"
+#include <llvm/Analysis/BasePointers.h>
 #include <llvm/Transforms/Utils/FullInstNamer.h>
 
 #include "llvm/InitializePasses.h"

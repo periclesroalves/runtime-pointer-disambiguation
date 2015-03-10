@@ -65,12 +65,12 @@ class SCEVRangeBuilder : private SCEVExpander {
                                                            // counts for loops.
 
   void setAnalysisMode(bool val) { analysisMode = val; }
-
+public:
   void setArtificialBECounts(std::map<const Loop *,
                              const SCEV *> artificialBECounts) {
     this->artificialBECounts = artificialBECounts;
   }
-
+private:
   // If the caller doesn't specify which bound to compute, we assume the same of
   // the last expanded expression. Usually called by methods defined in
   // SCEVExpander.
@@ -174,6 +174,10 @@ public:
   // Given a set of SCEVs, verify if bounds can be generated for all of them,
   // without actually inserting bounds computation instructions.
   bool canComputeBoundsFor(const std::set<const SCEV *> &exprList);
+
+  Value* noopCast(Value *v, Type *ty) {
+    return SCEVExpander::InsertNoopCastOfTo(v, ty);
+  }
 };
 } // end namespace polly
 

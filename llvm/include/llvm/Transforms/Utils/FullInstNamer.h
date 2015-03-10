@@ -1,40 +1,44 @@
 #ifndef _FULL_INST_NAMER_H_
 #define _FULL_INST_NAMER_H_
 
+#include <llvm/Pass.h>
+#include <llvm/ADT/StringRef.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Value.h>
 #include <llvm/IR/Metadata.h>
 #include <llvm/IR/MDBuilder.h>
 #include <llvm/IR/LLVMContext.h>
-#include <llvm/Pass.h>
 
 #include <string>
 #include <cassert>
 
-class FullInstNamer : public llvm::FunctionPass
-{
-    public:
-    static char ID;
+namespace llvm {
 
-    FullInstNamer();
+class FullInstNamer : public FunctionPass {
+  public:
+  static char ID;
 
-    virtual const char *getPassName()                               const override { return "FullInstNamer"; }
-    virtual void        getAnalysisUsage(llvm::AnalysisUsage &Info) const override { Info.setPreservesAll(); }
-    virtual bool        runOnFunction(llvm::Function &F) override;
+  FullInstNamer();
 
-	unsigned getNameMDKindID() const;
-	unsigned getNameMDKindID(llvm::LLVMContext&) const;
+  virtual const char *getPassName()                         const override { return "FullInstNamer"; }
+  virtual void        getAnalysisUsage(AnalysisUsage &Info) const override { Info.setPreservesAll(); }
+  virtual bool        runOnFunction(Function &F) override;
 
-	/// Return name or empty string
-	llvm::StringRef getName(const llvm::Value *v) const;
-	/// Return name or abort
-	llvm::StringRef getNameOrFail(const llvm::Pass *caller, const llvm::Value *v) const;
-	llvm::StringRef getNameOrFail(llvm::StringRef   caller, const llvm::Value *v) const;
+  unsigned getNameMDKindID() const;
+  unsigned getNameMDKindID(LLVMContext&) const;
 
-	void setName(llvm::LLVMContext& ctx, llvm::Value *v, llvm::StringRef name) const;
-	void setNameIfAbsent(llvm::LLVMContext& ctx, llvm::Value *v, llvm::StringRef name) const;
+  /// Return name or empty string
+  StringRef getName(const Value *v) const;
+  /// Return name or abort
+  StringRef getNameOrFail(const Pass *caller, const Value *v) const;
+  StringRef getNameOrFail(StringRef   caller, const Value *v) const;
 
-	static llvm::Value* lookup(llvm::Function *fn, llvm::StringRef name);
+  void setName(LLVMContext& ctx, Value *v, StringRef name) const;
+  void setNameIfAbsent(LLVMContext& ctx, Value *v, StringRef name) const;
+
+  static Value* lookup(Function *fn, StringRef name);
 };
+
+} // end namespace llvm
 
 #endif //_FULL_INST_NAMER_H_

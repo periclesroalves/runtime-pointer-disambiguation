@@ -43,7 +43,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/FileSystem.h"
 #include "ilc/Common.h"
-#include "ilc/BasePtrInfo.h"
+#include <llvm/Analysis/BasePointers.h>
 #include <llvm/Transforms/Utils/FullInstNamer.h>
 #include "ilc/YamlUtils.h"
 #include <cstring>

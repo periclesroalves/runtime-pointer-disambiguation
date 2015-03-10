@@ -53,7 +53,6 @@ add_llvm_tool_subdirectory(obj2yaml)
 add_llvm_tool_subdirectory(yaml2obj)
 
 add_llvm_tool_subdirectory(alias-instrument)
-add_llvm_tool_subdirectory(alias-profiler)
 add_llvm_tool_subdirectory(perf-instrument-regions)
 add_llvm_tool_subdirectory(canonicalize)
 

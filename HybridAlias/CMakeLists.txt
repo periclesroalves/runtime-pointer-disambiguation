@@ -18,6 +18,9 @@ include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(google-benchmark/include)
 add_subdirectory(google-benchmark)
 
+## add alias profiler
+add_subdirectory(../alias_profiler "${CMAKE_BINARY_DIR}/alias_profiler")
+
 ### set compilers
 if("${LLVM_TOOLS_BINARY_DIR}" STREQUAL "")
 	message(FATAL_ERROR "\${LLVM_TOOLS_BINARY_DIR} was not set, try setting CMAKE_PREFIX_PATH")

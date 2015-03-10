@@ -6,6 +6,7 @@
 #ifndef _GCG_ALIAS_TRACING_HPP
 #define _GCG_ALIAS_TRACING_HPP 1
 
+#include "memtrack.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -13,15 +14,12 @@ extern "C" {
 #endif
 
 // Checks if two pointers alias
+// @return 0 if there is no alias, non-zero otherwise
 void gcg_trace_alias_pair(
 	const char *loop,
-	const char *ptr1_name, void *ptr1,
-	const char *ptr2_name, void *ptr2);
-
-// returns the start of the malloc block for the given address
-void *gcg_getBasePtr(void *address);
-
-void gcg_trace_malloc_chunk(const char *loop, const char *ptr_name, void *ptr);
+	const char *name1, void *ptr1,
+	const char *name2, void *ptr2
+);
 
 #ifdef __cplusplus
 } // end extern "C"

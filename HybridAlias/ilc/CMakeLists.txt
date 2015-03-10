@@ -5,7 +5,6 @@ cmake_minimum_required(VERSION 2.8)
 
 add_executable(print-base-ptrs
 	PrintBasePtrs.cpp
-	BasePtrInfo.cpp
 	Common.cpp
 	YamlUtils.cpp
 )
@@ -28,7 +27,6 @@ add_executable(clone-loops
 	ILC.cpp
 	YamlUtils.cpp
 	Common.cpp
-	BasePtrInfo.cpp
 )
 
 target_link_libraries(clone-loops
