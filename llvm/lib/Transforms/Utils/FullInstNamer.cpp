@@ -78,11 +78,11 @@ static llvm::MDNode* createNameMetadata(LLVMContext& ctx, llvm::StringRef name)
 	return MDNode::get(ctx, md.createString(name));
 }
 
-unsigned FullInstNamer::getNameMDKindID() const
+unsigned FullInstNamer::getNameMDKindID()
 {
 	return getNameMDKindID(getGlobalContext());
 }
-unsigned FullInstNamer::getNameMDKindID(LLVMContext& ctx) const
+unsigned FullInstNamer::getNameMDKindID(LLVMContext& ctx)
 {
 	static unsigned kindId;
 
@@ -93,7 +93,7 @@ unsigned FullInstNamer::getNameMDKindID(LLVMContext& ctx) const
 	return kindId;
 }
 
-StringRef FullInstNamer::getName(const Value *v) const
+StringRef FullInstNamer::getName(const Value *v)
 {
 	StringRef name = v->getName();
 
@@ -121,7 +121,8 @@ StringRef FullInstNamer::getName(const Value *v) const
 }
 
 
-StringRef FullInstNamer::getNameOrFail(const Pass *pass, const Value* v) const {
+StringRef FullInstNamer::getNameOrFail(const Pass *pass, const Value* v)
+{
 	StringRef name = getName(v);
 
 	if (name.empty()) {
@@ -132,7 +133,8 @@ StringRef FullInstNamer::getNameOrFail(const Pass *pass, const Value* v) const {
 	return name;
 }
 
-StringRef FullInstNamer::getNameOrFail(StringRef caller, const Value* v) const {
+StringRef FullInstNamer::getNameOrFail(StringRef caller, const Value* v)
+{
 	StringRef name = getName(v);
 
 	if (name.empty()) {
@@ -144,7 +146,7 @@ StringRef FullInstNamer::getNameOrFail(StringRef caller, const Value* v) const {
 }
 
 
-void FullInstNamer::setName(llvm::LLVMContext& ctx, llvm::Value *v, llvm::StringRef name) const
+void FullInstNamer::setName(llvm::LLVMContext& ctx, llvm::Value *v, llvm::StringRef name)
 {
 	if (v->getType()->isVoidTy()) {
 		if (auto i = dyn_cast<Instruction>(v)) {
@@ -161,7 +163,7 @@ void FullInstNamer::setName(llvm::LLVMContext& ctx, llvm::Value *v, llvm::String
 	}
 }
 
-void FullInstNamer::setNameIfAbsent(llvm::LLVMContext& ctx, llvm::Value *v, llvm::StringRef name) const
+void FullInstNamer::setNameIfAbsent(llvm::LLVMContext& ctx, llvm::Value *v, llvm::StringRef name)
 {
 	StringRef old_name = getName(v);
 

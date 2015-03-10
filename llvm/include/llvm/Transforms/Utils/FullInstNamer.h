@@ -15,7 +15,7 @@
 namespace llvm {
 
 class FullInstNamer : public FunctionPass {
-  public:
+public:
   static char ID;
 
   FullInstNamer();
@@ -24,17 +24,17 @@ class FullInstNamer : public FunctionPass {
   virtual void        getAnalysisUsage(AnalysisUsage &Info) const override { Info.setPreservesAll(); }
   virtual bool        runOnFunction(Function &F) override;
 
-  unsigned getNameMDKindID() const;
-  unsigned getNameMDKindID(LLVMContext&) const;
+  static unsigned getNameMDKindID();
+  static unsigned getNameMDKindID(LLVMContext&);
 
   /// Return name or empty string
-  StringRef getName(const Value *v) const;
+  static StringRef getName(const Value *v);
   /// Return name or abort
-  StringRef getNameOrFail(const Pass *caller, const Value *v) const;
-  StringRef getNameOrFail(StringRef   caller, const Value *v) const;
+  static StringRef getNameOrFail(const Pass *caller, const Value *v);
+  static StringRef getNameOrFail(StringRef   caller, const Value *v);
 
-  void setName(LLVMContext& ctx, Value *v, StringRef name) const;
-  void setNameIfAbsent(LLVMContext& ctx, Value *v, StringRef name) const;
+  static void setName(LLVMContext& ctx, Value *v, StringRef name);
+  static void setNameIfAbsent(LLVMContext& ctx, Value *v, StringRef name);
 
   static Value* lookup(Function *fn, StringRef name);
 };
