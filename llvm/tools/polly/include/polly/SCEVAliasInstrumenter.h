@@ -117,10 +117,6 @@ class SCEVAliasInstrumenter : public FunctionPass {
   void buildNoAliasClone(AliasInstrumentationContext &context,
                          Value *checkResult);
 
-  // Create single entry and exit EDGES in a region (thus creating entering and
-  // exiting blocks).
-  void simplifyRegion(Region *r);
-
   // Use scoped alias tags to tell the compiler that cloned regions are free of
   // dependencies. Basically creates a separate alias scope for each base
   // pointer in the region. Each load/store instruction is then associated with

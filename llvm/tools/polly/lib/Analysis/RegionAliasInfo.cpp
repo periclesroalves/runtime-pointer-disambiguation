@@ -111,6 +111,28 @@ void polly::findAliasInstrumentableRegions(
   builder.findTargetRegions(region);
 }
 
+void polly::simplifyRegion(Region *r, LoopInfo *li) {
+  auto entering = r->getEnteringBlock();
+
+  // Create a new entering block to host the checks. If an entering block
+  // already exists, just reuse it. If not, create one from the region entry.
+  if (entering && (entering != &entering->getParent()->getEntryBlock())) {
+    SplitBlock(entering, entering->getTerminator(), li);
+  } else {
+    auto entry = r->getEntry();
+    r->replaceEntryRecursive(SplitBlock(entry, entry->begin(), li));
+  }
+
+  // Create exiting block.
+  if (!r->getExitingBlock()) {
+    BasicBlock *newExit = createSingleExitEdge(r, li);
+
+    for (auto &&subRegion : *r)
+      subRegion->replaceExitRecursive(newExit);
+  }
+}
+
+
 bool RegionAliasInfoBuilder::isSafeToSimplify(const Region *r) {
   if (r->isSimple())
     return true;

@@ -118,6 +118,10 @@ void findAliasInstrumentableRegions(
     std::vector<AliasInstrumentationContext>& out
 );
 
+/// Create single entry and exit EDGES in a region (thus creating entering and
+/// exiting blocks).
+void simplifyRegion(Region *r, LoopInfo *li);
+
 } // end namespace polly
 
 #endif // POLLY_RegionAliasInfo_H

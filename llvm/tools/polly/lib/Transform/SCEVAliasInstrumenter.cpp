@@ -82,27 +82,6 @@ void SCEVAliasInstrumenter::fixAliasInfo(AliasInstrumentationContext &ctx) {
   }
 }
 
-void SCEVAliasInstrumenter::simplifyRegion(Region *r) {
-  BasicBlock *entering = r->getEnteringBlock();
-
-  // Create a new entering block to host the checks. If an entering block
-  // already exists, just reuse it. If not, create one from the region entry.
-  if (entering && (entering != &(entering->getParent()->getEntryBlock()))) {
-    SplitBlock(entering, entering->getTerminator(), li);
-  } else {
-    BasicBlock *entry = r->getEntry();
-    r->replaceEntryRecursive(SplitBlock(entry, entry->begin(), li));
-  }
-
-  // Create exiting block.
-  if (!r->getExitingBlock()) {
-    BasicBlock *newExit = createSingleExitEdge(r, li);
-
-    for (auto &&subRegion : *r)
-      subRegion->replaceExitRecursive(newExit);
-  }
-}
-
 void SCEVAliasInstrumenter::buildNoAliasClone(AliasInstrumentationContext &context,
                                               Value *checkResult) {
   if (!checkResult)
@@ -134,7 +113,7 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
   auto region = context.region;
 
   // Create an entering block to receive the checks.
-  simplifyRegion(region);
+  simplifyRegion(region, li);
 
   // Set instruction insertion context. We'll insert the run-time tests in the
   // region entering block.
@@ -216,13 +195,15 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
     targetRegions
   );
 
+  bool changed = !targetRegions.empty();
+
   // Instrument and clone each target region.
   for (auto context : targetRegions) {
     auto checkResult = insertDynamicChecks(context);
     buildNoAliasClone(context, checkResult);
   }
 
-  return true;
+  return changed;
 }
 
 void SCEVAliasInstrumenter::getAnalysisUsage(AnalysisUsage &AU) const {
@@ -275,6 +256,7 @@ INITIALIZE_PASS_BEGIN(SCEVAliasInstrumenter, "polly-scev-checks",
                       "Polly - Instrument alias dependencies", false,
                       false);
 INITIALIZE_AG_DEPENDENCY(AliasAnalysis);
+INITIALIZE_AG_DEPENDENCY(SpeculativeAliasAnalysis);
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass);
 INITIALIZE_PASS_DEPENDENCY(LoopInfo);
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTree);
@@ -282,4 +264,4 @@ INITIALIZE_PASS_DEPENDENCY(DominanceFrontier);
 INITIALIZE_PASS_DEPENDENCY(RegionInfoPass);
 INITIALIZE_PASS_DEPENDENCY(ScalarEvolution);
 INITIALIZE_PASS_END(SCEVAliasInstrumenter, "polly-scev-checks",
-                    "Polly - Instrument alias dependencies", false, false) 
+                    "Polly - Instrument alias dependencies", false, false)
