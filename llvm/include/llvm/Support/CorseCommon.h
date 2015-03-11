@@ -14,6 +14,7 @@
 #include <llvm/IR/Function.h>
 #include <cassert>
 #include <string>
+#include <utility>
 
 namespace llvm {
 
@@ -51,6 +52,11 @@ llvm::BasicBlock *lastOf(llvm::BasicBlock *bb1, llvm::BasicBlock *bb2);
 
 llvm::raw_ostream& fancy_errs(llvm::StringRef prefix = "");
 llvm::raw_ostream& fancy_dbgs(llvm::StringRef prefix = "");
+
+template<typename T>
+std::pair<T,T> make_ordered_pair(const T& t1, const T& t2) {
+  return (t1 < t2) ? std::make_pair(t1,t2) : std::make_pair(t2,t1);
+}
 
 #define ERR(EXPR)      (llvm::fancy_errs(DEBUG_TYPE) << EXPR << "\n")
 

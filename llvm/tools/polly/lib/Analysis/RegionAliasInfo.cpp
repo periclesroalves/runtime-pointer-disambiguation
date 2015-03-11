@@ -16,6 +16,7 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/TypeBuilder.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
+#include "llvm/Support/CorseCommon.h"
 
 #include "polly/CloneRegion.h"
 #include "polly/LinkAllPasses.h"
@@ -31,11 +32,6 @@ using namespace llvm;
 using namespace polly;
 
 #define DEBUG_TYPE "polly-region-alias-info"
-
-template<typename T>
-std::pair<T,T> make_ordered_pair(const T& t1, const T& t2) {
-  return (t1 < t2) ? std::make_pair(t1,t2) : std::make_pair(t2,t1);
-}
 
 struct RegionAliasInfoBuilder {
   RegionAliasInfoBuilder(

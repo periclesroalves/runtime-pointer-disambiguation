@@ -180,6 +180,8 @@ void initializePollyPasses(PassRegistry &Registry) {
   initializeAliasAnalysisAnalysisGroup(Registry);
   initializeProfilingFeedbackSpecAAPass(Registry);
   initializeNoSpecAAPass(Registry);
+
+  initializePollyAaEvalPass(Registry);
 }
 
 /// @brief Register Polly passes such that they form a polyhedral optimizer.
