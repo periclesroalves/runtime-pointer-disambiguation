@@ -33,6 +33,13 @@ public:
   static StringRef getNameOrFail(const Pass *caller, const Value *v);
   static StringRef getNameOrFail(StringRef   caller, const Value *v);
 
+  template<typename IRBuilder>
+  static Value* getNameAsValue(const Pass *caller, IRBuilder& irb, const Value *v) {
+    StringRef name = getNameOrFail(caller, v);
+
+    return irb.CreateGlobalStringPtr(name);
+  }
+
   static void setName(LLVMContext& ctx, Value *v, StringRef name);
   static void setNameIfAbsent(LLVMContext& ctx, Value *v, StringRef name);
 
