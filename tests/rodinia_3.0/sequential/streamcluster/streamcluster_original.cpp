@@ -31,6 +31,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <time.h>
 #include <string.h>
 #include <assert.h>
 #include <math.h>
