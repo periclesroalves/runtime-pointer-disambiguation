@@ -70,7 +70,7 @@ function main {
 
 	mkdir -p "$BIN_DIR"
 
-	# compile_libraries
+	compile_libraries
 	compile_benchmarks
 	run_benchmarks
 }
@@ -83,7 +83,7 @@ function compile_libraries {
 		<("$CLANG" -std=c11 -O3 -S -emit-llvm -I"$MEMTRACK_SRC" "$MEMTRACK_SRC/misc.c"           -o -) \
 	;
 	"$LLVM_LINK" -o "$ALIAS_PROFILER_LL" \
-		memtrack.ll \
+		"$BIN_DIR/memtrack.ll" \
 		<("$CLANG" -std=c11 -O3 -S -emit-llvm -I"$MEMTRACK_SRC" "$MEMTRACK_SRC/alias_profiler.c" -o -) \
 	;
 }
