@@ -56,7 +56,7 @@ struct PollyAaEval final : FunctionPass {
     df  = &getAnalysis<DominanceFrontier>();
     saa = &getAnalysis<SpeculativeAliasAnalysis>();
 
-    std::vector<AliasInstrumentationContext> targetRegions;
+    std::vector<std::unique_ptr<AliasInstrumentationContext>> targetRegions;
 
     findAliasInstrumentableRegions(
       ri->getTopLevelRegion(),
@@ -64,8 +64,8 @@ struct PollyAaEval final : FunctionPass {
       targetRegions
     );
 
-    for (auto context : targetRegions) {
-      evalRegion(context);
+    for (auto& context : targetRegions) {
+      evalRegion(*context);
     }
 
     return false;
@@ -118,10 +118,10 @@ private:
     for (BasicBlock *bb : region->blocks())
       ast.add(*bb);
 
-    for (auto& memAccess1 : ctx.memAccesses) {
+    for (const auto& memAccess1 : ctx.memAccesses) {
       auto* ptr1 = memAccess1.first;
 
-      for (auto& memAccess2 : ctx.memAccesses) {
+      for (const auto& memAccess2 : ctx.memAccesses) {
         auto* ptr2 = memAccess2.first;
 
         if (ptr1 == ptr2)

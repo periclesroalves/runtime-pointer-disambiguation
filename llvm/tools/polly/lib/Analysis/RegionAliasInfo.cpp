@@ -41,7 +41,7 @@ struct RegionAliasInfoBuilder {
     DominatorTree *dt,
     PostDominatorTree *pdt,
     DominanceFrontier *df,
-    std::vector<AliasInstrumentationContext>& regions
+    std::vector<std::unique_ptr<AliasInstrumentationContext>>& regions
   ) : se(se), aa(aa), li(li), dt(dt), pdt(pdt), df(df), regions(regions) {}
 
   // Walks the region tree, collecting the greatest possible regions that can be
@@ -89,7 +89,7 @@ struct RegionAliasInfoBuilder {
   PostDominatorTree *pdt;
   DominanceFrontier *df;
 
-  std::vector<AliasInstrumentationContext>& regions;
+  std::vector<std::unique_ptr<AliasInstrumentationContext>>& regions;
 };
 
 void polly::findAliasInstrumentableRegions(
@@ -100,7 +100,7 @@ void polly::findAliasInstrumentableRegions(
     DominatorTree *dt,
     PostDominatorTree *pdt,
     DominanceFrontier *df,
-    std::vector<AliasInstrumentationContext>& out
+    std::vector<std::unique_ptr<AliasInstrumentationContext>>& out
 ) {
   RegionAliasInfoBuilder builder(se, aa, li, dt, pdt, df, out);
 
@@ -204,7 +204,8 @@ bool RegionAliasInfoBuilder::collectDependencyData(
       Value *ptr = getPointerOperand(inst);
       Loop *l = li->getLoopFor(inst.getParent());
       const SCEV *accessFunction = se->getSCEVAtScope(ptr, l);
-      context.memAccesses[basePtrValue].addMemoryAccess(&inst, accessFunction);
+
+      context.addMemoryAccess(basePtrValue, &inst, accessFunction);
 
       if (isa<StoreInst>(inst))
         context.storeTargets.insert(basePtrValue);
@@ -397,7 +398,7 @@ bool RegionAliasInfoBuilder::canInstrument(AliasInstrumentationContext &context)
   SCEVRangeBuilder rangeBuilder(se, aa, li, dt, region, insertPt);
   rangeBuilder.setArtificialBECounts(context.getBECountsMap());
 
-  for (auto& pair : context.memAccesses)
+  for (const auto& pair : context.memAccesses)
     if (!rangeBuilder.canComputeBoundsFor(pair.second.accessFunctions))
       return false;
 
@@ -405,11 +406,14 @@ bool RegionAliasInfoBuilder::canInstrument(AliasInstrumentationContext &context)
 }
 
 void RegionAliasInfoBuilder::findTargetRegions(Region *r) {
-  AliasInstrumentationContext context(r);
+  // make_unique is C++14 :(
+  std::unique_ptr<AliasInstrumentationContext> context{
+    new AliasInstrumentationContext(r)
+  };
 
   // If the whole region can be instrumented, stop the search.
-  if (canInstrument(context)) {
-    regions.push_back(context);
+  if (canInstrument(*context)) {
+    regions.push_back(std::move(context));
     return;
   }
 

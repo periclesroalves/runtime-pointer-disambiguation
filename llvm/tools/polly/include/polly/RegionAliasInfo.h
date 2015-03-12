@@ -18,6 +18,8 @@
 #include <llvm/Analysis/TargetFolder.h>
 #include <llvm/Pass.h>
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/ValueMap.h>
+#include <llvm/ADT/iterator_range.h>
 #include <map>
 #include <set>
 #include <list>
@@ -66,13 +68,8 @@ struct AliasInstrumentationContext {
   struct BasePtrInfo {
     std::set<Instruction *> users;
     std::set<const SCEV  *> accessFunctions;
-
-    void addMemoryAccess(Instruction *inst, const SCEV *scev) {
-      users.insert(inst);
-      accessFunctions.insert(scev);
-    }
   };
-  using MemoryAccessMap = std::map<Value *, BasePtrInfo>;
+  using MemoryAccessMap = ValueMap<Value *, BasePtrInfo>;
 
   Region *region; // The region being instrumented.
 
@@ -96,6 +93,13 @@ struct AliasInstrumentationContext {
 
   AliasInstrumentationContext(Region *r) : region(r) {}
 
+  void addMemoryAccess(Value *basePtr, Instruction *inst, const SCEV *scev) {
+    BasePtrInfo& info = memAccesses[basePtr];
+
+    info.users.insert(inst);
+    info.accessFunctions.insert(scev);
+  }
+
   // Builds a map containing the artificially created BE counts.
   std::map<const Loop *, const SCEV *> getBECountsMap() {
     std::map<const Loop *, const SCEV *> counts;
@@ -105,6 +109,8 @@ struct AliasInstrumentationContext {
 
     return counts;
   }
+
+  friend struct RegionAliasInfoBuilder;
 };
 
 void findAliasInstrumentableRegions(
@@ -115,7 +121,7 @@ void findAliasInstrumentableRegions(
     DominatorTree *dt,
     PostDominatorTree *pdt,
     DominanceFrontier *df,
-    std::vector<AliasInstrumentationContext>& out
+    std::vector<std::unique_ptr<AliasInstrumentationContext>>& out
 );
 
 /// Create single entry and exit EDGES in a region (thus creating entering and

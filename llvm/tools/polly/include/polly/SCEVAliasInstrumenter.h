@@ -88,9 +88,6 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Metadata domain to be used by alias metadata.
   MDNode *mdDomain = nullptr;
 
-  // Set of regions that will be instrumented.
-  std::vector<AliasInstrumentationContext> targetRegions;
-
   // Generates dynamic checks that compare the access range of every pair of
   // pointers in the region at run-time, thus finding if there is true aliasing.
   // For every pair (A,B) of pointers in the region that may alias, we generate:
@@ -130,7 +127,6 @@ public:
   // FunctionPass interface.
   virtual void getAnalysisUsage(AnalysisUsage &AU) const override;
   virtual bool runOnFunction(Function &F) override;
-  void releaseMemory() override { targetRegions.clear(); }
 
   bool doInitialization(Module &M) override;
 };

@@ -34,7 +34,7 @@ std::pair<T,T> make_ordered_pair(const T& t1, const T& t2) {
 }
 
 void SCEVAliasInstrumenter::fixAliasInfo(AliasInstrumentationContext &ctx) {
-  auto& memAccesses = ctx.memAccesses;
+  const auto& memAccesses = ctx.memAccesses;
 
   MDBuilder MDB(currFn->getContext());
   if (!mdDomain)
@@ -43,7 +43,7 @@ void SCEVAliasInstrumenter::fixAliasInfo(AliasInstrumentationContext &ctx) {
   unsigned ptrCount = 0;
 
   // Create a different alias scope for each base pointer in the region.
-  for (auto pair : memAccesses) {
+  for (const auto& pair : memAccesses) {
     const Value *basePointer = pair.first;
     std::string name = currFn->getName();
 
@@ -56,7 +56,7 @@ void SCEVAliasInstrumenter::fixAliasInfo(AliasInstrumentationContext &ctx) {
   // Set the actual scoped alias tags for each memory instruction in the region.
   // A memory instruction always aliases its base pointer and never aliases
   // other pointers in the region.
-  for (auto pair : memAccesses) {
+  for (const auto& pair : memAccesses) {
     const Value *basePointer = pair.first;
 
     // Set the alias metadata for each memory access instruction in the region.
@@ -188,7 +188,9 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   currFn = &F;
   Region *topRegion = ri->getTopLevelRegion();
 
-  releaseMemory();
+  // Set of regions that will be instrumented.
+  std::vector<std::unique_ptr<AliasInstrumentationContext>> targetRegions;
+
   findAliasInstrumentableRegions(
     topRegion,
     se, aa, li, dt, pdt, df,
@@ -198,9 +200,9 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   bool changed = !targetRegions.empty();
 
   // Instrument and clone each target region.
-  for (auto context : targetRegions) {
-    auto checkResult = insertDynamicChecks(context);
-    buildNoAliasClone(context, checkResult);
+  for (auto& context : targetRegions) {
+    auto checkResult = insertDynamicChecks(*context);
+    buildNoAliasClone(*context, checkResult);
   }
 
   return changed;
