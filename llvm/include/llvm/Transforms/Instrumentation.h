@@ -123,7 +123,6 @@ ModulePass *createDebugIRPass(bool HideDebugIntrinsics,
 ModulePass *createDebugIRPass();
 
 LoopPass   *createAliasTracerPass();
-ModulePass *createAliasTracerModuleHelperPass();
 
 } // End llvm namespace
 

@@ -165,7 +165,6 @@ namespace {
 
       (void) llvm::createFullInstructionNamerPass();
       (void) llvm::createAliasTracerPass();
-      (void) llvm::createAliasTracerModuleHelperPass();
 
       (void)new llvm::IntervalPartition();
       (void)new llvm::FindUsedTypes();

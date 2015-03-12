@@ -68,6 +68,8 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/SourceMgr.h"
 
+#include "llvm/Support/SourceMgr.h"
+
 using namespace llvm;
 using namespace std;
 
@@ -164,13 +166,10 @@ int main(int argc, char **argv) {
 	initializeScalarEvolutionAliasAnalysisPass(Registry);
 	initializeTypeBasedAliasAnalysisPass(Registry);
 	initializeScopedNoAliasAAPass(Registry);
-	initializeAliasTracerModuleHelperPass(Registry);
 	initializeAliasTracerPass(Registry);
 
 	PassManager pm;
 
-	// insert declaration of tracing functions into module
-	pm.add(getPass("alias-tracer-module-helper"));
 	// do alias analysis
 	pm.add(getPass("globalsmodref-aa"));
 	pm.add(getPass("libcall-aa"));

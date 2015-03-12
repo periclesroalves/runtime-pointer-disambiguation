@@ -30,7 +30,6 @@ void llvm::initializeInstrumentation(PassRegistry &Registry) {
   initializeDataFlowSanitizerPass(Registry);
 
   initializeAliasTracerPass(Registry);
-  initializeAliasTracerModuleHelperPass(Registry);
 }
 
 /// LLVMInitializeInstrumentation - C binding for

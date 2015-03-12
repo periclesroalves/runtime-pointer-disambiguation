@@ -13,12 +13,23 @@
 extern "C" {
 #endif
 
-// Checks if two pointers alias
-// @return 0 if there is no alias, non-zero otherwise
-void gcg_trace_alias_pair(
-	const char *loop,
-	const char *name1, void *ptr1,
-	const char *name2, void *ptr2
+enum memtrackAliasType {
+	MEMTRACK_NO_HEAP_ALIAS  = 1,
+	MEMTRACK_NO_RANGE_ALIAS = 2,
+	MEMTRACK_EXACT_ALIAS    = 3,
+	MEMTRACK_END
+};
+
+typedef enum memtrackAliasType memtrackAliasType;
+
+// Logs alias behaviour of two pointers
+void memtrack_traceAlias(
+	const char *function, // name of function pointers live in
+	const char *ptr1,     // name of first pointer
+	const char *ptr2,     // name of second pointer
+	uint8_t alias,        // 0 iff the alias check failed
+	uint8_t alias_type    // what kind of alias check was done
+	                      // (see memtrackAliasType)
 );
 
 #ifdef __cplusplus

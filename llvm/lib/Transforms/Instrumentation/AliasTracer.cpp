@@ -16,7 +16,9 @@
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/TypeBuilder.h"
 #include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/ValueMap.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/CommandLine.h"
 #include <llvm/Support/Debug.h>
@@ -39,53 +41,138 @@
 using namespace llvm;
 using namespace std;
 
-// Make sure this matches the name of the tracer function in libmemtrack.a
-static const char *const dumpTrace_fname = "gcg_trace_alias_pair";
+// Make sure this matches the name of the tracer function in libmemtrack.a/so
+static const char *const dumpTrace_fname = "memtrack_traceAlias";
 
 namespace {
 
-class AliasTracer: public LoopPass {
-  Instruction      *insertBefore;
-  StringMap<Value*> string2Value;
+/// Helper for creating and caching calls to `magic' function
+struct MagicBuilder {
+  MagicBuilder(BasicBlock *function_entry, Function *getBasePtr_fn)
+    : function_entry{function_entry}
+    , getBasePtr_fn{getBasePtr_fn}
+  {}
 
-  Value* getOrInsertGlobalString(StringRef str);
+  Instruction *create(Value *basePtr)
+  {
+    // look up in map
+    auto I = basePtr2magic.find(basePtr);
+
+    if(I != basePtr2magic.end())
+        return I->second;
+
+    Instruction *insertBefore = [&]() -> Instruction* {
+      if (auto phi = dyn_cast<PHINode>(basePtr))
+        return phi->getParent()->getFirstInsertionPt();
+      if (auto inst = dyn_cast<Instruction>(basePtr))
+        return nextOf(inst);
+      return function_entry->getFirstInsertionPt();
+    }();
+
+    assert(insertBefore);
+
+    IRBuilder<> IRB(insertBefore);
+
+    auto operand  = IRB.CreatePointerCast(basePtr, IRB.getInt8PtrTy());
+    auto magicNum = IRB.CreateCall(getBasePtr_fn, operand);
+
+    // update map
+    basePtr2magic[basePtr] = magicNum;
+
+    return magicNum;
+  }
+private:
+  BasicBlock                     *function_entry;
+  Function                       *getBasePtr_fn;
+  ValueMap<Value*, Instruction*>  basePtr2magic;
+};
+
+struct AliasTracer: public LoopPass {
 public:
   static char ID;
 
   AliasTracer();
 
-  bool        runOnLoop(Loop *L, LPPassManager &LPM)    override;
-  const char *getPassName()                       const override { return "AliasTracer"; }
-  void        getAnalysisUsage(AnalysisUsage &AU) const override
+  bool runOnLoop(Loop *L, LPPassManager &LPM) override;
+  const char *getPassName() const override {
+    return "AliasTracer";
+  }
+  void getAnalysisUsage(AnalysisUsage &AU) const override
   {
     AU.addRequired<DominatorTreeWrapperPass>();
     AU.addRequired<AliasAnalysis>();
   }
-};
+private:
+  Function* declareTraceFn(Module *M)
+  {
+    using TraceFnTy  = void(const char*, const char*, const char *, uint8_t, uint8_t);
 
-struct AliasTracerModuleHelper : public ModulePass {
-  static char ID;
+    DEBUG(dbgs() << "AliasTracer::initialize\n");
 
-  AliasTracerModuleHelper();
+    auto trace_fn = M->getFunction(dumpTrace_fname);
 
-  virtual bool  runOnModule(Module& m) override;
-  const char   *getPassName()    const override { return "AliasTracerModuleHelper"; }
+    if (trace_fn)
+      return trace_fn;
 
-  static Function *getTraceFn(Module *m) {
-    assert(m);
+    DEBUG(dbgs() << "get basic types\n");
 
-    auto fn = m->getFunction(dumpTrace_fname);
+    auto &ctx = M->getContext();
+    auto type = TypeBuilder<TraceFnTy, false>::get(ctx);
 
-    assert(fn && "Trying to get alias trace function, but AliasTracerModuleHelper has not been run");
+    DEBUG(dbgs() << "create declaration of trace function\n");
 
-    return fn;
+    trace_fn = Function::Create(
+      type,
+      GlobalValue::ExternalLinkage,
+      dumpTrace_fname,
+      M
+    );
+
+    trace_fn->addAttribute(1, Attribute::ReadOnly);
+    trace_fn->addAttribute(2, Attribute::ReadOnly);
+    trace_fn->addAttribute(3, Attribute::ReadOnly);
+
+    trace_fn->addAttribute(1, Attribute::NoCapture);
+    trace_fn->addAttribute(2, Attribute::NoCapture);
+    trace_fn->addAttribute(3, Attribute::NoCapture);
+
+    return trace_fn;
+  }
+  Function *declareGetBasePtrFn(Module *M) {
+    auto getBasePtr_fn = M->getFunction("gcg_getBasePtr");
+
+    if (getBasePtr_fn)
+      return getBasePtr_fn;
+
+    // ** declare getBasePtr function
+
+    LLVMContext& ctx = M->getContext();
+
+    Type *void_ptr_type = Type::getInt8PtrTy(ctx);
+
+    Type *return_type = void_ptr_type;
+
+    std::vector<Type*> parameter_types{
+      void_ptr_type
+    };
+
+    getBasePtr_fn = Function::Create(
+      FunctionType::get(return_type, parameter_types, false),
+      GlobalValue::ExternalLinkage,
+      "gcg_getBasePtr",
+      M
+    );
+
+    getBasePtr_fn->addAttribute(1, Attribute::ReadOnly);
+    getBasePtr_fn->addAttribute(1, Attribute::NoCapture);
+
+    return getBasePtr_fn;
   }
 };
 
 } // end anonymous namespace
 
 char AliasTracer::ID = 0;
-char AliasTracerModuleHelper::ID = 0;
 
 INITIALIZE_PASS(AliasTracer,
   "alias-tracer",
@@ -94,51 +181,16 @@ INITIALIZE_PASS(AliasTracer,
   false
 )
 
-INITIALIZE_PASS(AliasTracerModuleHelper,
-  "alias-tracer-module-helper",
-  "Declare external reference to alias tracing function",
-  false,
-  false
-)
-
 LoopPass *llvm::createAliasTracerPass() {
   return new AliasTracer();
-}
-ModulePass *llvm::createAliasTracerModuleHelperPass() {
-  return new AliasTracerModuleHelper();
 }
 
 AliasTracer::AliasTracer() : LoopPass(ID) {
   initializeAliasTracerPass(*PassRegistry::getPassRegistry());
 }
 
-AliasTracerModuleHelper::AliasTracerModuleHelper() : ModulePass(ID) {
-  initializeAliasTracerModuleHelperPass(*PassRegistry::getPassRegistry());
-}
-
 
 /****************** PRIVATE API *****************/
-
-// Creates a global string constant and returns a pointer to it
-Value *AliasTracer::getOrInsertGlobalString(StringRef str)
-{
-  assert(!str.empty() && "Tried to create empty string constant");
-
-  // look up in map
-  StringMap<Value*>::iterator I = string2Value.find(str);
-
-  if(I != string2Value.end()) return I->second;
-
-  IRBuilder<> IRB(insertBefore);
-
-  Value *globalStr = IRB.CreateGlobalStringPtr(str);
-
-  // update map
-  string2Value[str] = globalStr;
-
-  return globalStr;
-}
-
 
 static Instruction* getInsertionPoint(Function *fn, Value *val1, Value *val2);
 
@@ -150,48 +202,6 @@ cl::opt<string> InstrumentOnlyPrefix(
 	cl::init("")
 );
 
-bool AliasTracerModuleHelper::runOnModule(Module &M)
-{
-  DEBUG(dbgs() << "AliasTracerModuleHelper::runOnModule\n");
-
-  DEBUG(dbgs() << "get basic types\n");
-
-  LLVMContext  &ctx           = M.getContext();
-  Type         *char_ptr_type = Type::getInt8PtrTy(ctx);
-  Type         *return_type   = Type::getVoidTy(ctx);
-
-  vector<Type*> parameter_types
-  {
-    char_ptr_type, // const char *loop
-    char_ptr_type, // const char *name1
-    char_ptr_type, // void *ptr1
-    char_ptr_type, // const char *name2
-    char_ptr_type  // void *ptr2
-  };
-
-  DEBUG(dbgs() << "create declaration of trace function\n");
-
-  auto trace_fn = Function::Create(
-    FunctionType::get(return_type, parameter_types, false),
-    GlobalValue::ExternalLinkage,
-    dumpTrace_fname,
-    &M);
-
-  trace_fn->addAttribute(1, Attribute::ReadOnly);
-  trace_fn->addAttribute(2, Attribute::ReadOnly);
-  trace_fn->addAttribute(3, Attribute::ReadOnly);
-  trace_fn->addAttribute(4, Attribute::ReadOnly);
-  trace_fn->addAttribute(5, Attribute::ReadOnly);
-
-  trace_fn->addAttribute(1, Attribute::NoCapture);
-  trace_fn->addAttribute(2, Attribute::NoCapture);
-  trace_fn->addAttribute(3, Attribute::NoCapture);
-  trace_fn->addAttribute(4, Attribute::NoCapture);
-  trace_fn->addAttribute(5, Attribute::NoCapture);
-
-  return true;
-}
-
 bool AliasTracer::runOnLoop(Loop *L, LPPassManager &LPM)
 {
   //we are interested only in innermost loops
@@ -199,15 +209,15 @@ bool AliasTracer::runOnLoop(Loop *L, LPPassManager &LPM)
 
   DEBUG(dbgs() << "trace alias\n");
 
-  const FullInstNamer FIN;
+  using FIN = FullInstNamer;
 
-  auto loop_header = L->getHeader();
-  auto function    = loop_header->getParent();
-  auto module      = function->getParent();
+  auto loop_header    = L->getHeader();
+  auto function       = loop_header->getParent();
+  auto module         = function->getParent();
+  auto function_entry = &function->getEntryBlock();
 
-  StringRef functionName = FIN.getName(function);
-  StringRef headerName   = FIN.getName(loop_header);
-  string    loopName     = functionName.str() + "::" + headerName.str();
+  StringRef functionName = FIN::getName(function);
+  StringRef headerName   = FIN::getName(loop_header);
 
   if (InstrumentOnlyPrefix.size() && !hasPrefix(functionName, InstrumentOnlyPrefix))
     return false;
@@ -216,14 +226,21 @@ bool AliasTracer::runOnLoop(Loop *L, LPPassManager &LPM)
   AliasAnalysis &AA  = getAnalysis<AliasAnalysis>();
 
   DEBUG(dbgs() << "========================================================\n");
-  DEBUG(dbgs() << "AliasTracer::runOnLoop(" << loopName << ")\n");
+  DEBUG(dbgs() << "AliasTracer::runOnLoop(" << functionName << "::" << headerName << ")\n");
   DEBUG(dbgs() << "========================================================\n");
 
-  auto trace_fn = AliasTracerModuleHelper::getTraceFn(module);
+  auto trace_fn      = declareTraceFn(module);
+  auto getBasePtr_fn = declareGetBasePtrFn(module);
+
+  MagicBuilder magic{function_entry, getBasePtr_fn};
 
   BasePtrInfo basePtrInfo = BasePtrInfo::build(L, DT, AA);
 
   set<ValuePair> &basePtrPairs = basePtrInfo.getBasePtrPairs();
+
+  IRBuilder<> IRB(function_entry);
+
+  Value *functionNameVal = FIN::getNameAsValue(this, IRB, function);
 
   for(set<ValuePair>::iterator I = basePtrPairs.begin(), IE = basePtrPairs.end(); I != IE; ++I)
   {
@@ -238,20 +255,27 @@ bool AliasTracer::runOnLoop(Loop *L, LPPassManager &LPM)
     DEBUG(dbgs() << *r << "\n");
     DEBUG(dbgs() << "--------------------------------------------------------\n");
 
+    auto ptr1 = magic.create(l);
+    auto ptr2 = magic.create(r);
+
     // try to hoist the insertion point
-    insertBefore = getInsertionPoint(L->getHeader()->getParent(), l, r);
+    Instruction *insertBefore = getInsertionPoint(function, ptr1, ptr2);
 
     IRBuilder<> IRB(insertBefore);
 
-    // cast to Int8PtrTy if needed
-    Value *ptr1  = l->getType() == IRB.getInt8PtrTy() ? l : IRB.CreatePointerCast(l, IRB.getInt8PtrTy());
-    Value *ptr2  = r->getType() == IRB.getInt8PtrTy() ? r : IRB.CreatePointerCast(r, IRB.getInt8PtrTy());
+    Value* check;
 
-    Value *loop_name = getOrInsertGlobalString(StringRef(loopName));
-    Value *ptr1_name = getOrInsertGlobalString(FIN.getName(l));
-    Value *ptr2_name = getOrInsertGlobalString(FIN.getName(r));
+    check = IRB.CreateICmpNE(ptr1, ptr2);
+    check = IRB.CreateSExtOrTrunc(check, IRB.getInt8Ty());
 
-    IRB.CreateCall5(trace_fn, loop_name, ptr1_name, ptr1, ptr2_name, ptr2);
+    IRB.CreateCall5(
+      trace_fn,
+      functionNameVal,
+      FIN::getNameAsValue(this, IRB, l),
+      FIN::getNameAsValue(this, IRB, r),
+      check,
+      IRB.getInt8(1) // from alias_profiler.h
+    );
   }
 
   return true;
@@ -259,20 +283,17 @@ bool AliasTracer::runOnLoop(Loop *L, LPPassManager &LPM)
 
 Instruction *getInsertionPoint(Function *fn, Value *val1, Value *val2)
 {
-  if (isGlobalOrArgument(val1)) {
-    if (isGlobalOrArgument(val2)) {
-      return fn->getEntryBlock().getFirstInsertionPt();
+  if (auto inst1 = dyn_cast<Instruction>(val1)) {
+    if (auto inst2 = dyn_cast<Instruction>(val2)) {
+      return &lastOf(inst1->getParent(), inst2->getParent())->back();
     } else {
-      return &cast<Instruction>(val2)->getParent()->back();
+      return &inst1->getParent()->back();
     }
   } else {
-    if (isGlobalOrArgument(val2)) {
-      return &cast<Instruction>(val1)->getParent()->back();
+    if (auto inst2 = dyn_cast<Instruction>(val2)) {
+      return &inst2->getParent()->back();
     } else {
-      auto i1 = cast<Instruction>(val1);
-      auto i2 = cast<Instruction>(val2);
-
-      return &lastOf(i1->getParent(), i2->getParent())->back();
+      return fn->getEntryBlock().getFirstInsertionPt();
     }
   }
 }

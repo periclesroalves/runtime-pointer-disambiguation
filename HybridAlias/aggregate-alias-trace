@@ -7,7 +7,6 @@
 
 import collections
 import re
-import sys
 import argparse
 
 DEFAULT_SHOULD_NOT_ALIAS_TRESHOLD   =   5
@@ -49,122 +48,92 @@ def clamp(val, lo, hi):
 SHOULD_NOT_ALIAS_TRESHOLD   = clamp(float(args.should_not_alias_threshold)   / 100, 0, 1)
 SHOULD_ALIAS_EXACT_TRESHOLD = clamp(float(args.should_alias_exact_threshold) / 100, 0, 1)
 
-ALIAS       = "ALIAS"
-NOALIAS     = "NOALIAS"
-EXACT_ALIAS = "EXACT_ALIAS"
-
-class TraceReader:
+def TraceReader(file):
 	## iterator that parses the trace file
 	# each call to next() returns one alias pair data
 
-	LINE_REGEX = re.compile("^LOOP '([\w.-]+)::([\w.-]+)' - '([\w.-]+)' vs '([\w.-]+)' - ([\w.-]+)$")
+	LINE_REGEX = re.compile("^CHECK '([\w.-]+)' - '([\w.-]+)' vs '([\w.-]+)' - ([\w]+) - (N|Y)$")
 
-	def __init__(self, file):
-		self.file = file
-		self.line = 0
+	line_no = 0
 
-	def __iter__(self):
-		return self
+	for line in alias_trace_file:
+		line_no += 1
 
-	def __next__(self):
-		self.line += 1
-		line = self.file.readline()
+		if not line:
+			continue
 
-		if line:
-			match = TraceReader.LINE_REGEX.match(line)
+		match = LINE_REGEX.match(line)
 
-			if not match:
-				raise Exception('Malformed entry on line ' + str(self.line))
+		if not match:
+			raise Exception('Malformed entry on line ' + str(line_no))
 
-			groups = match.groups()
+		groups = match.groups()
 
-			if not groups or len(groups) != 5:
-				raise Exception('Malformed entry on line ' + str(self.line))
+		if not groups or len(groups) != 5:
+			raise Exception('Malformed entry on line ' + str(line_no))
 
-			fn, loop, ptr1, ptr2, alias = match.groups()
+		fn, ptr1, ptr2, alias_type, yes_no = match.groups()
 
-			if alias == ALIAS:
-				alias = ALIAS
-			elif alias == EXACT_ALIAS:
-				alias = EXACT_ALIAS
-			elif alias == NOALIAS:
-				alias = NOALIAS
-			else:
-				raise Exception('Malformed entry on line ' + str(self.line))
+		yield (fn, ptr1, ptr2, alias_type, yes_no)
 
-			return (fn, loop, ptr1, ptr2, alias)
-		else:
-			raise StopIteration
-
-
-class Counter:
-	def __init__(self, ptrs):
-		self.ptrs        = ptrs
-		self.alias       = 0
-		self.exact_alias = 0
-		self.noalias     = 0
+class Count:
+	def __init__(self):
+		self.yes = 0
+		self.no  = 0
 
 	@property
-	def total(self):
-		return self.alias + self.noalias + self.exact_alias
+	def probability(self):
+		total = self.yes + self.no
 
-alias_pair = collections.namedtuple('AliasPair', 'ptr1 ptr2')
+		if total:
+			return self.yes / (self.yes + self.no)
+		else:
+			return 0
 
 ## parse & aggregate data
 
 data = {}
 
-for fn_name, loop_name, ptr1, ptr2, alias in TraceReader(alias_trace_file):
-	loop = data.setdefault((fn_name, loop_name), {})
-	pair = alias_pair(*sorted((ptr1, ptr2)))
+for fn_name, ptr1, ptr2, alias_type, yes_no in TraceReader(alias_trace_file):
+	if fn_name not in data:
+		data[fn_name] = {}
 
-	if pair not in loop:
-		loop[pair] = Counter(pair)
+	fn   = data[fn_name]
 
-	counter = loop[pair]
-
-	if alias is ALIAS:
-		counter.alias += 1
-	elif alias is EXACT_ALIAS:
-		counter.exact_alias += 1
-	elif alias is NOALIAS:
-		counter.noalias += 1
+	if ptr1 < ptr2:
+		pair = (ptr1, ptr2)
 	else:
-		assert(False)
+		pair = (ptr2, ptr1)
 
-## analyse numbers & decide should/should-not alias
+	if pair not in fn:
+		fn[pair] = {}
 
-analyzed_data = {}
+	counters = fn[pair]
 
-for name, pairs in data.items():
-	analyzed_pairs = {}
+	if alias_type not in counters:
+		counters[alias_type] = Count()
 
-	for pair, counter in pairs.items():
-		alias_probability       = (counter.alias + counter.exact_alias) / counter.total
-		exact_alias_probability = counter.exact_alias / counter.total
+	count = counters[alias_type]
 
-		if exact_alias_probability >= SHOULD_ALIAS_EXACT_TRESHOLD:
-			analyzed_pairs[pair] = "should-alias-exact"
-		elif alias_probability <= SHOULD_NOT_ALIAS_TRESHOLD:
-			analyzed_pairs[pair] = "should-not-alias"
-		else:
-			analyzed_pairs[pair] = "should-alias"
-
-	analyzed_data[name] = analyzed_pairs
+	if yes_no:
+		count.yes += 1
+	else:
+		count.no  += 1
 
 ## print out yaml
 
 def _print(*args):
 	print(sep="", *args, file=dst_file)
 
-for name, pairs in analyzed_data.items():
+for name, pairs in data.items():
 	_print('---')
-	_print('function: "', name[0], '"')
-	_print('loop:     "', name[1], '"')
+	_print('function: "', name, '"')
 	_print('alias_pairs:')
 
-	for pair, alias_type in pairs.items():
-		_print(2*' ', '- ptr1:  ',    pair.ptr1)
-		_print(2*' ', '  ptr2:  ',    pair.ptr2)
-		_print(2*' ', '  alias: ',   alias_type)
+	for pair, counters in pairs.items():
+		_print(2*' ', '- ptr1: ', pair[0])
+		_print(2*' ', '  ptr2: ', pair[1])
+
+		for alias_type, count in counters.items():
+			_print(2*' ', '  ', alias_type, ': ', count.probability)
 	_print('...')

@@ -15,11 +15,20 @@
 static size_t sampling_rate;
 static FILE*  trace_file;
 
+
+static const char *alias_type_names[] = {
+  [MEMTRACK_NO_HEAP_ALIAS]  = "NO_HEAP_ALIAS",
+  [MEMTRACK_NO_RANGE_ALIAS] = "NO_RANGE_ALIAS",
+  [MEMTRACK_EXACT_ALIAS]    = "EXACT_ALIAS",
+};
+
 // TODO: pass all alias pairs for a loop in at once
-void gcg_trace_alias_pair(
-  const char *loop,
-  const char *name1, void *ptr1,
-  const char *name2, void *ptr2
+void memtrack_traceAlias(
+  const char *function,
+  const char *ptr1,
+  const char *ptr2,
+  uint8_t alias,
+  uint8_t alias_type
 ) {
   static size_t sample_count = SIZE_MAX;
 
@@ -31,17 +40,17 @@ void gcg_trace_alias_pair(
 
   sample_count = 0;
 
-  ASSERT0(trace_file, "gcg_trace_alias_pair called before init_alias_tracer");
+  ASSERT(trace_file, "%s called before init_alias_tracer", __FUNCTION__);
 
-  fprintf(trace_file, "LOOP '%s' - '%s' vs '%s' - ", loop, name1, name2);
-
-  if (ptr1 == ptr2) {
-    fprintf(trace_file, "EXACT_ALIAS\n");
-  } else if (gcg_getBasePtr(ptr1) == gcg_getBasePtr(ptr2)) {
-    fprintf(trace_file, "ALIAS\n");
-  } else {
-    fprintf(trace_file, "NOALIAS\n");
+  if (alias_type >= MEMTRACK_END) {
+      fprintf(stderr, "Invalid alias behaviour type %u\n", alias_type);
+      exit(1);
   }
+
+  const char *alias_str      = alias ? "Y" : "N";
+  const char *alias_type_str = alias_type_names[alias_type];
+
+  fprintf(trace_file, "CHECK '%s' - '%s' vs '%s' - %s - %s\n", function, ptr1, ptr2, alias_type_str, alias_str);
 }
 
 static inline FILE *init_trace_file()
@@ -64,7 +73,7 @@ static inline FILE *init_trace_file()
 
 static inline size_t init_sampling_rate()
 {
-  size_t rate = 1;
+  size_t rate = 0;
 
   const char* env_rate = getenv("SAMPLING_RATE");
   if (env_rate)

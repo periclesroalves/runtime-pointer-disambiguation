@@ -20,7 +20,9 @@ namespace llvm {
 
 class Loop;
 
-inline bool isGlobalOrArgument(const llvm::Value *v) { return llvm::isa<llvm::GlobalValue>(v) || llvm::isa<llvm::Argument>(v); }
+inline bool isGlobalOrArgument(const Value *v) { return isa<GlobalValue>(v) || isa<Argument>(v); }
+
+inline bool isConstantOrArgument(const Value *v) { return isa<Constant>(v) || isa<Argument>(v); }
 
 inline bool hasPrefix(const std::string& str, const std::string& prefix) { return str.compare(0, prefix.size(), prefix) == 0; }
 

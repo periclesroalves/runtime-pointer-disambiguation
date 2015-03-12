@@ -284,7 +284,6 @@ void initializeLoadCombinePass(PassRegistry&);
 
 void initializeFullInstNamerPass(PassRegistry&);
 void initializeAliasTracerPass(PassRegistry&);
-void initializeAliasTracerModuleHelperPass(PassRegistry&);
 }
 
 #endif
