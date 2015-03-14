@@ -112,7 +112,9 @@ void polly::simplifyRegion(Region *r, LoopInfo *li) {
 
   // Create a new entering block to host the checks. If an entering block
   // already exists, just reuse it. If not, create one from the region entry.
-  if (entering && (entering != &entering->getParent()->getEntryBlock())) {
+  if (entering && (entering != &entering->getParent()->getEntryBlock()) &&
+      isa<BranchInst>(entering->getTerminator()) &&
+      dyn_cast<BranchInst>(entering->getTerminator())->isUnconditional()) {
     SplitBlock(entering, entering->getTerminator(), li);
   } else {
     auto entry = r->getEntry();
@@ -263,11 +265,6 @@ bool RegionAliasInfoBuilder::isValidInstruction(Instruction &inst) {
   return false;
 }
 
-
-
-// TODO: insert checks for the load address.
-// TODO: after cloning, replace uses of the old load in the cloned region
-//       be the new load and eliminate the old load.
 bool RegionAliasInfoBuilder::createArtificialInvariantBECount(Loop *l,
                             AliasInstrumentationContext &context) {
   Region     &r        = *context.region;

@@ -44,6 +44,7 @@ SOURCES= Polly.cpp \
 	 Support/ScopHelper.cpp \
 	 Support/AliasCheckBuilders.cpp \
 	 Analysis/Dependences.cpp \
+	 Analysis/RegionAliasInfo.cpp \
 	 Analysis/ScopDetection.cpp \
 	 Analysis/ScopDetectionDiagnostic.cpp \
 	 Analysis/ScopInfo.cpp \

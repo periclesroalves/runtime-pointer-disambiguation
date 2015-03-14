@@ -61,6 +61,10 @@ void SCEVAliasInstrumenter::fixAliasInfo(AliasInstrumentationContext &ctx) {
 
     // Set the alias metadata for each memory access instruction in the region.
     for (auto memInst : pair.second.users) {
+      // Check that the instruction was not removed from the region.
+      if (!memInst->getParent())
+        continue;
+
       // A memory instruction always aliases its base pointer.
       memInst->setMetadata(LLVMContext::MD_alias_scope, MDNode::concatenate(
         memInst->getMetadata(LLVMContext::MD_alias_scope),
@@ -91,7 +95,7 @@ void SCEVAliasInstrumenter::buildNoAliasClone(AliasInstrumentationContext &conte
   Region *clonedRegion = cloneRegion(region, nullptr, ri, dt, df);
 
   // Build the conditional brach based on the dynamic test result.
-  Instruction *br = &region->getEnteringBlock()->back();
+  TerminatorInst *br = region->getEnteringBlock()->getTerminator();
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(br);
   builder.CreateCondBr(checkResult, region->getEntry(), clonedRegion->getEntry());
