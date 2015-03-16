@@ -59,6 +59,7 @@ SOURCES= Polly.cpp \
 	 CodeGen/Utils.cpp \
 	 CodeGen/RuntimeDebugBuilder.cpp \
 	 Exchange/JSONExporter.cpp \
+	 Transform/AliasProfiler.cpp \
 	 Transform/SCEVAliasInstrumenter.cpp \
 	 Transform/Canonicalization.cpp \
 	 Transform/CodePreparation.cpp \

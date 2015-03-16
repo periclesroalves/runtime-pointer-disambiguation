@@ -108,6 +108,8 @@ public:
 
   Value *buildCheck(Value *a, Value *b);
 private:
+  Value *buildCmp(Value *setRepresentative, Value *ptr, Value *chain);
+
   // non-empty set of must alias pointers
   struct MustAliasSet {
     using iterator = std::set<Value*>::iterator;

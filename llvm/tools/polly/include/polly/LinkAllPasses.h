@@ -61,6 +61,7 @@ llvm::Pass *createProfilingFeedbackSpecAAPass();
 llvm::Pass *createRegionCloningPass();
 
 llvm::Pass *createPollyAaEvalPass();
+llvm::Pass *createAliasProfilingPass();
 
 extern char &IndependentBlocksID;
 extern char &CodePreparationID;
@@ -107,6 +108,7 @@ struct PollyForcePassLinking {
     polly::createNoSpecAAPass();
     polly::createProfilingFeedbackSpecAAPass();
     polly::createPollyAaEvalPass();
+    polly::createAliasProfilingPass();
   }
 } PollyForcePassLinking; // Force link by creating a global definition.
 }
@@ -137,6 +139,7 @@ void initializeProfilingFeedbackSpecAAPass(llvm::PassRegistry&);
 void initializeCloneRegionPass(llvm::PassRegistry&);
 
 void initializePollyAaEvalPass(llvm::PassRegistry&);
+void initializeAliasProfilingPass(llvm::PassRegistry&);
 }
 
 #endif

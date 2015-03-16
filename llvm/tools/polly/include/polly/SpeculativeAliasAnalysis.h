@@ -48,7 +48,7 @@ public:
   virtual ~SpeculativeAliasAnalysis() {}
 
   SpeculativeAliasResult
-  virtual speculativeAlias(const Value *a, const Value *b) = 0;
+  virtual speculativeAlias(const Function *f, const Value *a, const Value *b) = 0;
 private:
   virtual void anchor();
 };

@@ -144,7 +144,7 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
 
     Value *check;
 
-    switch (saa->speculativeAlias(basePtr1, basePtr2)) {
+    switch (saa->speculativeAlias(currFn, basePtr1, basePtr2)) {
       // TODO: implement heap checks
       case SpeculativeAliasResult::NoHeapAlias:
         check = heapChecks.buildCheck(basePtr1, basePtr2);

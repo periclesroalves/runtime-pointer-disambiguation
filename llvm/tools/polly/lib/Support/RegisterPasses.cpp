@@ -126,6 +126,12 @@ static cl::opt<bool> SCEVAliasInstrumenter(
              "with runtime checks"),
     cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
 
+static cl::opt<bool> UseAliasProfiling(
+    "polly-use-alias-profiling",
+    cl::desc("Instrument alias profiling for dependences that can't be solved"
+             " statically"),
+    cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
+
 static cl::opt<bool> PollyViewer(
     "polly-show",
     cl::desc("Highlight the code regions that will be optimized in a "
@@ -182,6 +188,7 @@ void initializePollyPasses(PassRegistry &Registry) {
   initializeNoSpecAAPass(Registry);
 
   initializePollyAaEvalPass(Registry);
+  initializeAliasProfilingPass(Registry);
 }
 
 /// @brief Register Polly passes such that they form a polyhedral optimizer.
@@ -216,6 +223,9 @@ void initializePollyPasses(PassRegistry &Registry) {
 /// default.
 static void registerPollyPasses(llvm::PassManagerBase &PM) {
   registerCanonicalicationPasses(PM, SCEVCodegen);
+
+  if (UseAliasProfiling)
+    PM.add(polly::createAliasProfilingPass());
 
   if (SCEVAliasInstrumenter)
     PM.add(polly::createSCEVAliasInstrumenterPass());

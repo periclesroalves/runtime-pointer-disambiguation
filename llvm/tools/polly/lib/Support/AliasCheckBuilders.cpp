@@ -113,11 +113,24 @@ Value *EqualityCheckBuilder::buildCheck(Value *a, Value *b) {
 
   Value* check = builder.getTrue();
 
-	if (a != representative)
-    check = builder.CreateAnd(check, builder.CreateICmpEQ(a, representative));
-
-	if (b != representative)
-    check = builder.CreateAnd(check, builder.CreateICmpEQ(b, representative));
+  check = buildCmp(representative, a, check);
+  check = buildCmp(representative, b, check);
 
   return check;
+}
+
+Value *EqualityCheckBuilder::buildCmp(Value *setRepresentative, Value *ptr, Value *chain) {
+  if (setRepresentative != ptr) {
+    auto *void_ptr_ty = builder.getInt8PtrTy();
+
+    chain = builder.CreateAnd(
+      chain,
+      builder.CreateICmpEQ(
+        builder.CreatePointerCast(setRepresentative, void_ptr_ty),
+        builder.CreatePointerCast(ptr, void_ptr_ty)
+      )
+    );
+  }
+
+  return chain;
 }

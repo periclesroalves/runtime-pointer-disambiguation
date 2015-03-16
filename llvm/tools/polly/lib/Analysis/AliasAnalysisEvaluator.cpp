@@ -65,7 +65,7 @@ struct PollyAaEval final : FunctionPass {
     );
 
     for (auto& context : targetRegions) {
-      evalRegion(*context);
+      evalRegion(&F, *context);
     }
 
     return false;
@@ -107,7 +107,7 @@ struct PollyAaEval final : FunctionPass {
     AU.setPreservesAll();
   }
 private:
-  void evalRegion(AliasInstrumentationContext& ctx) {
+  void evalRegion(Function *f, AliasInstrumentationContext& ctx) {
     numRegions++;
 
     const auto region = ctx.region;
@@ -132,10 +132,10 @@ private:
     }
 
     for (auto& pair : ptrPairs)
-      evalPair(pair.first, pair.second);
+      evalPair(f, pair.first, pair.second);
   }
 
-  void evalPair(Value *ptr1, Value *ptr2) {
+  void evalPair(Function *f, Value *ptr1, Value *ptr2) {
     numPairs++;
 
     switch (aa->alias(ptr1, ptr2)) {
@@ -152,7 +152,7 @@ private:
         break;
     }
 
-    switch (saa->speculativeAlias(ptr1, ptr2)) {
+    switch (saa->speculativeAlias(f, ptr1, ptr2)) {
       case SpeculativeAliasResult::NoHeapAlias:
         numDynamicNoHeapAlias++;
         break;
