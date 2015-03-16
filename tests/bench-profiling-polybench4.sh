@@ -110,6 +110,12 @@ function benchmark_list {
 	done
 }
 
+function benchmark_sampling_rate {
+	local NAME="$1"
+
+	echo "0"
+}
+
 ## run main
 
 main "$@"

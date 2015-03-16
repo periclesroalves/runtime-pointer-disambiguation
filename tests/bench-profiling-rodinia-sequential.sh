@@ -67,7 +67,7 @@ function run_benchmark {
 			_time "$BIN" core 1 file "$DATA"/b+tree/mil.txt command "$DATA"/b+tree/command.txt > /dev/null
 			;;
 		backprop)
-			_time "$BIN" 65536 > /dev/null
+			"$BIN" 65536 | get_elapsed_time
 			;;
 
 		bfs)
@@ -79,11 +79,11 @@ function run_benchmark {
 			;;
 
 		'particlefilter')
-			_time "$BIN" -x 128 -y 128 -z 10 -np 10000 > /dev/null
+			"$BIN" -x 128 -y 128 -z 10 -np 10000 | get_elapsed_time
 			;;
 
 		'pathfinder')
-			_time "$BIN" 100000 100 > /dev/null
+			"$BIN" 100000 100 | get_elapsed_time
 			;;
 
 		'heartwall')
@@ -91,7 +91,7 @@ function run_benchmark {
 			;;
 
 		'kmeans')
-			_time "$BIN" -i "$DATA"/kmeans/kdd_cup > /dev/null
+			"$BIN" -i "$DATA"/kmeans/kdd_cup | get_elapsed_time
 			;;
 
 		'lavaMD')
@@ -99,7 +99,7 @@ function run_benchmark {
 			;;
 
 		'streamcluster')
-			_time "$BIN" 10 20 256 65536 65536 1000 none output.txt 1 > /dev/null 2> /dev/null
+			"$BIN" 10 20 256 65536 65536 1000 none output.txt 1 | get_elapsed_time
 			;;
 
 		*)
@@ -168,31 +168,35 @@ function benchmark_list {
 	done
 }
 
-## helpers
-
-function benchmark_binary {
+function benchmark_sampling_rate {
 	local NAME="$1"
 
 	case $NAME in
-		'b+tree')
-			echo 'b+tree.out'
+		kmeans)
+			echo "1000"
 			;;
 
-		backprop | bfs | hotspot | pathfinder | heartwall | kmeans | lavaMD)
-			echo "$NAME"
-			;;
-
-		'particlefilter')
-			echo particle_filter
-			;;
-
-		'streamcluster')
-			echo sc_omp
+		streamcluster)
+			echo "100000"
 			;;
 
 		*)
-			_error "unknown benchmark '$NAME'"
+			echo "0"
+			;;
 	esac
+}
+
+## helpers
+
+function get_elapsed_time {
+	# find line that contains timing
+	local TIME="$(grep "Elapsed time:")"
+
+	# extract timing from line
+	local REGEX='Elapsed time: ([^[:blank:]]+)'
+    [[ $TIME =~ $REGEX ]]
+
+    echo "${BASH_REMATCH[1]}"
 }
 
 ## run main

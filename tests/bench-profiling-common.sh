@@ -76,7 +76,7 @@ function main {
 }
 
 function compile_libraries {
-	echo "#### compiling alias profiler"
+	echo "##### compiling alias profiler"
 
 	"$LLVM_LINK" -o "$MEMTRACK_LL" \
 		<("$CLANG" -std=c11 -O3 -g -S -emit-llvm -I"$MEMTRACK_SRC" "$MEMTRACK_SRC/memtrack.c"       -o -) \
@@ -89,39 +89,53 @@ function compile_libraries {
 }
 
 function compile_benchmarks {
-	echo "#### compiling benchmarks"
+	echo "##### compiling benchmarks"
 
-	echo "### alias-profiling"
+	echo "#### alias-profiling"
 	for BENCH in "${BENCH_LIST[@]}"
 	do
+		echo "### $BENCH"
+
 		local FILE="$BIN_DIR"/"$(basename "$BENCH")"
 
 		local ALIAS_TRACE="$FILE"".alias.trace"
 		local ALIAS_YAML="$FILE"".alias.yaml"  # processed trace file
 		local INSTRUMENTED_BENCHMARK="$FILE"-instrumented
 
+		echo "## instrument"
 		compile_benchmark "$BENCH" alias-profiling "$INSTRUMENTED_BENCHMARK"
 
+		echo "## run"
+		export SAMPLING_RATE="$(benchmark_sampling_rate "$BENCH")"
 		export TRACE_FILE="$ALIAS_TRACE"
 		run_benchmark "$BENCH" alias-profiling "$INSTRUMENTED_BENCHMARK" >/dev/null
 
-		## aggregate alias trace
+		echo "## aggregate trace"
 		python3 "$HA_SRC_DIR/aggregate-alias-trace" "$ALIAS_TRACE" "$ALIAS_YAML"
 	done
 
-	echo "### compile"
+	echo "#### compile normal"
 	for BENCH in "${BENCH_LIST[@]}"
 	do
-		echo "## $BENCH"
+		echo "### $BENCH"
+
+		local FILE="$BIN_DIR"/"$(basename "$BENCH")"
+
+		local BENCHMARK="$FILE"-normal
+
+		#### create speculatively optimized version
+		compile_benchmark "$BENCH" normal "$BENCHMARK"
+	done
+
+	echo "#### compile speculative"
+	for BENCH in "${BENCH_LIST[@]}"
+	do
+		echo "### $BENCH"
 
 		local FILE="$BIN_DIR"/"$(basename "$BENCH")"
 
 		local ALIAS_YAML="$FILE"".alias.yaml"  # processed trace file
-		local BENCHMARK="$FILE"-normal
 		local SPECULATIVE_BENCHMARK="$FILE"-speculative
-
-		### create baseline version
-		compile_benchmark "$BENCH" normal "$BENCHMARK"
 
 		#### create speculatively optimized version
 		compile_benchmark "$BENCH" speculative "$SPECULATIVE_BENCHMARK" "$ALIAS_YAML"
@@ -129,7 +143,7 @@ function compile_benchmarks {
 }
 
 function run_benchmarks {
-	echo "#### running"
+	echo "##### running"
 
 	for BENCH in "${BENCH_LIST[@]}"
 	do
@@ -179,7 +193,6 @@ function compile_benchmark {
 	local FLAGS=( -g )
 	local LIBRARIES=()
 
-	echo "# $MODE"
 	case "$MODE" in
 		alias-profiling)
 			FLAGS+=( "${CLANG_POLLY_FLAGS[@]}" -O3 -mllvm -polly-use-alias-profiling )
