@@ -224,6 +224,9 @@ void initializePollyPasses(PassRegistry &Registry) {
 static void registerPollyPasses(llvm::PassManagerBase &PM) {
   registerCanonicalicationPasses(PM, SCEVCodegen);
 
+  if (UseAliasProfiling || SCEVAliasInstrumenter)
+    PM.add(llvm::createFullInstructionNamerPass());
+
   if (UseAliasProfiling)
     PM.add(polly::createAliasProfilingPass());
 
