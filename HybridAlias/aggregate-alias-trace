@@ -90,6 +90,9 @@ class Count:
 		else:
 			return 0
 
+	def __str__(self):
+		return type(self).__name__ + "(" + str(self.yes) + ", " + str(self.no) + ")"
+
 ## parse & aggregate data
 
 data = {}
@@ -115,7 +118,7 @@ for fn_name, ptr1, ptr2, alias_type, yes_no in TraceReader(alias_trace_file):
 
 	count = counters[alias_type]
 
-	if yes_no:
+	if yes_no == 'Y':
 		count.yes += 1
 	else:
 		count.no  += 1
