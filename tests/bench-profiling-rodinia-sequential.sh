@@ -16,56 +16,44 @@ RODINIA_DATA_DIR="$SRC_BASE"/tests/rodinia_3.0/data
 
 ## FUNCTIONS TO BUILD & RUN BENCHMARKS
 
-function compile_benchmark {
+function benchmark_src_files {
 	local NAME="$1"
-	# local MODE="$2"
-	local DST="$2"
-
-	# _pushd "$RODINIA_SRC_DIR/$NAME"
-
-	# should be split into CC and CC_FLAGS but rodinia's makefiles are not very clean
-	export CC="$LLVM_BIN_DIR/clang"
-	export CXX="$LLVM_BIN_DIR/clang++"
 
 	case $NAME in
 		## heartwall includes some .c files so just compiling all .c files
 		## separately doesn't work here
 		heartwall)
-			local INCLUDE_DIRS="-I$RODINIA_SRC_DIR/$NAME/AVI"
-			local C_FILES=( $(find "$RODINIA_SRC_DIR/$NAME/AVI" -name '*.c') $(find "$RODINIA_SRC_DIR/$NAME" -name 'main.c') )
-			local CPP_FILES=()
+			find "$RODINIA_SRC_DIR/$NAME/AVI" -name '*.c'
+			find "$RODINIA_SRC_DIR/$NAME" -name 'main.c'
 			;;
 
 		*)
-			local INCLUDE_DIRS=""
-			local C_FILES=( $(find "$RODINIA_SRC_DIR/$NAME" -name '*.c') )
-			local CPP_FILES=( $(find "$RODINIA_SRC_DIR/$NAME" -name '*.cpp') )
+			find "$RODINIA_SRC_DIR/$NAME" -name '*.c'
+			find "$RODINIA_SRC_DIR/$NAME" -name '*.cpp'
 			;;
 	esac
+}
 
-	local LL_FILES=()
+function benchmark_include_dirs {
+	local NAME="$1"
 
-	for FILE in "${C_FILES[@]:+${C_FILES[@]}}"
-	do
-		echo "# $(basename $FILE)"
-		local LL="$BIN_DIR/$(basename "$FILE" .c).ll"
+	case $NAME in
+		heartwall)
+			echo "-I$RODINIA_SRC_DIR/$NAME/AVI"
+			;;
 
-		"$CC" "$FILE" $INCLUDE_DIRS -S -emit-llvm -o "$LL" -w
+		*)
+			true
+			;;
+	esac
+}
 
-		LL_FILES+=( "$LL" )
-	done
-	for FILE in "${CPP_FILES[@]:+${CPP_FILES[@]}}"
-	do
-		echo "# $(basename $FILE)"
-		local LL="$BIN_DIR/$(basename "$FILE" .cpp).ll"
+function benchmark_flags {
+	local NAME="$1"
 
-		"$CXX" "$FILE" -S -emit-llvm -o "$LL" -w
-
-		LL_FILES+=( "$LL" )
-	done
-
-	echo "# link"
-	"$LLVM_LINK" "${LL_FILES[@]}" -o "$DST"
+	true
+	# echo -I"$POLYBENCH_SRC_DIR"/utilities
+	# echo -DPOLYBENCH_TIME
 }
 
 function run_benchmark {
