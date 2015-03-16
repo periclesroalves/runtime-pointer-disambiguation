@@ -94,16 +94,24 @@ function compile_benchmarks {
 	echo "#### alias-profiling"
 	for BENCH in "${BENCH_LIST[@]}"
 	do
-		echo "### $BENCH"
+		echo "### instrument $BENCH"
+
+		local FILE="$BIN_DIR"/"$(basename "$BENCH")"
+
+		local INSTRUMENTED_BENCHMARK="$FILE"-instrumented
+
+		compile_benchmark "$BENCH" alias-profiling "$INSTRUMENTED_BENCHMARK"
+	done
+
+	for BENCH in "${BENCH_LIST[@]}"
+	do
+		echo "### profile $BENCH"
 
 		local FILE="$BIN_DIR"/"$(basename "$BENCH")"
 
 		local ALIAS_TRACE="$FILE"".alias.trace"
 		local ALIAS_YAML="$FILE"".alias.yaml"  # processed trace file
 		local INSTRUMENTED_BENCHMARK="$FILE"-instrumented
-
-		echo "## instrument"
-		compile_benchmark "$BENCH" alias-profiling "$INSTRUMENTED_BENCHMARK"
 
 		echo "## run"
 		export SAMPLING_RATE="$(benchmark_sampling_rate "$BENCH")"
@@ -208,8 +216,9 @@ function compile_benchmark {
 
 			FLAGS+=(
 				"${CLANG_POLLY_FLAGS[@]}"
-				-O3 -mllvm -polly-use-scev-alias-checks
-				# -mllvm -profiling-spec-aa
+				-O3
+				# -mllvm -profiling-spec-aa ## broken in clang
+				-mllvm -polly-use-scev-alias-checks
 				-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
 			)
 			;;

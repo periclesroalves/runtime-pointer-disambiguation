@@ -33,7 +33,6 @@ function benchmark_include_dirs {
 function benchmark_flags {
 	local NAME="$1"
 
-	echo -I"$POLYBENCH_SRC_DIR"/utilities
 	echo -DPOLYBENCH_TIME
 }
 
