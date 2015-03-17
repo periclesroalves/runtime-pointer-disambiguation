@@ -104,11 +104,12 @@ function compile_libraries {
 	echo "##### compiling alias profiler"
 
 	"$LLVM_LINK" -o "$MEMTRACK_LL" \
-		<("$CLANG" -std=c11 -O3 -g -S -emit-llvm -I"$MEMTRACK_SRC" "$MEMTRACK_SRC/memtrack.c"       -o -) \
-		<("$CLANG" -std=c11 -O3 -g -S -emit-llvm -I"$MEMTRACK_SRC" "$MEMTRACK_SRC/misc.c"           -o -) \
+		<("$CLANG" -std=c11 -O3 -DNDEBUG -S -emit-llvm -I"$MEMTRACK_SRC" "$MEMTRACK_SRC/memtrack.c"       -o -) \
+		<("$CLANG" -std=c11 -O3 -DNDEBUG -S -emit-llvm -I"$MEMTRACK_SRC" "$MEMTRACK_SRC/misc.c"           -o -) \
 	;
 	"$LLVM_LINK" -o "$ALIAS_PROFILER_LL" \
-		"$BIN_DIR/memtrack.ll" \
+		<("$CLANG" -std=c11 -O3 -g -S -emit-llvm -I"$MEMTRACK_SRC" "$MEMTRACK_SRC/memtrack.c"       -o -) \
+		<("$CLANG" -std=c11 -O3 -g -S -emit-llvm -I"$MEMTRACK_SRC" "$MEMTRACK_SRC/misc.c"           -o -) \
 		<("$CLANG" -std=c11 -O3 -g -S -emit-llvm -I"$MEMTRACK_SRC" "$MEMTRACK_SRC/alias_profiler.c" -o -) \
 	;
 }
