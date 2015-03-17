@@ -518,8 +518,8 @@ bool RegionAliasInfoBuilder::createArtificialInvariantBECount(Loop *l,
 static void addStoreTargets(AliasInstrumentationContext &ctx,
                             std::set<Value*>& dst, Value *basePtr) {
   for (Value *user : ctx.memAccesses[basePtr].users)
-    if (auto *store = dyn_cast<StoreInst>(user))
-      dst.insert(store);
+    if (isa<StoreInst>(user))
+      dst.insert(basePtr);
 }
 
 void AliasInstrumentationContext::NoAliasChecks::addPair(
