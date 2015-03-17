@@ -80,8 +80,6 @@ function main {
 
 	case "$COMMAND" in
 		compile)
-			compile_libraries
-			alias_profile_benchmarks
 			compile_benchmarks
 			;;
 		benchmark)
