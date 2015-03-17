@@ -30,6 +30,7 @@
 #include "polly/ScopDetection.h"
 #include "polly/ScopInfo.h"
 #include "polly/TempScopInfo.h"
+#include "polly/Support/AliasCheckBuilders.h"
 #include "llvm/Analysis/CFGPrinter.h"
 #include "llvm/PassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
@@ -120,8 +121,20 @@ static cl::opt<bool> DeadCodeElim("polly-run-dce",
                                   cl::Hidden, cl::init(true), cl::ZeroOrMore,
                                   cl::cat(PollyCategory));
 
-static cl::opt<bool> SCEVAliasInstrumenter(
+static cl::opt<bool> UseScevAliasChecks(
     "polly-use-scev-alias-checks",
+    cl::desc("Instrument dependences that can't be solved statically with"
+             "with runtime checks"),
+    cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
+
+static cl::opt<bool> UseHeapAliasChecks(
+    "polly-use-heap-alias-checks",
+    cl::desc("Instrument dependences that can't be solved statically with"
+             "with runtime checks"),
+    cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
+
+static cl::opt<bool> UseMustAliasChecks(
+    "polly-use-must-alias-checks",
     cl::desc("Instrument dependences that can't be solved statically with"
              "with runtime checks"),
     cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
@@ -229,7 +242,11 @@ void initializePollyPasses(PassRegistry &Registry) {
 static void registerPollyPasses(llvm::PassManagerBase &PM) {
   registerCanonicalicationPasses(PM, SCEVCodegen);
 
-  if (UseAliasProfiling || SCEVAliasInstrumenter || UseStaticAaEval)
+  AliasCheckFlags checkFlags(
+    UseScevAliasChecks, UseHeapAliasChecks, UseMustAliasChecks
+  );
+
+  if (UseAliasProfiling || checkFlags || UseStaticAaEval)
     PM.add(llvm::createFullInstructionNamerPass());
 
   if (UseStaticAaEval)
@@ -238,8 +255,8 @@ static void registerPollyPasses(llvm::PassManagerBase &PM) {
   if (UseAliasProfiling)
     PM.add(polly::createAliasProfilingPass());
 
-  if (SCEVAliasInstrumenter)
-    PM.add(polly::createSCEVAliasInstrumenterPass());
+  if (checkFlags)
+    PM.add(polly::createSCEVAliasInstrumenterPass(checkFlags));
 
   PM.add(polly::createScopInfoPass());
 

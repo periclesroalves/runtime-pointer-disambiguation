@@ -27,6 +27,7 @@
 #include "polly/Support/SCEVValidator.h"
 #include "polly/Support/ScopHelper.h"
 #include "polly/LinkAllPasses.h"
+#include "polly/Support/AliasCheckBuilders.h"
 
 using namespace llvm;
 using namespace polly;
@@ -40,8 +41,11 @@ struct RegionAliasInfoBuilder {
     SpeculativeAliasAnalysis *saa,
     LoopInfo *li,
     DominatorTree *dt,
+    AliasCheckFlags flags,
     std::vector<std::unique_ptr<AliasInstrumentationContext>>& regions
-  ) : se(se), aa(aa), saa(saa), li(li), dt(dt), regions(regions) {}
+  )
+  : se(se), aa(aa), saa(saa), li(li), dt(dt)
+  , flags(flags), regions(regions) {}
 
   // Walks the region tree, collecting the greatest possible regions that can be
   // safely instrumented.
@@ -108,6 +112,9 @@ private:
   bool canBuildScevCheck(AliasInstrumentationContext &context,
                          SCEVRangeBuilder &rangeBuilder,
                          Value *ptr1, Value *ptr2) {
+    if (!flags.UseSCEVAliasChecks)
+      return false;
+
     return isValidScevBasePtr(context, rangeBuilder, ptr1)
         && isValidScevBasePtr(context, rangeBuilder, ptr2);
   }
@@ -130,6 +137,9 @@ private:
 
   bool canBuildHeapCheck(AliasInstrumentationContext &context,
                          Value *ptr1, Value *ptr2) {
+    if (!flags.UseHeapAliasChecks)
+      return false;
+
     const auto *region = context.region;
 
     return notDefinedInRegion(region, ptr1)
@@ -356,6 +366,8 @@ private:
   LoopInfo *li;
   DominatorTree *dt;
 
+  AliasCheckFlags flags;
+
   std::vector<std::unique_ptr<AliasInstrumentationContext>>& regions;
 };
 
@@ -366,9 +378,10 @@ void polly::findAliasInstrumentableRegions(
     SpeculativeAliasAnalysis *saa,
     LoopInfo *li,
     DominatorTree *dt,
+    const AliasCheckFlags &flags,
     std::vector<std::unique_ptr<AliasInstrumentationContext>>& out
 ) {
-  RegionAliasInfoBuilder builder(se, aa, saa, li, dt, out);
+  RegionAliasInfoBuilder builder(se, aa, saa, li, dt, flags, out);
 
   builder.findTargetRegions(region);
 }

@@ -48,6 +48,7 @@ class DetectionContext;
 class AliasProfilingFeedback;
 class SCEVRangeBuilder;
 class SpeculativeAliasAnalysis;
+struct AliasCheckFlags;
 
 // Information regarding an artificial back edge count created for a loop.
 struct ArtificialBECount {
@@ -138,6 +139,7 @@ void findAliasInstrumentableRegions(
     SpeculativeAliasAnalysis *saa,
     LoopInfo *li,
     DominatorTree *dt,
+    const AliasCheckFlags& flags,
     std::vector<std::unique_ptr<AliasInstrumentationContext>>& out
 );
 

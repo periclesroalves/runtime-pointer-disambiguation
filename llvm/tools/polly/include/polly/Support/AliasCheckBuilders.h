@@ -41,6 +41,28 @@ using namespace llvm;
 
 using ValuePair = std::pair<Value*, Value*>;
 
+/// Controls which kinds alias of checks will be inserted.
+struct AliasCheckFlags {
+  static AliasCheckFlags allTrue();
+
+  explicit AliasCheckFlags(bool UseSCEVAliasChecks = false,
+    bool UseHeapAliasChecks = false, bool UseMustAliasChecks = false)
+  : UseSCEVAliasChecks(UseSCEVAliasChecks)
+  , UseHeapAliasChecks(UseHeapAliasChecks)
+  , UseMustAliasChecks(UseMustAliasChecks)
+  {}
+
+  explicit operator bool() const {
+    return UseSCEVAliasChecks
+        || UseHeapAliasChecks
+        || UseMustAliasChecks;
+  }
+
+  bool UseSCEVAliasChecks;
+  bool UseHeapAliasChecks;
+  bool UseMustAliasChecks;
+};
+
 // Builds no-alias checks using SCEV based range analysis
 class RangeCheckBuilder {
 public:

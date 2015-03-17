@@ -88,6 +88,8 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Metadata domain to be used by alias metadata.
   MDNode *mdDomain = nullptr;
 
+  AliasCheckFlags flags;
+
   // Generates dynamic checks that compare the access range of every pair of
   // pointers in the region at run-time, thus finding if there is true aliasing.
   // For every pair (A,B) of pointers in the region that may alias, we generate:
@@ -122,7 +124,8 @@ class SCEVAliasInstrumenter : public FunctionPass {
 
 public:
   static char ID;
-  explicit SCEVAliasInstrumenter() : FunctionPass(ID), getPtrId(nullptr) {}
+  explicit SCEVAliasInstrumenter(AliasCheckFlags flags = AliasCheckFlags())
+  : FunctionPass(ID), getPtrId(nullptr), flags(flags) {}
 
   // FunctionPass interface.
   virtual void getAnalysisUsage(AnalysisUsage &AU) const override;

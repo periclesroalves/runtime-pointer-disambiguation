@@ -26,6 +26,9 @@ class RegionPass;
 }
 
 namespace polly {
+
+struct AliasCheckFlags;
+
 #ifdef CLOOG_FOUND
 llvm::Pass *createCloogExporterPass();
 llvm::Pass *createCloogInfoPass();
@@ -33,6 +36,7 @@ llvm::Pass *createCodeGenerationPass();
 #endif
 llvm::Pass *createCodePreparationPass();
 llvm::Pass *createSCEVAliasInstrumenterPass();
+llvm::Pass *createSCEVAliasInstrumenterPass(const AliasCheckFlags&);
 llvm::Pass *createDeadCodeElimPass();
 llvm::Pass *createDependencesPass();
 llvm::Pass *createDOTOnlyPrinterPass();

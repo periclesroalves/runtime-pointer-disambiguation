@@ -139,6 +139,8 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
   // Insert comparison expressions for every pair of pointers that need to be
   // checked in the region.
   for (auto& pair : context.scevChecks.ptrPairsToCheck) {
+    assert(flags.UseSCEVAliasChecks);
+
     auto basePtr1 = pair.first;
     auto basePtr2 = pair.second;
 
@@ -148,6 +150,8 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
     );
   }
   for (auto& pair : context.heapChecks.ptrPairsToCheck) {
+    assert(flags.UseHeapAliasChecks);
+
     auto basePtr1 = pair.first;
     auto basePtr2 = pair.second;
 
@@ -195,6 +199,7 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   findAliasInstrumentableRegions(
     topRegion,
     se, aa, saa, li, dt,
+    flags,
     targetRegions
   );
 
@@ -253,6 +258,9 @@ char SCEVAliasInstrumenter::ID = 0;
 
 Pass *polly::createSCEVAliasInstrumenterPass() {
   return new SCEVAliasInstrumenter();
+}
+Pass *polly::createSCEVAliasInstrumenterPass(const AliasCheckFlags& flags) {
+  return new SCEVAliasInstrumenter(flags);
 }
 
 INITIALIZE_PASS_BEGIN(SCEVAliasInstrumenter, "polly-scev-checks",

@@ -4,6 +4,10 @@
 using namespace polly;
 using namespace llvm;
 
+AliasCheckFlags AliasCheckFlags::allTrue() {
+  return AliasCheckFlags(true, true, true);
+}
+
 Value* RangeCheckBuilder::buildRangeCheck(Value *a, Value *b) {
   ValuePair boundsA, boundsB;
 

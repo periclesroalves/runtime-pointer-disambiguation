@@ -221,6 +221,7 @@ bool AliasProfiling::runOnFunction(llvm::Function &F) {
   findAliasInstrumentableRegions(
     ri->getTopLevelRegion(),
     se, aa, saa, li, dt,
+    AliasCheckFlags::allTrue(),
     targetRegions
   );
 

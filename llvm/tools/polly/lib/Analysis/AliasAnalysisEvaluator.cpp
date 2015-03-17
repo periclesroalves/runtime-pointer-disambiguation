@@ -59,6 +59,7 @@ struct PollyAaEval final : FunctionPass {
     findAliasInstrumentableRegions(
       ri->getTopLevelRegion(),
       se, aa, saa, li, dt,
+      AliasCheckFlags::allTrue(),
       targetRegions
     );
 

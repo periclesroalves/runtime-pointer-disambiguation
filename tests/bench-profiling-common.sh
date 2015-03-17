@@ -273,6 +273,8 @@ function compile_benchmark {
 				"${CLANG_POLLY_FLAGS[@]}" -O3
 				# -mllvm -profiling-spec-aa ## broken in clang
 				-mllvm -polly-use-scev-alias-checks
+				-mllvm -polly-use-heap-alias-checks
+				-mllvm -polly-use-must-alias-checks
 				-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
 			)
 			;;
