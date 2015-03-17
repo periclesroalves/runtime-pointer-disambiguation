@@ -141,7 +141,7 @@ Pass *polly::createProfilingFeedbackSpecAAPass() { return new ProfilingFeedbackS
 // Default implementation
 //===----------------------------------------------------------------------===//
 
-#define FAIL_ON_IO_ERROR 1
+#define FAIL_ON_IO_ERROR 0
 
 namespace {
   /// This class implements the -no-specaa pass which always returns don't know
