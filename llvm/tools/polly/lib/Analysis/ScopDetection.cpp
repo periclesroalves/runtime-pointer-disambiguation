@@ -298,7 +298,7 @@ bool ScopDetection::isValidCFG(BasicBlock &BB,
   return true;
 }
 
-bool ScopDetection::isValidCallInst(CallInst &CI) {
+bool ScopDetection::isValidCallInst(const CallInst &CI) {
   if (CI.mayHaveSideEffects() || CI.doesNotReturn())
     return false;
 

@@ -141,6 +141,8 @@ Pass *polly::createProfilingFeedbackSpecAAPass() { return new ProfilingFeedbackS
 // Default implementation
 //===----------------------------------------------------------------------===//
 
+#define FAIL_ON_IO_ERROR 1
+
 namespace {
   /// This class implements the -no-specaa pass which always returns don't know
   /// for any alias query.
@@ -195,10 +197,12 @@ namespace {
 
       auto document = MemoryBuffer::getFile(AliasProfileFile);
 
-      if (document.getError()) {
+      if (auto error = document.getError()) {
+        if (FAIL_ON_IO_ERROR) {
+          errs() << "Could not open alias profile file '" << AliasProfileFile << "': " << error.message() << "\n";
+          exit(1);
+        }
         return false;
-        // errs() << "Could not open alias profile file '" << AliasProfileFile << "': " << error.message() << "\n";
-        // exit(1);
       }
 
       /// parse input file
@@ -209,10 +213,12 @@ namespace {
 
       yin >> docs;
 
-      if (yin.error()) {
+      if (auto error = yin.error()) {
+        if (FAIL_ON_IO_ERROR) {
+          errs() << "Could not parse alias profile file '" << AliasProfileFile << "': " << error.message() << "\n";
+          exit(1);
+        }
         return false;
-        // errs() << "Could not parse alias profile file '" << AliasProfileFile << "': " << error.message() << "\n";
-        // exit(1);
       }
 
       /// convert to in memory data structure
@@ -222,9 +228,11 @@ namespace {
         std::string function = std::move(profile.function);
 
         if (data.count(function)) {
+          if (FAIL_ON_IO_ERROR) {
+            errs() << "Duplicate alias profile for function '" << function << "\n";
+            exit(1);
+          }
           return false;
-          // errs() << "Duplicate alias profile for function '" << function << "\n";
-          // exit(1);
         }
 
         AliasPairs pairs;
@@ -245,7 +253,21 @@ namespace {
     }
   private:
     SpeculativeAliasResult decideResult(const YamlPair& pair) {
-      return SpeculativeAliasResult::DontKnow;
+      static const float percentage = 1.0;
+
+      if ((pair.NO_HEAP_ALIAS == percentage)
+          && (pair.NO_RANGE_ALIAS == percentage))
+        return SpeculativeAliasResult::NoAlias;
+
+      if (pair.NO_HEAP_ALIAS == percentage)
+        return SpeculativeAliasResult::NoHeapAlias;
+      if (pair.NO_RANGE_ALIAS == percentage)
+        return SpeculativeAliasResult::NoRangeOverlap;
+
+      if (pair.EXACT_ALIAS == percentage)
+        return SpeculativeAliasResult::ExactAlias;
+
+      return SpeculativeAliasResult::ProbablyAlias;
     }
 
     AliasProfile data;

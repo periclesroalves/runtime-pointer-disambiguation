@@ -138,38 +138,35 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
 
   // Insert comparison expressions for every pair of pointers that need to be
   // checked in the region.
-  for (auto& pair : context.ptrPairsToCheck) {
+  for (auto& pair : context.scevChecks.ptrPairsToCheck) {
     auto basePtr1 = pair.first;
     auto basePtr2 = pair.second;
 
-    Value *check;
+    result = builder.CreateAnd(
+      result,
+      rangeChecks.buildRangeCheck(basePtr1, basePtr2)
+    );
+  }
+  for (auto& pair : context.heapChecks.ptrPairsToCheck) {
+    auto basePtr1 = pair.first;
+    auto basePtr2 = pair.second;
 
-    switch (saa->speculativeAlias(currFn, basePtr1, basePtr2)) {
-      // TODO: implement heap checks
-      case SpeculativeAliasResult::NoHeapAlias:
-        check = heapChecks.buildCheck(basePtr1, basePtr2);
-        break;
-      case SpeculativeAliasResult::ExactAlias:
-        check = eqChecks.buildCheck(basePtr1, basePtr2);
-        break;
-      // TODO: decide which check to use for these cases
-      case SpeculativeAliasResult::NoAlias:
-      case SpeculativeAliasResult::DontKnow:
-      // TODO: don't insert checks for these cases
-      case SpeculativeAliasResult::ProbablyAlias:
-      case SpeculativeAliasResult::NoRangeOverlap:
-        check = rangeChecks.buildRangeCheck(basePtr1, basePtr2);
-        break;
-    }
-
-    result = builder.CreateAnd(result, check);
+    result = builder.CreateAnd(
+      result,
+      heapChecks.buildCheck(basePtr1, basePtr2)
+    );
   }
 
   // Also, if we hoisted loop bound loads, insert tests to guarantee that no
   // store in the region alises the hoisted loads.
   for (auto &pair : context.artificialBECounts) {
-    for (auto &storeTarget : context.storeTargets) {
+    for (auto &storeTarget : context.scevChecks.storeTargets) {
       auto check = rangeChecks.buildLocationCheck(storeTarget, pair.second.addr);
+
+      result = builder.CreateAnd(result, check);
+    }
+    for (auto &storeTarget : context.heapChecks.storeTargets) {
+      auto check = heapChecks.buildCheck(storeTarget, pair.second.addr);
 
       result = builder.CreateAnd(result, check);
     }
@@ -197,7 +194,7 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
 
   findAliasInstrumentableRegions(
     topRegion,
-    se, aa, li, dt, pdt, df,
+    se, aa, saa, li, dt,
     targetRegions
   );
 

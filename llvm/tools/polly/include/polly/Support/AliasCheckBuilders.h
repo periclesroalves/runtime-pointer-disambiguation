@@ -66,7 +66,7 @@ public:
   // E.g.: %loc-no-alias = upper(A) < B || B < lower(A)
   Value* buildLocationCheck(Value *a, Value *addrB);
 private:
-  ValuePair buildSCEVBounds(Value *basePtr);
+  bool buildSCEVBounds(Value *basePtr, ValuePair &dst);
 
   SCEVRangeBuilder&                             rangeBuilder;
   BuilderType&                                  builder;

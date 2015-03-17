@@ -49,6 +49,10 @@ public:
 
   SpeculativeAliasResult
   virtual speculativeAlias(const Function *f, const Value *a, const Value *b) = 0;
+
+  bool probablyAlias(const Function *f, const Value *a, const Value *b) {
+    return speculativeAlias(f, a, b) == SpeculativeAliasResult::ProbablyAlias;
+  }
 private:
   virtual void anchor();
 };

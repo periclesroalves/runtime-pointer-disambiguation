@@ -263,7 +263,7 @@ public:
   ///
   /// @param CI The call instruction to check.
   /// @return True if the call instruction is valid, false otherwise.
-  static bool isValidCallInst(CallInst &CI);
+  static bool isValidCallInst(const CallInst &CI);
 
   /// @brief Is the region is the maximum region of a Scop?
   ///

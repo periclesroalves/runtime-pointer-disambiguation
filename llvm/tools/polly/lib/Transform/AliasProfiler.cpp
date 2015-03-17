@@ -83,51 +83,56 @@ private:
 
     // *** insert checks
 
-    // Insert comparison expressions for every pair of pointers that need to be
-    // checked in the region.
-    for (auto& pair : ctx.ptrPairsToCheck) {
-      auto basePtr1 = pair.first;
-      auto basePtr2 = pair.second;
+    auto insertTraceCall = [&](Value* basePtr1, Value* basePtr2, Value* checkResult, uint8_t type) {
+      assert(traceAliasBehaviour);
 
-      insertTraceCall(
-        builder,
-        basePtr1, basePtr2,
-        rangeChecks.buildRangeCheck(basePtr1, basePtr2),
-        MEMTRACK_NO_RANGE_ALIAS
+      if (!checkResult)
+        return;
+
+      checkResult = builder.CreateSExtOrTrunc(checkResult, builder.getInt8Ty());
+
+      builder.CreateCall5(
+        traceAliasBehaviour,
+        getNameAsValue(builder, currentFunction),
+        getNameAsValue(builder, basePtr1),
+        getNameAsValue(builder, basePtr2),
+        checkResult,
+        builder.getInt8(type)
       );
+    };
+
+    auto insertTraceCalls = [&](Value* basePtr1, Value* basePtr2) {
       insertTraceCall(
-        builder,
         basePtr1, basePtr2,
         heapChecks.buildCheck(basePtr1, basePtr2),
         MEMTRACK_NO_HEAP_ALIAS
       );
       insertTraceCall(
-        builder,
         basePtr1, basePtr2,
         eqChecks.buildCheck(basePtr1, basePtr2),
         MEMTRACK_EXACT_ALIAS
       );
+      insertTraceCall(
+        basePtr1, basePtr2,
+        rangeChecks.buildRangeCheck(basePtr1, basePtr2),
+        MEMTRACK_NO_RANGE_ALIAS
+      );
+    };
+
+    // Insert comparison expressions for every pair of pointers that need to be
+    // checked in the region.
+    for (auto& pair : ctx.heapChecks.ptrPairsToCheck) {
+      auto basePtr1 = pair.first;
+      auto basePtr2 = pair.second;
+
+      insertTraceCalls(basePtr1, basePtr2);
     }
-  }
-  void insertTraceCall(
-    BuilderType& irb,
-    Value* basePtr1,
-    Value* basePtr2,
-    Value* checkResult,
-    uint8_t type
-  ) {
-    assert(traceAliasBehaviour);
+    for (auto& pair : ctx.scevChecks.ptrPairsToCheck) {
+      auto basePtr1 = pair.first;
+      auto basePtr2 = pair.second;
 
-    checkResult = irb.CreateSExtOrTrunc(checkResult, irb.getInt8Ty());
-
-    irb.CreateCall5(
-      traceAliasBehaviour,
-      getNameAsValue(irb, currentFunction),
-      getNameAsValue(irb, basePtr1),
-      getNameAsValue(irb, basePtr2),
-      checkResult,
-      irb.getInt8(type)
-    );
+      insertTraceCalls(basePtr1, basePtr2);
+    }
   }
 
   Value* getNameAsValue(BuilderType& irb, Value *v) {
@@ -181,6 +186,7 @@ private:
   // Analyses used.
   ScalarEvolution *se;
   AliasAnalysis *aa;
+  SpeculativeAliasAnalysis *saa;
   LoopInfo *li;
   RegionInfo *ri;
   DominatorTree *dt;
@@ -204,6 +210,7 @@ bool AliasProfiling::runOnFunction(llvm::Function &F) {
   li  = &getAnalysis<LoopInfo>();
   ri  = &getAnalysis<RegionInfoPass>().getRegionInfo();
   aa  = &getAnalysis<AliasAnalysis>();
+  saa = &getAnalysis<SpeculativeAliasAnalysis>();
   se  = &getAnalysis<ScalarEvolution>();
   dt  = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
   pdt = &getAnalysis<PostDominatorTree>();
@@ -213,7 +220,7 @@ bool AliasProfiling::runOnFunction(llvm::Function &F) {
 
   findAliasInstrumentableRegions(
     ri->getTopLevelRegion(),
-    se, aa, li, dt, pdt, df,
+    se, aa, saa, li, dt,
     targetRegions
   );
 
@@ -234,6 +241,7 @@ void AliasProfiling::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequired<LoopInfo>();
   AU.addRequired<ScalarEvolution>();
   AU.addRequired<AliasAnalysis>();
+  AU.addRequired<SpeculativeAliasAnalysis>();
   AU.addRequired<RegionInfoPass>();
 
   // Changing the CFG like we do doesn't preserve anything.
@@ -253,6 +261,7 @@ INITIALIZE_PASS_BEGIN(AliasProfiling, "polly-alias-profiler",
                       "Polly - Add instrumentation for alias profiling",
                       false, false);
 INITIALIZE_AG_DEPENDENCY(AliasAnalysis);
+INITIALIZE_AG_DEPENDENCY(SpeculativeAliasAnalysis);
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass);
 INITIALIZE_PASS_DEPENDENCY(LoopInfo);
 INITIALIZE_PASS_DEPENDENCY(PostDominatorTree);

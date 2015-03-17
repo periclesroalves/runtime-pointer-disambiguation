@@ -47,6 +47,7 @@ class ScopDetection;
 class DetectionContext;
 class AliasProfilingFeedback;
 class SCEVRangeBuilder;
+class SpeculativeAliasAnalysis;
 
 // Information regarding an artificial back edge count created for a loop.
 struct ArtificialBECount {
@@ -69,7 +70,25 @@ struct AliasInstrumentationContext {
     std::set<Instruction *> users;
     std::set<const SCEV  *> accessFunctions;
   };
+
   using MemoryAccessMap = ValueMap<Value *, BasePtrInfo>;
+  using MemoryAccess    = MemoryAccessMap::value_type;
+  using ValuePair       = std::pair<Value *, Value *>;
+
+  struct NoAliasChecks {
+    // Stores all pairs of base pointers that need to be dynamically checked
+    // against each other, for the region to be considered free of aliasing.
+    // If the pointers a, b, and c may alias in the region, we'd have:
+    // - pairsToCheck: (<a,b>, <b,c>, <a,c>)
+    std::set<ValuePair> ptrPairsToCheck;
+
+    // All base pointers that are targets of store instructions in the region.
+    std::set<Value *> storeTargets;
+
+    // Add a pair of pointers to check for aliasing.
+    // If any of them are targets of a store they will be added to storeTargets.
+    void addPair(AliasInstrumentationContext& ctx, Value *ptr1, Value *ptr2);
+  };
 
   Region *region; // The region being instrumented.
 
@@ -79,17 +98,16 @@ struct AliasInstrumentationContext {
   // - memAccesses: {a: (i,i+5), b: (i+j)}
   MemoryAccessMap memAccesses;
 
-  // All base pointers that are targets of store instructions in the region.
-  std::set<Value *> storeTargets;
-
   // Artificial back-edge counts created for loops in this region.
   std::map<Loop *, ArtificialBECount> artificialBECounts;
 
-  // Stores all pairs of base pointers that need to be dynamically checked
-  // against each other, for the region to be considered free of aliasing.
-  // If the pointers a, b, and c may alias in the region, we'd have:
-  // - pairsToCheck: (<a,b>, <b,c>, <a,c>)
-  std::set<std::pair<Value *, Value *>> ptrPairsToCheck;
+  // stores pairs of pointers and stores that need to be checked for aliasing
+  NoAliasChecks heapChecks;
+  NoAliasChecks scevChecks;
+
+  // Stores pairs of pointers that are likely to be exactly equal
+  // at runtime.
+  std::set<std::pair<Value *, Value *>> ptrPairsToEqualityCheck;
 
   AliasInstrumentationContext(Region *r) : region(r) {}
 
@@ -117,10 +135,9 @@ void findAliasInstrumentableRegions(
     Region *region,
     ScalarEvolution *se,
     AliasAnalysis *aa,
+    SpeculativeAliasAnalysis *saa,
     LoopInfo *li,
     DominatorTree *dt,
-    PostDominatorTree *pdt,
-    DominanceFrontier *df,
     std::vector<std::unique_ptr<AliasInstrumentationContext>>& out
 );
 

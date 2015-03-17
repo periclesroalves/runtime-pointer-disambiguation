@@ -126,6 +126,11 @@ static cl::opt<bool> SCEVAliasInstrumenter(
              "with runtime checks"),
     cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
 
+static cl::opt<bool> UseStaticAaEval(
+    "polly-aa-eval",
+    cl::desc("Evaluate static alias analysis on scops"),
+    cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
+
 static cl::opt<bool> UseAliasProfiling(
     "polly-use-alias-profiling",
     cl::desc("Instrument alias profiling for dependences that can't be solved"
@@ -224,8 +229,11 @@ void initializePollyPasses(PassRegistry &Registry) {
 static void registerPollyPasses(llvm::PassManagerBase &PM) {
   registerCanonicalicationPasses(PM, SCEVCodegen);
 
-  if (UseAliasProfiling || SCEVAliasInstrumenter)
+  if (UseAliasProfiling || SCEVAliasInstrumenter || UseStaticAaEval)
     PM.add(llvm::createFullInstructionNamerPass());
+
+  if (UseStaticAaEval)
+    PM.add(polly::createPollyAaEvalPass());
 
   if (UseAliasProfiling)
     PM.add(polly::createAliasProfilingPass());

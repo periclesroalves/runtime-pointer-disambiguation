@@ -5,8 +5,10 @@ using namespace polly;
 using namespace llvm;
 
 Value* RangeCheckBuilder::buildRangeCheck(Value *a, Value *b) {
-  auto boundsA = buildSCEVBounds(a);
-  auto boundsB = buildSCEVBounds(b);
+  ValuePair boundsA, boundsB;
+
+  if (!buildSCEVBounds(a, boundsA) || !buildSCEVBounds(b, boundsB))
+    return nullptr;
 
   // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
   auto i8PtrTy = builder.getInt8PtrTy();
@@ -23,7 +25,9 @@ Value* RangeCheckBuilder::buildRangeCheck(Value *a, Value *b) {
 }
 
 Value *RangeCheckBuilder::buildLocationCheck(Value *a, Value *addrB) {
-  auto boundsA = buildSCEVBounds(a);
+  ValuePair boundsA;
+  if (!buildSCEVBounds(a, boundsA))
+    return nullptr;
 
   // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
   auto i8PtrTy = builder.getInt8PtrTy();
@@ -41,11 +45,13 @@ Value *RangeCheckBuilder::buildLocationCheck(Value *a, Value *addrB) {
 }
 
 
-ValuePair RangeCheckBuilder::buildSCEVBounds(Value *basePtr) {
+bool RangeCheckBuilder::buildSCEVBounds(Value *basePtr, ValuePair &dst) {
   auto it = boundsCache.find(basePtr);
 
-  if (it != boundsCache.end())
-    return it->second;
+  if (it != boundsCache.end()) {
+    dst = it->second;
+    return true;
+  }
 
   assert(memAccesses.count(basePtr));
 
@@ -54,14 +60,15 @@ ValuePair RangeCheckBuilder::buildSCEVBounds(Value *basePtr) {
   auto lower = rangeBuilder.getULowerBound(accessFunctions);
   auto upper = rangeBuilder.getUUpperBound(accessFunctions);
 
-  assert((lower && upper) &&
-    "All access expressions should have computable SCEV bounds by now");
+  if (!lower || !upper)
+    return false;
 
   auto pair = std::make_pair(lower, upper);
 
   boundsCache.insert(it, std::make_pair(basePtr, pair));
 
-  return pair;
+  dst = pair;
+  return true;
 }
 
 Value* HeapCheckBuilder::buildCheck(Value *a, Value *b) {
