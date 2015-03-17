@@ -50,6 +50,14 @@ CLANG_POLLY_FLAGS=( -Xclang -load -Xclang "$LLVM_LIB_DIR/LLVMPolly.so" -mllvm -p
 ## MAIN
 
 function main {
+	if [[ "$#" -eq 0 ]]
+	then
+		echo "Expected a command (one of: compile, benchmark, aa-eval, aa-profile)"
+		exit 1
+	fi
+	local COMMAND="$1"
+	shift 1
+
 	if [[ "$#" -gt 0 ]]
 	then
 		BENCH_LIST=( "$@" )
@@ -70,9 +78,26 @@ function main {
 
 	mkdir -p "$BIN_DIR"
 
-	compile_libraries
-	compile_benchmarks
-	run_benchmarks
+	case "$COMMAND" in
+		compile)
+			compile_libraries
+			alias_profile_benchmarks
+			compile_benchmarks
+			;;
+		benchmark)
+			compile_libraries
+			alias_profile_benchmarks
+			compile_benchmarks
+			run_benchmarks
+			;;
+		aa-eval)
+			static_alias_analyis_benchmarks
+			;;
+		aa-profile)
+			compile_libraries
+			alias_profile_benchmarks
+			;;
+	esac
 }
 
 function compile_libraries {
@@ -88,10 +113,9 @@ function compile_libraries {
 	;
 }
 
-function compile_benchmarks {
-	echo "##### compiling benchmarks"
+function alias_profile_benchmarks {
+	echo "##### alias-profiling"
 
-	echo "#### alias-profiling"
 	for BENCH in "${BENCH_LIST[@]}"
 	do
 		echo "### instrument $BENCH"
@@ -121,6 +145,10 @@ function compile_benchmarks {
 		echo "## aggregate trace"
 		python3 "$HA_SRC_DIR/aggregate-alias-trace" "$ALIAS_TRACE" "$ALIAS_YAML"
 	done
+}
+
+function compile_benchmarks {
+	echo "##### compiling benchmarks"
 
 	echo "#### compile normal"
 	for BENCH in "${BENCH_LIST[@]}"
@@ -147,6 +175,21 @@ function compile_benchmarks {
 
 		#### create speculatively optimized version
 		compile_benchmark "$BENCH" speculative "$SPECULATIVE_BENCHMARK" "$ALIAS_YAML"
+	done
+}
+
+function static_alias_analyis_benchmarks {
+	echo "##### static alias eval"
+
+	for BENCH in "${BENCH_LIST[@]}"
+	do
+		echo "### static alias eval $BENCH"
+
+		local FILE="$BIN_DIR"/"$(basename "$BENCH")"
+
+		local ALIAS_YAML="$FILE"".alias.yaml"  # processed trace file
+
+		compile_benchmark "$BENCH" aa-eval "/dev/null" "$ALIAS_YAML"
 	done
 }
 
@@ -202,6 +245,17 @@ function compile_benchmark {
 	local LIBRARIES=()
 
 	case "$MODE" in
+		aa-eval)
+			local ALIAS_YAML_FILE="$4"
+
+			FLAGS+=(
+				"${CLANG_POLLY_FLAGS[@]}" -O3
+				-mllvm -polly-aa-eval
+				-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
+				-o /dev/null
+			)
+			;;
+
 		alias-profiling)
 			FLAGS+=( "${CLANG_POLLY_FLAGS[@]}" -O3 -mllvm -polly-use-alias-profiling )
 			LIBRARIES+=( "$ALIAS_PROFILER_LL" -ldl )
@@ -215,8 +269,7 @@ function compile_benchmark {
 			local ALIAS_YAML_FILE="$4"
 
 			FLAGS+=(
-				"${CLANG_POLLY_FLAGS[@]}"
-				-O3
+				"${CLANG_POLLY_FLAGS[@]}" -O3
 				# -mllvm -profiling-spec-aa ## broken in clang
 				-mllvm -polly-use-scev-alias-checks
 				-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
@@ -264,16 +317,19 @@ function compile_benchmark {
 		OBJ_FILES+=( "$OBJ" )
 	done
 
-	# only link in memtrack if it is actually needed
-	if nm "${OBJ_FILES[@]}" | grep -q 'U gcg_getBasePtr' \
-	&& [[ "$MODE" != alias-profiling ]]
+	if [[ "$MODE" != aa-eval ]]
 	then
-		echo "# linking in memtrack"
-		LIBRARIES+=( "$MEMTRACK_LL" -ldl )
-	fi
+		# only link in memtrack if it is actually needed
+		if nm "${OBJ_FILES[@]}" | grep -q 'U gcg_getBasePtr' \
+			&& [[ "$MODE" != alias-profiling ]]
+		then
+			echo "# linking in memtrack"
+			LIBRARIES+=( "$MEMTRACK_LL" -ldl )
+		fi
 
-	echo "# link"
-	"$LINKER" "${OBJ_FILES[@]}" "${LIBRARIES[@]:-}" "${BENCH_LIBRARIES:-}" -o "$DST"
+		echo "# link"
+		"$LINKER" "${OBJ_FILES[@]}" "${LIBRARIES[@]:-}" "${BENCH_LIBRARIES:-}" -o "$DST"
+	fi
 }
 
 ## helpers
