@@ -68,6 +68,8 @@ function main {
 	[ "${#BENCH_LIST[@]}" -eq 0 ] && _error "BENCH_LIST is empty"
 	[ -z "$BIN_DIR" ]             && _error "BIN_DIR not set"
 
+	echo "## USER: $(whoami)"
+
 	MEMTRACK_LL="$BIN_DIR/memtrack.ll"
 	ALIAS_PROFILER_LL="$BIN_DIR/alias_profiler.ll"
 
