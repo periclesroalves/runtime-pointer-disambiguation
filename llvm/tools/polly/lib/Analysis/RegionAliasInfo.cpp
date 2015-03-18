@@ -337,10 +337,14 @@ private:
   // note: this function inserts new instructions!
   bool ensureAllLoopsHaveSymbolicBackedgeCount(
                                         AliasInstrumentationContext& context) {
+    auto *region = context.region;
     std::set<Instruction*> hoistedLoads;
 
     // Make sure that all loops in the region have a symbolic limit.
     for (Loop *loop : *li) {
+      if (!region->contains(loop))
+        continue;
+
       // If a loop doesn't have a defined limit, try to create an artificial one.
       if (!se->hasLoopInvariantBackedgeTakenCount(loop) &&
           !createArtificialInvariantBECount(loop, context, hoistedLoads)) {
