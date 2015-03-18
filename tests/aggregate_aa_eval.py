@@ -12,14 +12,17 @@ def input_files():
 		yield sys.stdin
 	else:
 		for root in roots:
-			for root, dirs, files in os.walk(root):
-				for file in files:
-					path = os.path.join(root, file)
+			if os.path.isfile(root):
+				yield open(root)
+			else:
+				for root, dirs, files in os.walk(root):
+					for file in files:
+						path = os.path.join(root, file)
 
-					if not path.endswith('yaml'):
-						continue
+						if not path.endswith('yaml'):
+							continue
 
-					yield open(path)
+						yield open(path)
 
 accum = collections.OrderedDict()
 
