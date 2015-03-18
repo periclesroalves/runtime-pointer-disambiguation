@@ -101,6 +101,7 @@ struct AliasInstrumentationContext {
 
   // Artificial back-edge counts created for loops in this region.
   std::map<Loop *, ArtificialBECount> artificialBECounts;
+  bool allLoopsHaveBounds = false;
 
   // stores pairs of pointers and stores that need to be checked for aliasing
   NoAliasChecks heapChecks;

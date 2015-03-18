@@ -98,9 +98,8 @@ private:
     if (!collectMemoryAccesses(context))
       return false;
 
-    // !!!! This may insert dead loads on failure
     // TODO: only insert loads on success.
-    ensureAllLoopsHaveSymbolicBackedgeCount(context);
+    context.allLoopsHaveBounds = ensureAllLoopsHaveSymbolicBackedgeCount(context);
 
     // find pairs of base ptrs with aliasing users
     if (!collectPtrPairsToCheck(context))
@@ -113,6 +112,9 @@ private:
                          SCEVRangeBuilder &rangeBuilder,
                          Value *ptr1, Value *ptr2) {
     if (!flags.UseSCEVAliasChecks)
+      return false;
+
+    if (!context.allLoopsHaveBounds)
       return false;
 
     return isValidScevBasePtr(context, rangeBuilder, ptr1)
@@ -335,12 +337,21 @@ private:
   // note: this function inserts new instructions!
   bool ensureAllLoopsHaveSymbolicBackedgeCount(
                                         AliasInstrumentationContext& context) {
+    std::set<Instruction*> hoistedLoads;
+
     // Make sure that all loops in the region have a symbolic limit.
     for (Loop *loop : *li) {
       // If a loop doesn't have a defined limit, try to create an artificial one.
       if (!se->hasLoopInvariantBackedgeTakenCount(loop) &&
-          !createArtificialInvariantBECount(loop, context))
+          !createArtificialInvariantBECount(loop, context, hoistedLoads)) {
+
+        // cleanup
+        context.artificialBECounts.clear();
+        for (auto *load : hoistedLoads)
+          load->eraseFromParent();
+
         return false;
+      }
     }
     return true;
   }
@@ -353,7 +364,8 @@ private:
   // insertion, we generate a dynamic check that guarantees that no other store
   // aliases the hoisted load.
   bool createArtificialInvariantBECount(Loop *l,
-                                        AliasInstrumentationContext &context);
+                                        AliasInstrumentationContext &context,
+                                        std::set<Instruction*> &hoistedLoads);
 
   // Get the value that represents the base pointer of the given memory access
   // instruction in the given region. The pointer must be region invariant.
@@ -434,7 +446,8 @@ Value *RegionAliasInfoBuilder::getBasePtrValue(Instruction &inst,
 }
 
 bool RegionAliasInfoBuilder::createArtificialInvariantBECount(Loop *l,
-                            AliasInstrumentationContext &context) {
+                                        AliasInstrumentationContext &context,
+                                        std::set<Instruction*> &hoistedLoads) {
   Region     &r        = *context.region;
   BasicBlock *entering = r.getEnteringBlock();
 
@@ -484,6 +497,9 @@ bool RegionAliasInfoBuilder::createArtificialInvariantBECount(Loop *l,
   newLoad->setName((oldLoad->hasName() ? oldLoad->getName() + "." : "") +
     "hoisted");
   newLoad->insertBefore(entering->getTerminator());
+
+  hoistedLoads.insert(newLoad);
+
   const SCEV *newRhsSCEV = se->getSCEVAtScope(newLoad, l);
   const SCEV *count;
 
@@ -517,6 +533,10 @@ bool RegionAliasInfoBuilder::createArtificialInvariantBECount(Loop *l,
 // record which users of base ptr are stores
 static void addStoreTargets(AliasInstrumentationContext &ctx,
                             std::set<Value*>& dst, Value *basePtr) {
+  // if no hoisting happened there is no need to guard stores.
+  if (!ctx.allLoopsHaveBounds)
+    return;
+
   for (Value *user : ctx.memAccesses[basePtr].users)
     if (isa<StoreInst>(user))
       dst.insert(basePtr);
