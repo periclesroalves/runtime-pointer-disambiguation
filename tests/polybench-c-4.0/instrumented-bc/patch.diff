@@ -1,0 +1,29 @@
+diff --git a/llvm/tools/polly/lib/Analysis/ScopDetection.cpp b/llvm/tools/polly/lib/Analysis/ScopDetection.cpp
+index e7ff15d..f313c20 100644
+--- a/llvm/tools/polly/lib/Analysis/ScopDetection.cpp
++++ b/llvm/tools/polly/lib/Analysis/ScopDetection.cpp
+@@ -62,7 +62,10 @@
+ #include "llvm/IR/DiagnosticInfo.h"
+ #include "llvm/IR/DiagnosticPrinter.h"
+ #include "llvm/IR/LLVMContext.h"
++#include "llvm/IR/Module.h"
+ #include "llvm/Support/Debug.h"
++#include "llvm/Support/raw_ostream.h"
++#include "llvm/Support/FileSystem.h"
+ #include <set>
+ 
+ using namespace llvm;
+@@ -829,6 +832,13 @@ void ScopDetection::emitMissedRemarksForLeaves(const Function &F,
+ }
+ 
+ bool ScopDetection::runOnFunction(llvm::Function &F) {
++  const int idx = F.getParent()->getModuleIdentifier().find_last_of("\\/");
++  std::error_code ec;
++  raw_fd_ostream file(F.getParent()->getModuleIdentifier().substr(idx
++    + 1) + ".ll", ec, sys::fs::F_Text);
++  file << *(F.getParent());
++  file.close();
++
+   LI = &getAnalysis<LoopInfo>();
+   RI = &getAnalysis<RegionInfoPass>().getRegionInfo();
+   if (!DetectScopsWithoutLoops && LI->empty())
