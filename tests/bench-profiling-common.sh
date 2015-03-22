@@ -402,7 +402,7 @@ function _error {
 }
 
 function _time {
-	command time -f '%U' "$@"
+	command time -f '%U' "$@" >/dev/null
 }
 
 function _pushd {

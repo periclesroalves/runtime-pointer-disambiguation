@@ -64,18 +64,18 @@ function run_benchmark {
 
 	case $NAME in
 		'b+tree')
-			_time "$BIN" core 1 file "$DATA"/b+tree/mil.txt command "$DATA"/b+tree/command.txt > /dev/null
+			_time "$BIN" core 1 file "$DATA"/b+tree/mil.txt command "$DATA"/b+tree/command.txt 2>&1
 			;;
 		backprop)
 			"$BIN" 65536 | get_elapsed_time
 			;;
 
 		bfs)
-			_time "$BIN" 1 "$DATA"/bfs/graph1MW_6.txt > /dev/null
+			_time "$BIN" 1 "$DATA"/bfs/graph1MW_6.txt 2>&1
 			;;
 
 		'hotspot')
-			_time "$BIN" 512 512 2 1 "$DATA"/hotspot/temp_512 "$DATA"/hotspot/power_512 > /dev/null
+			_time "$BIN" 512 512 2 1 "$DATA"/hotspot/temp_512 "$DATA"/hotspot/power_512  2>&1
 			;;
 
 		'particlefilter')
@@ -87,7 +87,7 @@ function run_benchmark {
 			;;
 
 		'heartwall')
-			_time "$BIN" "$DATA"/heartwall/test.avi 20 1 > /dev/null
+			_time "$BIN" "$DATA"/heartwall/test.avi 20 1 2>&1
 			;;
 
 		'kmeans')
@@ -95,7 +95,7 @@ function run_benchmark {
 			;;
 
 		'lavaMD')
-			_time "$BIN" -cores 1 -boxes1d 10 > /dev/null
+			_time "$BIN" -cores 1 -boxes1d 10 2>&1
 			;;
 
 		'streamcluster')
