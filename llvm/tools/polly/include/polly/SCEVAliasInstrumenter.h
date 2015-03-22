@@ -122,6 +122,7 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // it's base pointer scope, generating disjoint alias sets in the region.
   void fixAliasInfo(AliasInstrumentationContext&);
 
+  GlobalVariable *defineBlackhole();
 public:
   static char ID;
   explicit SCEVAliasInstrumenter(AliasCheckFlags flags = AliasCheckFlags())
@@ -133,6 +134,8 @@ public:
 
   bool doInitialization(Module &M) override;
 };
+
+extern bool EvaluateAliasCheckCosts;
 
 } // end namespace polly
 

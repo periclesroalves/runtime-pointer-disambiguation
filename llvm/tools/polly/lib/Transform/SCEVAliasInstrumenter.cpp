@@ -13,6 +13,7 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/TypeBuilder.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
+#include "llvm/Support/CommandLine.h"
 
 #include "polly/SCEVAliasInstrumenter.h"
 #include "polly/SpeculativeAliasAnalysis.h"
@@ -88,36 +89,51 @@ void SCEVAliasInstrumenter::fixAliasInfo(AliasInstrumentationContext &ctx) {
 
 void SCEVAliasInstrumenter::buildNoAliasClone(AliasInstrumentationContext &context,
                                               Value *checkResult) {
-  if (!checkResult)
-    return;
+  Region         *region = context.region;
+  TerminatorInst *br     = region->getEnteringBlock()->getTerminator();
 
-  Region *region       = context.region;
-  Region *clonedRegion = cloneRegion(region, nullptr, ri, dt, df);
+  if (EvaluateAliasCheckCosts) {
+    GlobalValue *blackhole = defineBlackhole();
 
-  // Build the conditional brach based on the dynamic test result.
-  TerminatorInst *br = region->getEnteringBlock()->getTerminator();
-  BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
-  builder.SetInsertPoint(br);
-  builder.CreateCondBr(checkResult, region->getEntry(), clonedRegion->getEntry());
-  br->eraseFromParent();
+    IRBuilder<> irb(br);
 
-  // Replace original loop bound loads by hoisted loads in the region, which is
-  // now guarded against true aliasing.
-  for (auto &pair : context.artificialBECounts) {
-    pair.second.oldLoad->replaceAllUsesWith(pair.second.hoistedLoad);
-    pair.second.oldLoad->eraseFromParent();
+    checkResult = checkResult ? checkResult : irb.getFalse();
+
+    irb.CreateStore(checkResult, blackhole);
+  } else {
+    if (!checkResult)
+      return;
+
+    Region *clonedRegion = cloneRegion(region, nullptr, ri, dt, df);
+
+    // Build the conditional brach based on the dynamic test result.
+    BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
+    builder.SetInsertPoint(br);
+    builder.CreateCondBr(checkResult, region->getEntry(), clonedRegion->getEntry());
+    br->eraseFromParent();
+
+    // Replace original loop bound loads by hoisted loads in the region, which is
+    // now guarded against true aliasing.
+    for (auto &pair : context.artificialBECounts) {
+      pair.second.oldLoad->replaceAllUsesWith(pair.second.hoistedLoad);
+      pair.second.oldLoad->eraseFromParent();
+    }
+
+    // Mark the cloned region as free of dependencies.
+    fixAliasInfo(context);
   }
-
-  // Mark the cloned region as free of dependencies.
-  fixAliasInfo(context);
 }
 
 Value *SCEVAliasInstrumenter::insertDynamicChecks(
                             AliasInstrumentationContext &context) {
+
   auto region = context.region;
 
   // Create an entering block to receive the checks.
   simplifyRegion(region, li);
+
+  if (EvaluateAliasCheckCosts)
+    return nullptr;
 
   // Set instruction insertion context. We'll insert the run-time tests in the
   // region entering block.
@@ -178,6 +194,30 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
 
   return result;
 }
+
+GlobalVariable *SCEVAliasInstrumenter::defineBlackhole() {
+  static const char *const name = "__alias_check_blackhole";
+
+  auto *mod = currFn->getParent();
+  auto &ctx = currFn->getContext();
+
+  GlobalVariable *blackhole = mod->getGlobalVariable(name);
+
+  if (!blackhole) {
+    blackhole = new GlobalVariable(
+      *mod,
+      IntegerType::get(ctx, 1),
+      /*isConstant=*/false,
+      GlobalValue::LinkOnceAnyLinkage,
+      ConstantInt::get(ctx, APInt(1, 0)),
+      name
+    );
+    blackhole->setAlignment(1);
+  }
+
+  return blackhole;
+}
+
 
 bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   // Collect all analyses needed for runtime check generation.
@@ -262,6 +302,8 @@ Pass *polly::createSCEVAliasInstrumenterPass() {
 Pass *polly::createSCEVAliasInstrumenterPass(const AliasCheckFlags& flags) {
   return new SCEVAliasInstrumenter(flags);
 }
+
+bool polly::EvaluateAliasCheckCosts = false;
 
 INITIALIZE_PASS_BEGIN(SCEVAliasInstrumenter, "polly-scev-checks",
                       "Polly - Instrument alias dependencies", false,

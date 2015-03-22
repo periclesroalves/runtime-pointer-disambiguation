@@ -31,6 +31,7 @@
 #include "polly/ScopInfo.h"
 #include "polly/TempScopInfo.h"
 #include "polly/Support/AliasCheckBuilders.h"
+#include "polly/SCEVAliasInstrumenter.h"
 #include "llvm/Analysis/CFGPrinter.h"
 #include "llvm/PassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
@@ -149,6 +150,15 @@ static cl::opt<bool> UseAliasProfiling(
     cl::desc("Instrument alias profiling for dependences that can't be solved"
              " statically"),
     cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
+
+static cl::opt<bool, true> EvaluateAliasCheckCostsFlag(
+  "polly-evaluate-check-costs",
+  cl::desc("Evaluate costs of alias guards by inserting them but doing no"
+    " cloning"),
+  cl::location(EvaluateAliasCheckCosts),
+  cl::init(false),
+  cl::ZeroOrMore
+);
 
 static cl::opt<bool> PollyViewer(
     "polly-show",

@@ -97,6 +97,12 @@ function main {
 			compile_libraries
 			alias_profile_benchmarks
 			;;
+		eval-check-costs)
+			compile_libraries
+			alias_profile_benchmarks
+			compile_benchmarks_guard_costs
+			run_benchmarks
+			;;
 	esac
 }
 
@@ -176,6 +182,37 @@ function compile_benchmarks {
 
 		#### create speculatively optimized version
 		compile_benchmark "$BENCH" speculative "$SPECULATIVE_BENCHMARK" "$ALIAS_YAML"
+	done
+}
+
+function compile_benchmarks_guard_costs {
+	echo "##### compiling benchmarks"
+
+	echo "#### compile normal"
+	for BENCH in "${BENCH_LIST[@]}"
+	do
+		echo "### $BENCH"
+
+		local FILE="$BIN_DIR"/"$(basename "$BENCH")"
+
+		local BENCHMARK="$FILE"-normal
+
+		#### create speculatively optimized version
+		compile_benchmark "$BENCH" eval-check-costs-baseline "$BENCHMARK"
+	done
+
+	echo "#### compile speculative"
+	for BENCH in "${BENCH_LIST[@]}"
+	do
+		echo "### $BENCH"
+
+		local FILE="$BIN_DIR"/"$(basename "$BENCH")"
+
+		local ALIAS_YAML="$FILE"".alias.yaml"  # processed trace file
+		local SPECULATIVE_BENCHMARK="$FILE"-speculative
+
+		#### create speculatively optimized version
+		compile_benchmark "$BENCH" eval-check-costs "$SPECULATIVE_BENCHMARK" "$ALIAS_YAML"
 	done
 }
 
@@ -272,6 +309,28 @@ function compile_benchmark {
 			FLAGS+=(
 				"${CLANG_POLLY_FLAGS[@]}" -O3
 				# -mllvm -profiling-spec-aa ## broken in clang
+				-mllvm -polly-use-scev-alias-checks
+				-mllvm -polly-use-heap-alias-checks
+				-mllvm -polly-use-must-alias-checks
+				-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
+			)
+			;;
+
+		eval-check-costs-baseline)
+			FLAGS+=(
+				"${CLANG_POLLY_FLAGS[@]}" -O3
+				-mllvm -polly-evaluate-check-costs
+				-mllvm -polly-use-scev-alias-checks
+				-mllvm -polly-use-heap-alias-checks
+				-mllvm -polly-use-must-alias-checks
+			)
+			;;
+		eval-check-costs)
+			local ALIAS_YAML_FILE="$4"
+
+			FLAGS+=(
+				"${CLANG_POLLY_FLAGS[@]}" -O3
+				-mllvm -polly-evaluate-check-costs
 				-mllvm -polly-use-scev-alias-checks
 				-mllvm -polly-use-heap-alias-checks
 				-mllvm -polly-use-must-alias-checks
