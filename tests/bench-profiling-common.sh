@@ -188,20 +188,20 @@ function compile_benchmarks {
 function compile_benchmarks_guard_costs {
 	echo "##### compiling benchmarks"
 
-	echo "#### compile normal"
+	echo "#### compile measure check costs baseline"
 	for BENCH in "${BENCH_LIST[@]}"
 	do
 		echo "### $BENCH"
 
 		local FILE="$BIN_DIR"/"$(basename "$BENCH")"
 
-		local BENCHMARK="$FILE"-normal
+		local BENCHMARK="$FILE"-measure-check-costs-baseline
 
 		#### create speculatively optimized version
 		compile_benchmark "$BENCH" eval-check-costs-baseline "$BENCHMARK"
 	done
 
-	echo "#### compile speculative"
+	echo "#### compile measure check costs"
 	for BENCH in "${BENCH_LIST[@]}"
 	do
 		echo "### $BENCH"
@@ -209,10 +209,10 @@ function compile_benchmarks_guard_costs {
 		local FILE="$BIN_DIR"/"$(basename "$BENCH")"
 
 		local ALIAS_YAML="$FILE"".alias.yaml"  # processed trace file
-		local SPECULATIVE_BENCHMARK="$FILE"-speculative
+		local BENCHMARK="$FILE"-measure-check-costs
 
 		#### create speculatively optimized version
-		compile_benchmark "$BENCH" eval-check-costs "$SPECULATIVE_BENCHMARK" "$ALIAS_YAML"
+		compile_benchmark "$BENCH" eval-check-costs "$BENCHMARK" "$ALIAS_YAML"
 	done
 }
 
@@ -283,10 +283,9 @@ function compile_benchmark {
 	local LIBRARIES=()
 
 	local ALIAS_CHECK_FLAGS=(
-		-mllvm -polly-use-scev-alias-checks
+		# -mllvm -polly-use-scev-alias-checks
 		-mllvm -polly-use-heap-alias-checks
 		-mllvm -polly-use-must-alias-checks
-		-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
 	)
 
 	case "$MODE" in
@@ -302,7 +301,10 @@ function compile_benchmark {
 			;;
 
 		alias-profiling)
-			FLAGS+=( "${CLANG_POLLY_FLAGS[@]}" -O3 -mllvm -polly-use-alias-profiling )
+			FLAGS+=(
+				"${CLANG_POLLY_FLAGS[@]}" -O3
+				-mllvm -polly-use-alias-profiling
+			)
 			LIBRARIES+=( "$ALIAS_PROFILER_LL" -ldl )
 			;;
 
@@ -317,13 +319,14 @@ function compile_benchmark {
 				"${CLANG_POLLY_FLAGS[@]}" -O3
 				# -mllvm -profiling-spec-aa ## broken in clang
 				"${ALIAS_CHECK_FLAGS[@]}"
+				-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
 			)
 			;;
 
 		eval-check-costs-baseline)
 			FLAGS+=(
 				"${CLANG_POLLY_FLAGS[@]}" -O3
-				-mllvm -polly-evaluate-check-costs
+				-mllvm -polly-alias-instrumenter=measure-check-costs-baseline
 				"${ALIAS_CHECK_FLAGS[@]}"
 			)
 			;;
@@ -332,8 +335,9 @@ function compile_benchmark {
 
 			FLAGS+=(
 				"${CLANG_POLLY_FLAGS[@]}" -O3
-				-mllvm -polly-evaluate-check-costs
+				-mllvm -polly-alias-instrumenter=measure-check-costs
 				"${ALIAS_CHECK_FLAGS[@]}"
+				-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
 			)
 			;;
 
@@ -366,6 +370,7 @@ function compile_benchmark {
 		esac
 
 		local OBJ="$BIN_DIR/$(basename "$SRC_FILE" "$SUFFIX").o"
+		local LL="$BIN_DIR/$(basename "$SRC_FILE" "$SUFFIX").ll"
 
 		"$COMPILER" \
 			"${FLAGS[@]:-}" \
@@ -374,6 +379,13 @@ function compile_benchmark {
 			"${BENCH_FLAGS[@]:-}" \
 			-c -w \
 			"$SRC_FILE" -o "$OBJ"
+		"$COMPILER" \
+			"${FLAGS[@]:-}" \
+			"${BENCH_INCLUDE_DIRS[@]:-}" \
+			"${BENCH_LIBRARIES[@]:-}" \
+			"${BENCH_FLAGS[@]:-}" \
+			-S -emit-llvm -w \
+			"$SRC_FILE" -o "$LL"
 
 		OBJ_FILES+=( "$OBJ" )
 	done
