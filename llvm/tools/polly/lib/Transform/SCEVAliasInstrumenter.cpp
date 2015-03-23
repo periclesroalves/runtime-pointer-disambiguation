@@ -163,7 +163,7 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
 
   // *** insert checks
 
-  Value *result = builder.getTrue();
+  Value *result = nullptr;
 
   // Insert comparison expressions for every pair of pointers that need to be
   // checked in the region.
@@ -173,10 +173,9 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
     auto basePtr1 = pair.first;
     auto basePtr2 = pair.second;
 
-    result = builder.CreateAnd(
-      result,
-      rangeChecks.buildRangeCheck(basePtr1, basePtr2)
-    );
+    auto *check = rangeChecks.buildRangeCheck(basePtr1, basePtr2);
+
+    result = result ? builder.CreateAnd(result, check) : check:
   }
   for (auto& pair : context.heapChecks.ptrPairsToCheck) {
     assert(flags.UseHeapAliasChecks);
@@ -184,10 +183,9 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
     auto basePtr1 = pair.first;
     auto basePtr2 = pair.second;
 
-    result = builder.CreateAnd(
-      result,
-      heapChecks.buildCheck(basePtr1, basePtr2)
-    );
+    auto *check = heapChecks.buildCheck(basePtr1, basePtr2)
+
+    result = result ? builder.CreateAnd(result, check) : check:
   }
 
   // Also, if we hoisted loop bound loads, insert tests to guarantee that no
@@ -196,12 +194,12 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
     for (auto &storeTarget : context.scevChecks.storeTargets) {
       auto check = rangeChecks.buildLocationCheck(storeTarget, pair.second.addr);
 
-      result = builder.CreateAnd(result, check);
+      result = result ? builder.CreateAnd(result, check) : check:
     }
     for (auto &storeTarget : context.heapChecks.storeTargets) {
       auto check = heapChecks.buildCheck(storeTarget, pair.second.addr);
 
-      result = builder.CreateAnd(result, check);
+      result = result ? builder.CreateAnd(result, check) : check:
     }
   }
 
