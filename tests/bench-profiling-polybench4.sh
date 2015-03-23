@@ -48,9 +48,9 @@ function benchmark_iterations {
 	local NAME="$1"
 
 	case $NAME in
-		2mm | 3mm | symm | cholesky)
-			echo $SLOW_BENCH_ITERATIONS
-			;;
+		# 2mm | 3mm | symm | cholesky)
+		# 	echo $SLOW_BENCH_ITERATIONS
+		# 	;;
 		*)
 			echo $FAST_BENCH_ITERATIONS
 			;;

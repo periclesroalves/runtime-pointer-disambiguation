@@ -225,8 +225,8 @@ private:
         Value *ptr1 = i->first;
         Value *ptr2 = j->first;
 
-        if (!anyUsersMayAlias(*i, *j))
-          continue;
+        // if (!anyUsersMayAlias(*i, *j))
+        //   continue;
 
         switch (saa->speculativeAlias(function, ptr1, ptr2)) {
           case SpeculativeAliasResult::NoHeapAlias:

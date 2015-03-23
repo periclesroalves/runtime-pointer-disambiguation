@@ -81,27 +81,29 @@ function main {
 	mkdir -p "$BIN_DIR"
 
 	case "$COMMAND" in
+		compile-libraries)
+			compile_libraries
+			;;
 		compile)
 			compile_benchmarks
-			;;
-		benchmark)
-			compile_libraries
-			alias_profile_benchmarks
-			compile_benchmarks
-			run_benchmarks
 			;;
 		aa-eval)
 			static_alias_analyis_benchmarks
 			;;
 		aa-profile)
-			compile_libraries
 			alias_profile_benchmarks
 			;;
+		benchmark)
+			compile_benchmarks
+			run_benchmarks
+			;;
 		eval-check-costs)
-			compile_libraries
-			alias_profile_benchmarks
 			compile_benchmarks_guard_costs
 			run_benchmarks
+			;;
+		*)
+			_error "Unknown command '$COMMAND'"
+			exit 1
 			;;
 	esac
 }
@@ -282,11 +284,19 @@ function compile_benchmark {
 	local FLAGS=( -g )
 	local LIBRARIES=()
 
-	local ALIAS_CHECK_FLAGS=(
-		# -mllvm -polly-use-scev-alias-checks
-		-mllvm -polly-use-heap-alias-checks
-		-mllvm -polly-use-must-alias-checks
-	)
+	# allow alias check flags to be overriden from command line
+	if [[ -n "${ALIAS_CHECK_FLAGS:-}" ]]
+	then
+		local ALIAS_CHECK_FLAGS=(
+			$ALIAS_CHECK_FLAGS
+		)
+	else
+		local ALIAS_CHECK_FLAGS=(
+			-mllvm -polly-use-scev-alias-checks
+			-mllvm -polly-use-heap-alias-checks
+			-mllvm -polly-use-must-alias-checks
+		)
+	fi
 
 	case "$MODE" in
 		aa-eval)
@@ -309,7 +319,9 @@ function compile_benchmark {
 			;;
 
 		normal)
-			FLAGS+=( "${CLANG_POLLY_FLAGS[@]}" -O3 )
+			FLAGS+=(
+				"${CLANG_POLLY_FLAGS[@]}" -O3
+			)
 			;;
 
 		speculative)
@@ -317,7 +329,6 @@ function compile_benchmark {
 
 			FLAGS+=(
 				"${CLANG_POLLY_FLAGS[@]}" -O3
-				# -mllvm -profiling-spec-aa ## broken in clang
 				"${ALIAS_CHECK_FLAGS[@]}"
 				-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
 			)
@@ -326,8 +337,8 @@ function compile_benchmark {
 		eval-check-costs-baseline)
 			FLAGS+=(
 				"${CLANG_POLLY_FLAGS[@]}" -O3
-				-mllvm -polly-alias-instrumenter=measure-check-costs-baseline
 				"${ALIAS_CHECK_FLAGS[@]}"
+				-mllvm -polly-alias-instrumenter=measure-check-costs-baseline
 			)
 			;;
 		eval-check-costs)
@@ -335,8 +346,8 @@ function compile_benchmark {
 
 			FLAGS+=(
 				"${CLANG_POLLY_FLAGS[@]}" -O3
-				-mllvm -polly-alias-instrumenter=measure-check-costs
 				"${ALIAS_CHECK_FLAGS[@]}"
+				-mllvm -polly-alias-instrumenter=measure-check-costs
 				-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
 			)
 			;;
@@ -349,6 +360,9 @@ function compile_benchmark {
 	### compile src files to obj files
 	local LINKER="$CLANG"
 	local OBJ_FILES=()
+
+	local OBJ_DIR="$BIN_DIR/$BENCH/$MODE/"
+	mkdir -p $OBJ_DIR
 
 	for SRC_FILE in "${SRC_FILES[@]}"
 	do
@@ -369,8 +383,10 @@ function compile_benchmark {
 				;;
 		esac
 
-		local OBJ="$BIN_DIR/$(basename "$SRC_FILE" "$SUFFIX").o"
-		local LL="$BIN_DIR/$(basename "$SRC_FILE" "$SUFFIX").ll"
+		local OBJ_NAME="$(basename "$SRC_FILE" "$SUFFIX")"
+
+		local OBJ="$OBJ_DIR/$OBJ_NAME".o
+		local LL="$OBJ_DIR/$OBJ_NAME".ll
 
 		"$COMPILER" \
 			"${FLAGS[@]:-}" \

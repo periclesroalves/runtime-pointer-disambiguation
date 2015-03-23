@@ -104,6 +104,7 @@ function run_benchmark {
 
 		*)
 			_error "unknown benchmark '$NAME'"
+			;;
 	esac
 }
 
@@ -111,15 +112,12 @@ function benchmark_iterations {
 	local NAME="$1"
 
 	case $NAME in
-		'b+tree' | 'backprop' | 'bfs' | 'hotspot' | 'particlefilter' | 'pathfinder')
+		# 'heartwall' | 'kmeans' | 'lavaMD' | 'streamcluster')
+		# 	echo $SLOW_BENCH_ITERATIONS
+		# 	;;
+		*)
 			echo $FAST_BENCH_ITERATIONS
 			;;
-
-		'heartwall' | 'kmeans' | 'lavaMD' | 'streamcluster')
-			echo $SLOW_BENCH_ITERATIONS
-			;;
-		*)
-			_error "unknown benchmark '$NAME'"
 	esac
 }
 
