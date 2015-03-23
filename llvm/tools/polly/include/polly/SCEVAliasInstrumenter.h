@@ -135,7 +135,13 @@ public:
   bool doInitialization(Module &M) override;
 };
 
-extern bool EvaluateAliasCheckCosts;
+enum AliasInstrumenterMode {
+  InstrumentAndClone,
+  MeasureCheckCosts,
+  MeasureCheckCostsBaseline,
+};
+
+extern AliasInstrumenterMode PollyAliasInstrumenterMode;
 
 } // end namespace polly
 

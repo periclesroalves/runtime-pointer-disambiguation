@@ -92,35 +92,48 @@ void SCEVAliasInstrumenter::buildNoAliasClone(AliasInstrumentationContext &conte
   Region         *region = context.region;
   TerminatorInst *br     = region->getEnteringBlock()->getTerminator();
 
-  if (EvaluateAliasCheckCosts) {
-    GlobalValue *blackhole = defineBlackhole();
+  switch (PollyAliasInstrumenterMode) {
+    case InstrumentAndClone: {
+      if (!checkResult)
+        return;
 
-    IRBuilder<> irb(br);
+      Region *clonedRegion = cloneRegion(region, nullptr, ri, dt, df);
 
-    checkResult = checkResult ? checkResult : irb.getFalse();
+      // Build the conditional brach based on the dynamic test result.
+      BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
+      builder.SetInsertPoint(br);
+      builder.CreateCondBr(checkResult, region->getEntry(), clonedRegion->getEntry());
+      br->eraseFromParent();
 
-    irb.CreateStore(checkResult, blackhole);
-  } else {
-    if (!checkResult)
-      return;
+      // Replace original loop bound loads by hoisted loads in the region, which is
+      // now guarded against true aliasing.
+      for (auto &pair : context.artificialBECounts) {
+        pair.second.oldLoad->replaceAllUsesWith(pair.second.hoistedLoad);
+        pair.second.oldLoad->eraseFromParent();
+      }
 
-    Region *clonedRegion = cloneRegion(region, nullptr, ri, dt, df);
-
-    // Build the conditional brach based on the dynamic test result.
-    BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
-    builder.SetInsertPoint(br);
-    builder.CreateCondBr(checkResult, region->getEntry(), clonedRegion->getEntry());
-    br->eraseFromParent();
-
-    // Replace original loop bound loads by hoisted loads in the region, which is
-    // now guarded against true aliasing.
-    for (auto &pair : context.artificialBECounts) {
-      pair.second.oldLoad->replaceAllUsesWith(pair.second.hoistedLoad);
-      pair.second.oldLoad->eraseFromParent();
+      // Mark the cloned region as free of dependencies.
+      fixAliasInfo(context);
+      break;
     }
+    case MeasureCheckCosts: {
+      if (!checkResult)
+        return;
+      GlobalValue *blackhole = defineBlackhole();
 
-    // Mark the cloned region as free of dependencies.
-    fixAliasInfo(context);
+      IRBuilder<> irb(br);
+      irb.CreateStore(checkResult, blackhole);
+      break;
+    }
+    case MeasureCheckCostsBaseline: {
+      assert(!checkResult);
+
+      GlobalValue *blackhole = defineBlackhole();
+
+      IRBuilder<> irb(br);
+      irb.CreateStore(irb.getFalse(), blackhole);
+      break;
+    }
   }
 }
 
@@ -132,7 +145,7 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
   // Create an entering block to receive the checks.
   simplifyRegion(region, li);
 
-  if (EvaluateAliasCheckCosts)
+  if (PollyAliasInstrumenterMode == MeasureCheckCostsBaseline)
     return nullptr;
 
   // Set instruction insertion context. We'll insert the run-time tests in the
@@ -302,8 +315,6 @@ Pass *polly::createSCEVAliasInstrumenterPass() {
 Pass *polly::createSCEVAliasInstrumenterPass(const AliasCheckFlags& flags) {
   return new SCEVAliasInstrumenter(flags);
 }
-
-bool polly::EvaluateAliasCheckCosts = false;
 
 INITIALIZE_PASS_BEGIN(SCEVAliasInstrumenter, "polly-scev-checks",
                       "Polly - Instrument alias dependencies", false,

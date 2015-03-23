@@ -282,6 +282,13 @@ function compile_benchmark {
 	local FLAGS=( -g )
 	local LIBRARIES=()
 
+	local ALIAS_CHECK_FLAGS=(
+		-mllvm -polly-use-scev-alias-checks
+		-mllvm -polly-use-heap-alias-checks
+		-mllvm -polly-use-must-alias-checks
+		-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
+	)
+
 	case "$MODE" in
 		aa-eval)
 			local ALIAS_YAML_FILE="$4"
@@ -309,10 +316,7 @@ function compile_benchmark {
 			FLAGS+=(
 				"${CLANG_POLLY_FLAGS[@]}" -O3
 				# -mllvm -profiling-spec-aa ## broken in clang
-				-mllvm -polly-use-scev-alias-checks
-				-mllvm -polly-use-heap-alias-checks
-				-mllvm -polly-use-must-alias-checks
-				-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
+				"${ALIAS_CHECK_FLAGS[@]}"
 			)
 			;;
 
@@ -320,9 +324,7 @@ function compile_benchmark {
 			FLAGS+=(
 				"${CLANG_POLLY_FLAGS[@]}" -O3
 				-mllvm -polly-evaluate-check-costs
-				-mllvm -polly-use-scev-alias-checks
-				-mllvm -polly-use-heap-alias-checks
-				-mllvm -polly-use-must-alias-checks
+				"${ALIAS_CHECK_FLAGS[@]}"
 			)
 			;;
 		eval-check-costs)
@@ -331,10 +333,7 @@ function compile_benchmark {
 			FLAGS+=(
 				"${CLANG_POLLY_FLAGS[@]}" -O3
 				-mllvm -polly-evaluate-check-costs
-				-mllvm -polly-use-scev-alias-checks
-				-mllvm -polly-use-heap-alias-checks
-				-mllvm -polly-use-must-alias-checks
-				-mllvm -polly-alias-profile-file="$ALIAS_YAML_FILE"
+				"${ALIAS_CHECK_FLAGS[@]}"
 			)
 			;;
 

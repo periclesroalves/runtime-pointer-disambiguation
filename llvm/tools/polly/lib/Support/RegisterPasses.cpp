@@ -151,13 +151,19 @@ static cl::opt<bool> UseAliasProfiling(
              " statically"),
     cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
 
-static cl::opt<bool, true> EvaluateAliasCheckCostsFlag(
-  "polly-evaluate-check-costs",
-  cl::desc("Evaluate costs of alias guards by inserting them but doing no"
-    " cloning"),
-  cl::location(EvaluateAliasCheckCosts),
-  cl::init(false),
-  cl::ZeroOrMore
+polly::AliasInstrumenterMode polly::PollyAliasInstrumenterMode;
+static cl::opt<polly::AliasInstrumenterMode, true> AliasInstrumenterMode(
+    "polly-alias-instrumenter",
+    cl::desc("Select the alias check instrumentation strategy"),
+    cl::values(
+      clEnumValN(polly::InstrumentAndClone,        "optimize", ""),
+      clEnumValN(polly::MeasureCheckCosts,         "measure-check-costs", ""),
+      clEnumValN(polly::MeasureCheckCostsBaseline, "measure-check-costs-baseline", ""),
+    clEnumValEnd),
+    cl::location(PollyAliasInstrumenterMode),
+    cl::init(polly::InstrumentAndClone),
+    cl::ZeroOrMore,
+    cl::cat(PollyCategory)
 );
 
 static cl::opt<bool> PollyViewer(
