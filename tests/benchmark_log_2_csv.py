@@ -170,6 +170,15 @@ def median(seq):
 	else:
 		return (lst[len(lst)//2] + lst[idiv_up(len(lst), 2)]) / 2
 
+def geometric_mean(seq):
+	lst     = list(seq)
+	product = 1
+
+	for item in lst:
+		product = product * item
+
+	return product ** (1.0/len(lst))
+
 def idiv_up(n, d):
 	"""Integer division of `n' by `d', rounding up."""
 
