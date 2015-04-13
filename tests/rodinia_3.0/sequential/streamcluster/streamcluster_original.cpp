@@ -1112,7 +1112,7 @@ int main(int argc, char **argv)
   __parsec_roi_end();
 #endif
 
-printf("Elapsed time: %lf s\n", t2-t1);
+printf("%lf\n", t2-t1);
 
   delete stream;
 #ifdef PROFILE

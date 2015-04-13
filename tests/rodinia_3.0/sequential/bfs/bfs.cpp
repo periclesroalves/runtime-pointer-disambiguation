@@ -2,6 +2,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#include <time.h>
 //#define NUM_THREAD 4
 
 int no_of_nodes;
@@ -48,7 +49,6 @@ void BFSGraph( int argc, char** argv)
     
 	input_f = argv[2];
 	
-	printf("Reading File\n");
 	//Read in Graph from a file
 	fp = fopen(input_f,"r");
 	if(!fp)
@@ -108,7 +108,9 @@ void BFSGraph( int argc, char** argv)
 		h_cost[i]=-1;
 	h_cost[source]=0;
 	
-	printf("Start traversing the tree\n");
+
+  clock_t t;
+  t = clock();
 	
 	int k=0;
     
@@ -147,12 +149,14 @@ void BFSGraph( int argc, char** argv)
 	}
 	while(stop);
 
+  t = (clock() - t);
+  printf ("%f\n", (((float)t)/CLOCKS_PER_SEC));
+
 	//Store the result into a file
 	FILE *fpo = fopen("result.txt","w");
 	for(int i=0;i<no_of_nodes;i++)
 		fprintf(fpo,"%d) cost:%d\n",i,h_cost[i]);
 	fclose(fpo);
-	printf("Result stored in result.txt\n");
 
 
 	// cleanup memory

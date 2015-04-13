@@ -563,7 +563,7 @@ int main(int argc, char * argv[]){
 	//call particle filter
 	particleFilter(I, IszX, IszY, Nfr, seed, Nparticles);
 	long long endParticleFilter = get_time();
-	printf("Elapsed time %f s\n", elapsed_time(start, endParticleFilter));
+	printf("%f\n", elapsed_time(start, endParticleFilter));
 	
 	free(seed);
 	free(I);

@@ -217,7 +217,7 @@ int main(int argc, char **argv) {
     }
 
   t = (clock() - t);
-  printf ("Elapsed time: %f\n", (((float)t)/CLOCKS_PER_SEC));
+  printf ("%f\n", (((float)t)/CLOCKS_PER_SEC));
 
     /*printf("Cluster Centers Output\n"); 
 	printf("The first number is cluster number and the following data is arribute value\n");

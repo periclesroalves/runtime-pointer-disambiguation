@@ -59,6 +59,6 @@ void bpnn_train_kernel(BPNN *net, float *eo, float *eh)
   bpnn_adjust_weights(net->hidden_delta, hid, net->input_units, in, net->input_weights, net->input_prev_weights);
 
   t = (clock() - t);
-  printf ("Elapsed time: %f\n", (((float)t)/CLOCKS_PER_SEC));
+  printf ("%f\n", (((float)t)/CLOCKS_PER_SEC));
 
 }

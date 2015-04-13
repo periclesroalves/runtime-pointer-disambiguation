@@ -109,7 +109,7 @@ void run(int argc, char** argv)
     }
 
     t = (clock() - t);
-    printf ("Elapsed time: %f\n", (((float)t)/CLOCKS_PER_SEC));
+    printf ("%f\n", (((float)t)/CLOCKS_PER_SEC));
 
     pin_stats_pause(cycles);
 

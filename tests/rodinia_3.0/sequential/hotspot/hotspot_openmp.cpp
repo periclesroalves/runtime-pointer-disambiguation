@@ -213,9 +213,15 @@ int main(int argc, char **argv)
 	read_input(temp, grid_rows, grid_cols, tfile);
 	read_input(power, grid_rows, grid_cols, pfile);
 
-	printf("Start computing the transient temperature\n");
+  clock_t t;
+  t = clock();
+
 	compute_tran_temp(result,sim_time, temp, power, grid_rows, grid_cols);
-	printf("Ending simulation\n");
+
+  t = (clock() - t);
+  printf ("%f\n", (((float)t)/CLOCKS_PER_SEC));
+
+
 	/* output results	*/
 #ifdef VERBOSE
 	fprintf(stdout, "Final Temperatures:\n");

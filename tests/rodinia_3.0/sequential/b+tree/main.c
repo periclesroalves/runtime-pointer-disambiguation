@@ -1850,6 +1850,7 @@ main(	int argc,
 	char *command_file = NULL;
 	char *output="output.txt";
 	FILE * pFile;
+  float time = 0.0;
 
 
 	// go through arguments
@@ -2177,7 +2178,7 @@ main(	int argc,
 				}
 
 				// New OpenMP kernel, same algorighm across all versions(OpenMP, CUDA, OpenCL) for comparison purposes
-				kernel_cpu(	cores_arg,
+				time += kernel_cpu(	cores_arg,
 
 							records,
 							knodes,
@@ -2330,7 +2331,7 @@ main(	int argc,
 				}
 
 				// New kernel, same algorighm across all versions(OpenMP, CUDA, OpenCL) for comparison purposes
-				kernel_cpu_2(	cores_arg,
+				time += kernel_cpu_2(	cores_arg,
 
 								knodes,
 								knodes_elem,
@@ -2399,11 +2400,12 @@ main(	int argc,
 		}
 
 	}
-	printf("\n");
 
 	// ------------------------------------------------------------60
 	// free remaining memory and exit
 	// ------------------------------------------------------------60
+
+  printf ("%.12f\n", time);
 
 	free(mem);
 	return EXIT_SUCCESS;
