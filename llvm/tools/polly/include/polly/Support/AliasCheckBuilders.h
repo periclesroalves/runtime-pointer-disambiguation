@@ -41,6 +41,28 @@ using namespace llvm;
 
 using ValuePair = std::pair<Value*, Value*>;
 
+/// Controls which kinds alias of checks will be inserted.
+struct AliasCheckFlags {
+  static AliasCheckFlags allTrue();
+
+  explicit AliasCheckFlags(bool UseSCEVAliasChecks = false,
+    bool UseHeapAliasChecks = false, bool UseMustAliasChecks = false)
+  : UseSCEVAliasChecks(UseSCEVAliasChecks)
+  , UseHeapAliasChecks(UseHeapAliasChecks)
+  , UseMustAliasChecks(UseMustAliasChecks)
+  {}
+
+  explicit operator bool() const {
+    return UseSCEVAliasChecks
+        || UseHeapAliasChecks
+        || UseMustAliasChecks;
+  }
+
+  bool UseSCEVAliasChecks;
+  bool UseHeapAliasChecks;
+  bool UseMustAliasChecks;
+};
+
 // Builds no-alias checks using SCEV based range analysis
 class RangeCheckBuilder {
 public:
@@ -66,7 +88,7 @@ public:
   // E.g.: %loc-no-alias = upper(A) < B || B < lower(A)
   Value* buildLocationCheck(Value *a, Value *addrB);
 private:
-  ValuePair buildSCEVBounds(Value *basePtr);
+  bool buildSCEVBounds(Value *basePtr, ValuePair &dst);
 
   SCEVRangeBuilder&                             rangeBuilder;
   BuilderType&                                  builder;
@@ -108,6 +130,8 @@ public:
 
   Value *buildCheck(Value *a, Value *b);
 private:
+  Value *buildCmp(Value *setRepresentative, Value *ptr, Value *chain);
+
   // non-empty set of must alias pointers
   struct MustAliasSet {
     using iterator = std::set<Value*>::iterator;

@@ -52,6 +52,7 @@ add_polly_library(Polly
   Support/ScopHelper.cpp
   Support/AliasCheckBuilders.cpp
   ${POLLY_JSON_FILES}
+  Transform/AliasProfiler.cpp
   Transform/SCEVAliasInstrumenter.cpp
   Transform/Canonicalization.cpp
   Transform/CodePreparation.cpp

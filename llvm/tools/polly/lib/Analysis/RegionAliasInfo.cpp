@@ -27,6 +27,7 @@
 #include "polly/Support/SCEVValidator.h"
 #include "polly/Support/ScopHelper.h"
 #include "polly/LinkAllPasses.h"
+#include "polly/Support/AliasCheckBuilders.h"
 
 using namespace llvm;
 using namespace polly;
@@ -37,35 +38,327 @@ struct RegionAliasInfoBuilder {
   RegionAliasInfoBuilder(
     ScalarEvolution *se,
     AliasAnalysis *aa,
+    SpeculativeAliasAnalysis *saa,
     LoopInfo *li,
     DominatorTree *dt,
-    PostDominatorTree *pdt,
-    DominanceFrontier *df,
+    AliasCheckFlags flags,
     std::vector<std::unique_ptr<AliasInstrumentationContext>>& regions
-  ) : se(se), aa(aa), li(li), dt(dt), pdt(pdt), df(df), regions(regions) {}
+  )
+  : se(se), aa(aa), saa(saa), li(li), dt(dt)
+  , flags(flags), regions(regions) {}
 
   // Walks the region tree, collecting the greatest possible regions that can be
   // safely instrumented.
-  void findTargetRegions(Region *r);
+  void findTargetRegions(Region *r) {
+    // make_unique is C++14 :(
+    std::unique_ptr<AliasInstrumentationContext> context{
+      new AliasInstrumentationContext(r)
+    };
+
+    // If the whole region can be instrumented, stop the search.
+    if (canInstrument(*context)) {
+      regions.push_back(std::move(context));
+      return;
+    }
+
+    // If the region can't be instrumented, look at smaller regions.
+    for (auto &subRegion : *r)
+      findTargetRegions(subRegion.get());
+  }
+private:
+  using Context         = AliasInstrumentationContext;
+  using MemoryAccessMap = Context::MemoryAccessMap;
+  using MemoryAccess    = Context::MemoryAccess;
+  using ValuePair       = std::pair<Value*, Value*>;
+  using ValuePairSet    = std::set<ValuePair>;
+
+  // Checks if the given region has all the properties needed for
+  // instrumentation.
+  bool canInstrument(AliasInstrumentationContext &context) {
+    const auto region = context.region;
+
+    // ** check basic properties of region
+
+    if (region->isTopLevelRegion())
+      return false;
+
+    if (!isSafeToSimplify(region))
+      return false;
+
+    if (!containsLoops(region))
+      return false;
+
+    if (!containsOnlyValidInstructions(region))
+      return false;
+
+    // ** try to collect information about region
+
+    // get base pointers, the instructions that use them and their
+    // access functions.
+    if (!collectMemoryAccesses(context))
+      return false;
+
+    // TODO: only insert loads on success.
+    context.allLoopsHaveBounds = ensureAllLoopsHaveSymbolicBackedgeCount(context);
+
+    // find pairs of base ptrs with aliasing users
+    if (!collectPtrPairsToCheck(context))
+      return false;
+
+    return true;
+  }
+
+  bool canBuildScevCheck(AliasInstrumentationContext &context,
+                         SCEVRangeBuilder &rangeBuilder,
+                         Value *ptr1, Value *ptr2) {
+    if (!flags.UseSCEVAliasChecks)
+      return false;
+
+    if (!context.allLoopsHaveBounds)
+      return false;
+
+    return isValidScevBasePtr(context, rangeBuilder, ptr1)
+        && isValidScevBasePtr(context, rangeBuilder, ptr2);
+  }
+
+  bool isValidScevBasePtr(AliasInstrumentationContext &context,
+                          SCEVRangeBuilder &rangeBuilder,
+                          Value *basePtr) {
+    // We can't handle direct address manipulation.
+    if (isa<UndefValue>(basePtr) || isa<IntToPtrInst>(basePtr))
+      return false;
+
+    // The base pointer can vary within the given region.
+    if (!ScopDetection::isInvariant(*basePtr, *context.region, li, aa))
+      return false;
+
+    auto &accessFunctions = context.memAccesses[basePtr].accessFunctions;
+
+    return rangeBuilder.canComputeBoundsFor(accessFunctions);
+  }
+
+  bool canBuildHeapCheck(AliasInstrumentationContext &context,
+                         Value *ptr1, Value *ptr2) {
+    if (!flags.UseHeapAliasChecks)
+      return false;
+
+    const auto *region = context.region;
+
+    return notDefinedInRegion(region, ptr1)
+        && notDefinedInRegion(region, ptr2);
+  }
+
+  static bool notDefinedInRegion(const Region *r, Value *v) {
+    if (auto *inst = dyn_cast<Instruction>(v))
+      return !r->contains(inst);
+    return true;
+  }
 
   // Checks if a region can be simplified to have single entry and exit EDGES
   // without breaking the sinlge entry and exit BLOCKS property. This can happen
   // when edges from within the region point to its entry or exit.
-  bool isSafeToSimplify(const Region *r);
+  bool isSafeToSimplify(const Region *r) {
+    if (r->isSimple())
+      return true;
 
-  // Checks if the given region has all the properties needed for
-  // instrumentation.
-  bool canInstrument(AliasInstrumentationContext &context);
+    bool safeToSimplify = true;
+
+    // Check if a region edge's destination won't taken to outside the region.
+    for (auto *p : make_range(pred_begin(r->getEntry()), pred_end(r->getEntry())))
+      if (r->contains(p) && p != r->getExit())
+        safeToSimplify = false;
+
+    // Check if a region edge's source won't taken to outside the region.
+    for (auto *s : make_range(succ_begin(r->getExit()), succ_end(r->getExit())))
+      if (r->contains(s) && s != r->getEntry())
+        safeToSimplify = false;
+
+    return safeToSimplify;
+  }
+
+  bool collectMemoryAccesses(AliasInstrumentationContext &context) {
+    const auto region = context.region;
+
+    for (auto *bb : region->blocks()) {
+      for (auto &inst : bb->getInstList()) {
+        // TODO: what about other memory instructions?
+        if (!isa<LoadInst>(inst) && !isa<StoreInst>(inst))
+          continue;
+
+        Value *basePtrValue = getBasePtrValue(inst, *region);
+
+        if (!basePtrValue)
+          return false;
+
+        // Compute access expression.
+        Value *ptr = getPointerOperand(inst);
+        Loop *l = li->getLoopFor(inst.getParent());
+        const SCEV *accessFunction = se->getSCEVAtScope(ptr, l);
+
+        context.addMemoryAccess(basePtrValue, &inst, accessFunction);
+      }
+    }
+
+    return true;
+  }
+
+  bool collectPtrPairsToCheck(AliasInstrumentationContext &context) {
+    auto *region         = context.region;
+    auto *function       = region->getEntry()->getParent();
+    auto &memAccesses    = context.memAccesses;
+    auto &heapChecks     = context.heapChecks;
+    auto &scevChecks     = context.scevChecks;
+    auto &equalityChecks = context.ptrPairsToEqualityCheck;
+
+    auto begin = memAccesses.begin();
+    auto end   = memAccesses.end();
+
+    // Make sure that access bounds can be computed for every access expression
+    // within the region.
+    Instruction *insertPt = region->getEntry()->getFirstNonPHI();
+    SCEVRangeBuilder rangeBuilder(se, aa, li, dt, region, insertPt);
+    rangeBuilder.setArtificialBECounts(context.getBECountsMap());
+
+    // create pairs of base pointers
+    for (auto i = begin; i != end; ++i) {
+      for (auto j = i; ++j != end; /**/) {
+        Value *ptr1 = i->first;
+        Value *ptr2 = j->first;
+
+        // if (!anyUsersMayAlias(*i, *j))
+        //   continue;
+
+        switch (saa->speculativeAlias(function, ptr1, ptr2)) {
+          case SpeculativeAliasResult::NoHeapAlias:
+            if (canBuildHeapCheck(context, ptr1, ptr2)) {
+              heapChecks.addPair(context, ptr1, ptr2);
+            } else if (canBuildScevCheck(context, rangeBuilder, ptr1, ptr2)) {
+              scevChecks.addPair(context, ptr1, ptr2);
+            } else {
+              return false;
+            }
+            break;
+
+          case SpeculativeAliasResult::NoAlias:
+          case SpeculativeAliasResult::DontKnow:
+            // TODO: evaluate which check to use for these cases
+          case SpeculativeAliasResult::NoRangeOverlap:
+            if (canBuildScevCheck(context, rangeBuilder, ptr1, ptr2)) {
+              scevChecks.addPair(context, ptr1, ptr2);
+            } else if (canBuildHeapCheck(context, ptr1, ptr2)) {
+              heapChecks.addPair(context, ptr1, ptr2);
+            } else {
+              return false;
+            }
+            break;
+
+          case SpeculativeAliasResult::ExactAlias:
+            // TODO: do must-alias checks
+          case SpeculativeAliasResult::ProbablyAlias:
+            // don't insert checks that will only fail anyway
+            return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  /// Check if any user of two base pointers have a badly defined
+  /// alias relationship (i.e. may-alias, but not must-alias or no-alias)
+  bool anyUsersMayAlias(const MemoryAccess &a, const MemoryAccess &b) {
+    for (auto *user1 : a.second.users) {
+      for (auto *user2 : b.second.users) {
+        if (user1 == user2)
+          continue;
+
+        switch (aa->alias(a.first, b.first)) {
+          case AliasAnalysis::MayAlias:
+          case AliasAnalysis::PartialAlias:
+            return true;
+          case AliasAnalysis::MustAlias:
+          case AliasAnalysis::NoAlias:
+            break;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  // Check if the given region contains any loops
+  bool containsLoops(const Region *region) {
+    for (const Loop *loop : *li)
+      if (region->contains(loop))
+        return true;
+
+    return false;
+  }
+
+  // Check if the given region contains only instructions polly can handle
+  bool containsOnlyValidInstructions(const Region *region) {
+    for (const auto *bb : region->blocks())
+      for (const auto &i : bb->getInstList())
+        if (!isValidInstruction(i))
+          return false;
+
+    return true;
+  }
 
   // Checks if the given instruction doesn't break the properties needed for
   // instrumentation (basically checks if it doesn't access memory in an
   // unpredictable way).
-  bool isValidInstruction(Instruction &inst);
+  bool isValidInstruction(const Instruction &inst) {
+    if (const auto *CI = dyn_cast<CallInst>(&inst)) {
+      if (ScopDetection::isValidCallInst(*CI))
+        return true;
 
-  // Collects, for each memory access instruction in the region, its base
-  // pointers, access function, and pointers that need to be checked against it
-  // so it can be considered alias-free.
-  bool collectDependencyData(AliasInstrumentationContext &context);
+      return false;
+    }
+
+    // Anything that doesn't access memory is valid.
+    if (!inst.mayWriteToMemory() && !inst.mayReadFromMemory()) {
+      if (!isa<AllocaInst>(inst))
+        return true;
+
+      return false;
+    }
+
+    // Loads and stores will be checked later, when building the dynamic tests.
+    if (isa<LoadInst>(inst) || isa<StoreInst>(inst))
+      return true;
+
+    // We do not know this instruction, therefore we assume it is invalid.
+    return false;
+  }
+
+  // ensure that all loops have a backedge count expressable as a SCEV.
+  // If this fails we can't compute bounds and have to use heap checks
+  // note: this function inserts new instructions!
+  bool ensureAllLoopsHaveSymbolicBackedgeCount(
+                                        AliasInstrumentationContext& context) {
+    auto *region = context.region;
+    std::set<Instruction*> hoistedLoads;
+
+    // Make sure that all loops in the region have a symbolic limit.
+    for (Loop *loop : *li) {
+      if (!region->contains(loop))
+        continue;
+
+      // If a loop doesn't have a defined limit, try to create an artificial one.
+      if (!se->hasLoopInvariantBackedgeTakenCount(loop) &&
+          !createArtificialInvariantBECount(loop, context, hoistedLoads)) {
+
+        // cleanup
+        context.artificialBECounts.clear();
+        for (auto *load : hoistedLoads)
+          load->eraseFromParent();
+
+        return false;
+      }
+    }
+    return true;
+  }
 
   // Tries to give the loop an invariant backedge taken count, by modifying the
   // loop structure then inserting some checks that guarantee its correctness.
@@ -75,7 +368,8 @@ struct RegionAliasInfoBuilder {
   // insertion, we generate a dynamic check that guarantees that no other store
   // aliases the hoisted load.
   bool createArtificialInvariantBECount(Loop *l,
-                                        AliasInstrumentationContext &context);
+                                        AliasInstrumentationContext &context,
+                                        std::set<Instruction*> &hoistedLoads);
 
   // Get the value that represents the base pointer of the given memory access
   // instruction in the given region. The pointer must be region invariant.
@@ -84,10 +378,11 @@ struct RegionAliasInfoBuilder {
   // Analyses used.
   ScalarEvolution *se;
   AliasAnalysis *aa;
+  SpeculativeAliasAnalysis *saa;
   LoopInfo *li;
   DominatorTree *dt;
-  PostDominatorTree *pdt;
-  DominanceFrontier *df;
+
+  AliasCheckFlags flags;
 
   std::vector<std::unique_ptr<AliasInstrumentationContext>>& regions;
 };
@@ -96,13 +391,13 @@ void polly::findAliasInstrumentableRegions(
     Region *region,
     ScalarEvolution *se,
     AliasAnalysis *aa,
+    SpeculativeAliasAnalysis *saa,
     LoopInfo *li,
     DominatorTree *dt,
-    PostDominatorTree *pdt,
-    DominanceFrontier *df,
+    const AliasCheckFlags &flags,
     std::vector<std::unique_ptr<AliasInstrumentationContext>>& out
 ) {
-  RegionAliasInfoBuilder builder(se, aa, li, dt, pdt, df, out);
+  RegionAliasInfoBuilder builder(se, aa, saa, li, dt, flags, out);
 
   builder.findTargetRegions(region);
 }
@@ -130,26 +425,6 @@ void polly::simplifyRegion(Region *r, LoopInfo *li) {
   }
 }
 
-
-bool RegionAliasInfoBuilder::isSafeToSimplify(const Region *r) {
-  if (r->isSimple())
-    return true;
-
-  bool safeToSimplify = true;
-
-  // Check if a region edge's destination won't taken to outside the region.
-  for (auto *p : make_range(pred_begin(r->getEntry()), pred_end(r->getEntry())))
-    if (r->contains(p) && p != r->getExit())
-      safeToSimplify = false;
-
-  // Check if a region edge's source won't taken to outside the region.
-  for (auto *s : make_range(succ_begin(r->getExit()), succ_end(r->getExit())))
-    if (r->contains(s) && s != r->getEntry())
-      safeToSimplify = false;
-
-  return safeToSimplify;
-}
-
 Value *RegionAliasInfoBuilder::getBasePtrValue(Instruction &inst,
                                               const Region &r) {
   Value *ptr = getPointerOperand(inst);
@@ -174,99 +449,9 @@ Value *RegionAliasInfoBuilder::getBasePtrValue(Instruction &inst,
   return basePtrValue;
 }
 
-bool RegionAliasInfoBuilder::collectDependencyData(
-                            AliasInstrumentationContext &context) {
-  const auto region          = context.region;
-  auto&      ptrPairsToCheck = context.ptrPairsToCheck;
-
-  AliasSetTracker ast(*aa);
-
-  // build alias sets
-  // TODO: this does yet another pass over the blocks of the region,
-  //       can we reuse context.memAccesses, or something like it?
-  for (BasicBlock *bb : region->blocks())
-    ast.add(*bb);
-
-  // find which checks we need to insert
-  for (BasicBlock *bb : region->blocks()) {
-    for (BasicBlock::iterator i = bb->begin(), e = --bb->end(); i != e; ++i) {
-      Instruction &inst = *i;
-
-      if (!isa<LoadInst>(inst) && !isa<StoreInst>(inst))
-        continue;
-
-      Value *basePtrValue = getBasePtrValue(inst, *region);
-
-      // If we can't define the base pointer, then it's not possible to define
-      // the dependencies.
-      if (!basePtrValue)
-        return false;
-
-      // Store this access expression.
-      Value *ptr = getPointerOperand(inst);
-      Loop *l = li->getLoopFor(inst.getParent());
-      const SCEV *accessFunction = se->getSCEVAtScope(ptr, l);
-
-      context.addMemoryAccess(basePtrValue, &inst, accessFunction);
-
-      if (isa<StoreInst>(inst))
-        context.storeTargets.insert(basePtrValue);
-
-      // We need checks against all pointers in the May Alias set.
-      AliasSet &as =
-        ast.getAliasSetForPointer(basePtrValue, AliasAnalysis::UnknownSize,
-                                  inst.getMetadata(LLVMContext::MD_tbaa));
-
-      // Store all pointers that need to be tested agains the current one.
-      if (!as.isMustAlias()) {
-        for (const auto &aliasPointer : as) {
-          Value *aliasValue = aliasPointer.getValue();
-
-          if (basePtrValue == aliasValue)
-            continue;
-
-          // We only need to check against pointers accessed within the region.
-          if (!context.memAccesses.count(aliasValue))
-            continue;
-
-          // Guarantees ordered pairs (avoids repetition).
-          auto pair = make_ordered_pair(basePtrValue, aliasValue);
-
-          ptrPairsToCheck.insert(pair);
-        }
-      }
-    }
-  }
-
-  return true;
-}
-
-bool RegionAliasInfoBuilder::isValidInstruction(Instruction &inst) {
-  if (CallInst *CI = dyn_cast<CallInst>(&inst)) {
-    if (ScopDetection::isValidCallInst(*CI))
-      return true;
-
-    return false;
-  }
-
-  // Anything that doesn't access memory is valid.
-  if (!inst.mayWriteToMemory() && !inst.mayReadFromMemory()) {
-    if (!isa<AllocaInst>(inst))
-      return true;
-
-    return false;
-  }
-
-  // Loads and stores will be checked later, when building the dynamic tests.
-  if (isa<LoadInst>(inst) || isa<StoreInst>(inst))
-    return true;
-
-  // We do not know this instruction, therefore we assume it is invalid.
-  return false;
-}
-
 bool RegionAliasInfoBuilder::createArtificialInvariantBECount(Loop *l,
-                            AliasInstrumentationContext &context) {
+                                        AliasInstrumentationContext &context,
+                                        std::set<Instruction*> &hoistedLoads) {
   Region     &r        = *context.region;
   BasicBlock *entering = r.getEnteringBlock();
 
@@ -316,6 +501,9 @@ bool RegionAliasInfoBuilder::createArtificialInvariantBECount(Loop *l,
   newLoad->setName((oldLoad->hasName() ? oldLoad->getName() + "." : "") +
     "hoisted");
   newLoad->insertBefore(entering->getTerminator());
+
+  hoistedLoads.insert(newLoad);
+
   const SCEV *newRhsSCEV = se->getSCEVAtScope(newLoad, l);
   const SCEV *count;
 
@@ -346,75 +534,25 @@ bool RegionAliasInfoBuilder::createArtificialInvariantBECount(Loop *l,
   return true;
 }
 
-bool RegionAliasInfoBuilder::canInstrument(AliasInstrumentationContext &context) {
-  const auto region = context.region;
+// record which users of base ptr are stores
+static void addStoreTargets(AliasInstrumentationContext &ctx,
+                            std::set<Value*>& dst, Value *basePtr) {
+  // if no hoisting happened there is no need to guard stores.
+  if (!ctx.allLoopsHaveBounds)
+    return;
 
-  // Top-level regions can't be instrumented.
-  if (region->isTopLevelRegion())
-    return false;
-
-  // We need an entering block to insert the dynamic checks, so if a region
-  // can't simplified, it can't be instrumented.
-  if (!isSafeToSimplify(region))
-    return false;
-
-  // Do not instrument regions without loops.
-  bool hasLoop = false;
-
-  for (const BasicBlock *bb : region->blocks())
-    if (region->contains(li->getLoopFor(bb)))
-      hasLoop = true;
-
-  if (!hasLoop)
-    return false;
-
-  // Make sure that all loops in the region have a symbolic limit.
-  for (BasicBlock *bb : region->blocks()) {
-    Loop *l = li->getLoopFor(bb);
-
-    // If a loop doesn't have a defined limit, try to create an artificial one.
-    if (l && (l->getHeader() == bb) &&
-        !se->hasLoopInvariantBackedgeTakenCount(l) &&
-        !createArtificialInvariantBECount(l, context))
-      return false;
-  }
-
-  // Check that all instructions are valid.
-  for (BasicBlock *bb : region->blocks())
-    for (BasicBlock::iterator i = bb->begin(), e = --bb->end(); i != e; ++i)
-      if (!isValidInstruction(*i))
-        return false;
-
-  // If dependencies can't be fully defined, then we can't instrument.
-  if (!collectDependencyData(context))
-    return false;
-
-  // Make sure that access bounds can be computed for every access expression
-  // within the region.
-  Instruction *insertPt = region->getEntry()->getFirstNonPHI();
-  SCEVRangeBuilder rangeBuilder(se, aa, li, dt, region, insertPt);
-  rangeBuilder.setArtificialBECounts(context.getBECountsMap());
-
-  for (const auto& pair : context.memAccesses)
-    if (!rangeBuilder.canComputeBoundsFor(pair.second.accessFunctions))
-      return false;
-
-  return true;
+  for (Value *user : ctx.memAccesses[basePtr].users)
+    if (isa<StoreInst>(user))
+      dst.insert(basePtr);
 }
 
-void RegionAliasInfoBuilder::findTargetRegions(Region *r) {
-  // make_unique is C++14 :(
-  std::unique_ptr<AliasInstrumentationContext> context{
-    new AliasInstrumentationContext(r)
-  };
+void AliasInstrumentationContext::NoAliasChecks::addPair(
+                            AliasInstrumentationContext &ctx,
+                            Value *ptr1, Value *ptr2) {
+  auto pair = make_ordered_pair(ptr1, ptr2);
 
-  // If the whole region can be instrumented, stop the search.
-  if (canInstrument(*context)) {
-    regions.push_back(std::move(context));
-    return;
-  }
+  ptrPairsToCheck.insert(pair);
 
-  // If the region can't be instrumented, look at smaller regions.
-  for (auto &subRegion : *r)
-    findTargetRegions(subRegion.get());
+  addStoreTargets(ctx, storeTargets, ptr1);
+  addStoreTargets(ctx, storeTargets, ptr2);
 }
