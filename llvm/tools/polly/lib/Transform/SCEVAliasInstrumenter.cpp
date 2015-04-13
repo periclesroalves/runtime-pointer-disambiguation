@@ -13,6 +13,7 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/TypeBuilder.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
+#include "llvm/Support/CommandLine.h"
 
 #include "polly/SCEVAliasInstrumenter.h"
 #include "polly/SpeculativeAliasAnalysis.h"
@@ -88,36 +89,64 @@ void SCEVAliasInstrumenter::fixAliasInfo(AliasInstrumentationContext &ctx) {
 
 void SCEVAliasInstrumenter::buildNoAliasClone(AliasInstrumentationContext &context,
                                               Value *checkResult) {
-  if (!checkResult)
-    return;
+  Region         *region = context.region;
+  TerminatorInst *br     = region->getEnteringBlock()->getTerminator();
 
-  Region *region       = context.region;
-  Region *clonedRegion = cloneRegion(region, nullptr, ri, dt, df);
+  switch (PollyAliasInstrumenterMode) {
+    case InstrumentAndClone: {
+      if (!checkResult)
+        return;
 
-  // Build the conditional brach based on the dynamic test result.
-  TerminatorInst *br = region->getEnteringBlock()->getTerminator();
-  BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
-  builder.SetInsertPoint(br);
-  builder.CreateCondBr(checkResult, region->getEntry(), clonedRegion->getEntry());
-  br->eraseFromParent();
+      Region *clonedRegion = cloneRegion(region, nullptr, ri, dt, df);
 
-  // Replace original loop bound loads by hoisted loads in the region, which is
-  // now guarded against true aliasing.
-  for (auto &pair : context.artificialBECounts) {
-    pair.second.oldLoad->replaceAllUsesWith(pair.second.hoistedLoad);
-    pair.second.oldLoad->eraseFromParent();
+      // Build the conditional brach based on the dynamic test result.
+      BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
+      builder.SetInsertPoint(br);
+      builder.CreateCondBr(checkResult, region->getEntry(), clonedRegion->getEntry());
+      br->eraseFromParent();
+
+      // Replace original loop bound loads by hoisted loads in the region, which is
+      // now guarded against true aliasing.
+      for (auto &pair : context.artificialBECounts) {
+        pair.second.oldLoad->replaceAllUsesWith(pair.second.hoistedLoad);
+        pair.second.oldLoad->eraseFromParent();
+      }
+
+      // Mark the cloned region as free of dependencies.
+      fixAliasInfo(context);
+      break;
+    }
+    case MeasureCheckCosts: {
+      if (!checkResult)
+        return;
+      GlobalValue *blackhole = defineBlackhole();
+
+      IRBuilder<> irb(br);
+      irb.CreateStore(checkResult, blackhole);
+      break;
+    }
+    case MeasureCheckCostsBaseline: {
+      assert(!checkResult);
+
+      GlobalValue *blackhole = defineBlackhole();
+
+      IRBuilder<> irb(br);
+      irb.CreateStore(irb.getFalse(), blackhole);
+      break;
+    }
   }
-
-  // Mark the cloned region as free of dependencies.
-  fixAliasInfo(context);
 }
 
 Value *SCEVAliasInstrumenter::insertDynamicChecks(
                             AliasInstrumentationContext &context) {
+
   auto region = context.region;
 
   // Create an entering block to receive the checks.
   simplifyRegion(region, li);
+
+  if (PollyAliasInstrumenterMode == MeasureCheckCostsBaseline)
+    return nullptr;
 
   // Set instruction insertion context. We'll insert the run-time tests in the
   // region entering block.
@@ -134,49 +163,72 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
 
   // *** insert checks
 
-  Value *result = builder.getTrue();
+  Value *result = nullptr;
 
   // Insert comparison expressions for every pair of pointers that need to be
   // checked in the region.
-  for (auto& pair : context.ptrPairsToCheck) {
+  for (auto& pair : context.scevChecks.ptrPairsToCheck) {
+    assert(flags.UseSCEVAliasChecks);
+
     auto basePtr1 = pair.first;
     auto basePtr2 = pair.second;
 
-    Value *check;
+    auto *check = rangeChecks.buildRangeCheck(basePtr1, basePtr2);
 
-    switch (saa->speculativeAlias(basePtr1, basePtr2)) {
-      // TODO: implement heap checks
-      case SpeculativeAliasResult::NoHeapAlias:
-        check = heapChecks.buildCheck(basePtr1, basePtr2);
-        break;
-      case SpeculativeAliasResult::ExactAlias:
-        check = eqChecks.buildCheck(basePtr1, basePtr2);
-        break;
-      // TODO: decide which check to use for these cases
-      case SpeculativeAliasResult::NoAlias:
-      case SpeculativeAliasResult::DontKnow:
-      // TODO: don't insert checks for these cases
-      case SpeculativeAliasResult::ProbablyAlias:
-      case SpeculativeAliasResult::NoRangeOverlap:
-        check = rangeChecks.buildRangeCheck(basePtr1, basePtr2);
-        break;
-    }
+    result = result ? builder.CreateAnd(result, check) : check;
+  }
+  for (auto& pair : context.heapChecks.ptrPairsToCheck) {
+    assert(flags.UseHeapAliasChecks);
 
-    result = builder.CreateAnd(result, check);
+    auto basePtr1 = pair.first;
+    auto basePtr2 = pair.second;
+
+    auto *check = heapChecks.buildCheck(basePtr1, basePtr2);
+
+    result = result ? builder.CreateAnd(result, check) : check;
   }
 
   // Also, if we hoisted loop bound loads, insert tests to guarantee that no
   // store in the region alises the hoisted loads.
   for (auto &pair : context.artificialBECounts) {
-    for (auto &storeTarget : context.storeTargets) {
+    for (auto &storeTarget : context.scevChecks.storeTargets) {
       auto check = rangeChecks.buildLocationCheck(storeTarget, pair.second.addr);
 
-      result = builder.CreateAnd(result, check);
+      result = result ? builder.CreateAnd(result, check) : check;
+    }
+    for (auto &storeTarget : context.heapChecks.storeTargets) {
+      auto check = heapChecks.buildCheck(storeTarget, pair.second.addr);
+
+      result = result ? builder.CreateAnd(result, check) : check;
     }
   }
 
   return result;
 }
+
+GlobalVariable *SCEVAliasInstrumenter::defineBlackhole() {
+  static const char *const name = "__alias_check_blackhole";
+
+  auto *mod = currFn->getParent();
+  auto &ctx = currFn->getContext();
+
+  GlobalVariable *blackhole = mod->getGlobalVariable(name);
+
+  if (!blackhole) {
+    blackhole = new GlobalVariable(
+      *mod,
+      IntegerType::get(ctx, 1),
+      /*isConstant=*/false,
+      GlobalValue::LinkOnceAnyLinkage,
+      ConstantInt::get(ctx, APInt(1, 0)),
+      name
+    );
+    blackhole->setAlignment(1);
+  }
+
+  return blackhole;
+}
+
 
 bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   // Collect all analyses needed for runtime check generation.
@@ -197,7 +249,8 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
 
   findAliasInstrumentableRegions(
     topRegion,
-    se, aa, li, dt, pdt, df,
+    se, aa, saa, li, dt,
+    flags,
     targetRegions
   );
 
@@ -256,6 +309,9 @@ char SCEVAliasInstrumenter::ID = 0;
 
 Pass *polly::createSCEVAliasInstrumenterPass() {
   return new SCEVAliasInstrumenter();
+}
+Pass *polly::createSCEVAliasInstrumenterPass(const AliasCheckFlags& flags) {
+  return new SCEVAliasInstrumenter(flags);
 }
 
 INITIALIZE_PASS_BEGIN(SCEVAliasInstrumenter, "polly-scev-checks",

@@ -16,56 +16,44 @@ RODINIA_DATA_DIR="$SRC_BASE"/tests/rodinia_3.0/data
 
 ## FUNCTIONS TO BUILD & RUN BENCHMARKS
 
-function compile_benchmark {
+function benchmark_src_files {
 	local NAME="$1"
-	# local MODE="$2"
-	local DST="$2"
-
-	# _pushd "$RODINIA_SRC_DIR/$NAME"
-
-	# should be split into CC and CC_FLAGS but rodinia's makefiles are not very clean
-	export CC="$LLVM_BIN_DIR/clang"
-	export CXX="$LLVM_BIN_DIR/clang++"
 
 	case $NAME in
 		## heartwall includes some .c files so just compiling all .c files
 		## separately doesn't work here
 		heartwall)
-			local INCLUDE_DIRS="-I$RODINIA_SRC_DIR/$NAME/AVI"
-			local C_FILES=( $(find "$RODINIA_SRC_DIR/$NAME/AVI" -name '*.c') $(find "$RODINIA_SRC_DIR/$NAME" -name 'main.c') )
-			local CPP_FILES=()
+			find "$RODINIA_SRC_DIR/$NAME/AVI" -name '*.c'
+			find "$RODINIA_SRC_DIR/$NAME" -name 'main.c'
 			;;
 
 		*)
-			local INCLUDE_DIRS=""
-			local C_FILES=( $(find "$RODINIA_SRC_DIR/$NAME" -name '*.c') )
-			local CPP_FILES=( $(find "$RODINIA_SRC_DIR/$NAME" -name '*.cpp') )
+			find "$RODINIA_SRC_DIR/$NAME" -name '*.c'
+			find "$RODINIA_SRC_DIR/$NAME" -name '*.cpp'
 			;;
 	esac
+}
 
-	local LL_FILES=()
+function benchmark_include_dirs {
+	local NAME="$1"
 
-	for FILE in "${C_FILES[@]:+${C_FILES[@]}}"
-	do
-		echo "# $(basename $FILE)"
-		local LL="$BIN_DIR/$(basename "$FILE" .c).ll"
+	case $NAME in
+		heartwall)
+			echo "-I$RODINIA_SRC_DIR/$NAME/AVI"
+			;;
 
-		"$CC" "$FILE" $INCLUDE_DIRS -S -emit-llvm -o "$LL" -w
+		*)
+			true
+			;;
+	esac
+}
 
-		LL_FILES+=( "$LL" )
-	done
-	for FILE in "${CPP_FILES[@]:+${CPP_FILES[@]}}"
-	do
-		echo "# $(basename $FILE)"
-		local LL="$BIN_DIR/$(basename "$FILE" .cpp).ll"
+function benchmark_flags {
+	local NAME="$1"
 
-		"$CXX" "$FILE" -S -emit-llvm -o "$LL" -w
-
-		LL_FILES+=( "$LL" )
-	done
-
-	echo "# link"
-	"$LLVM_LINK" "${LL_FILES[@]}" -o "$DST"
+	true
+	# echo -I"$POLYBENCH_SRC_DIR"/utilities
+	# echo -DPOLYBENCH_TIME
 }
 
 function run_benchmark {
@@ -76,46 +64,47 @@ function run_benchmark {
 
 	case $NAME in
 		'b+tree')
-			_time "$BIN" core 1 file "$DATA"/b+tree/mil.txt command "$DATA"/b+tree/command.txt > /dev/null
+			_time "$BIN" core 1 file "$DATA"/b+tree/mil.txt command "$DATA"/b+tree/command.txt 2>&1
 			;;
 		backprop)
-			_time "$BIN" 65536 > /dev/null
+			"$BIN" 65536 | get_elapsed_time
 			;;
 
 		bfs)
-			_time "$BIN" 1 "$DATA"/bfs/graph1MW_6.txt > /dev/null
+			_time "$BIN" 1 "$DATA"/bfs/graph1MW_6.txt 2>&1
 			;;
 
 		'hotspot')
-			_time "$BIN" 512 512 2 1 "$DATA"/hotspot/temp_512 "$DATA"/hotspot/power_512 > /dev/null
+			_time "$BIN" 512 512 2 1 "$DATA"/hotspot/temp_512 "$DATA"/hotspot/power_512  2>&1
 			;;
 
 		'particlefilter')
-			_time "$BIN" -x 128 -y 128 -z 10 -np 10000 > /dev/null
+			"$BIN" -x 128 -y 128 -z 10 -np 10000 | get_elapsed_time
 			;;
 
 		'pathfinder')
-			_time "$BIN" 100000 100 > /dev/null
+			"$BIN" 100000 100 | get_elapsed_time
 			;;
 
 		'heartwall')
-			_time "$BIN" "$DATA"/heartwall/test.avi 20 1 > /dev/null
+			_time "$BIN" "$DATA"/heartwall/test.avi 20 1 2>&1
 			;;
 
 		'kmeans')
-			_time "$BIN" -i "$DATA"/kmeans/kdd_cup > /dev/null
+			"$BIN" -i "$DATA"/kmeans/kdd_cup | get_elapsed_time
 			;;
 
 		'lavaMD')
-			_time "$BIN" -cores 1 -boxes1d 10 > /dev/null
+			_time "$BIN" -cores 1 -boxes1d 10 2>&1
 			;;
 
 		'streamcluster')
-			_time "$BIN" 10 20 256 65536 65536 1000 none output.txt 1 > /dev/null 2> /dev/null
+			"$BIN" 10 20 256 65536 65536 1000 none output.txt 1 | get_elapsed_time
 			;;
 
 		*)
 			_error "unknown benchmark '$NAME'"
+			;;
 	esac
 }
 
@@ -123,15 +112,12 @@ function benchmark_iterations {
 	local NAME="$1"
 
 	case $NAME in
-		'b+tree' | 'backprop' | 'bfs' | 'hotspot' | 'particlefilter' | 'pathfinder')
+		# 'heartwall' | 'kmeans' | 'lavaMD' | 'streamcluster')
+		# 	echo $SLOW_BENCH_ITERATIONS
+		# 	;;
+		*)
 			echo $FAST_BENCH_ITERATIONS
 			;;
-
-		'heartwall' | 'kmeans' | 'lavaMD' | 'streamcluster')
-			echo $SLOW_BENCH_ITERATIONS
-			;;
-		*)
-			_error "unknown benchmark '$NAME'"
 	esac
 }
 
@@ -180,31 +166,35 @@ function benchmark_list {
 	done
 }
 
-## helpers
-
-function benchmark_binary {
+function benchmark_sampling_rate {
 	local NAME="$1"
 
 	case $NAME in
-		'b+tree')
-			echo 'b+tree.out'
+		kmeans)
+			echo "1000"
 			;;
 
-		backprop | bfs | hotspot | pathfinder | heartwall | kmeans | lavaMD)
-			echo "$NAME"
-			;;
-
-		'particlefilter')
-			echo particle_filter
-			;;
-
-		'streamcluster')
-			echo sc_omp
+		streamcluster)
+			echo "100000"
 			;;
 
 		*)
-			_error "unknown benchmark '$NAME'"
+			echo "0"
+			;;
 	esac
+}
+
+## helpers
+
+function get_elapsed_time {
+	# find line that contains timing
+	local TIME="$(grep "Elapsed time:")"
+
+	# extract timing from line
+	local REGEX='Elapsed time: ([^[:blank:]]+)'
+    [[ $TIME =~ $REGEX ]]
+
+    echo "${BASH_REMATCH[1]}"
 }
 
 ## run main

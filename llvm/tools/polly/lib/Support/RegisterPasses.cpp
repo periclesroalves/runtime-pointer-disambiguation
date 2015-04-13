@@ -30,6 +30,8 @@
 #include "polly/ScopDetection.h"
 #include "polly/ScopInfo.h"
 #include "polly/TempScopInfo.h"
+#include "polly/Support/AliasCheckBuilders.h"
+#include "polly/SCEVAliasInstrumenter.h"
 #include "llvm/Analysis/CFGPrinter.h"
 #include "llvm/PassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
@@ -120,11 +122,49 @@ static cl::opt<bool> DeadCodeElim("polly-run-dce",
                                   cl::Hidden, cl::init(true), cl::ZeroOrMore,
                                   cl::cat(PollyCategory));
 
-static cl::opt<bool> SCEVAliasInstrumenter(
+static cl::opt<bool> UseScevAliasChecks(
     "polly-use-scev-alias-checks",
     cl::desc("Instrument dependences that can't be solved statically with"
              "with runtime checks"),
     cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
+
+static cl::opt<bool> UseHeapAliasChecks(
+    "polly-use-heap-alias-checks",
+    cl::desc("Instrument dependences that can't be solved statically with"
+             "with runtime checks"),
+    cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
+
+static cl::opt<bool> UseMustAliasChecks(
+    "polly-use-must-alias-checks",
+    cl::desc("Instrument dependences that can't be solved statically with"
+             "with runtime checks"),
+    cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
+
+static cl::opt<bool> UseStaticAaEval(
+    "polly-aa-eval",
+    cl::desc("Evaluate static alias analysis on scops"),
+    cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
+
+static cl::opt<bool> UseAliasProfiling(
+    "polly-use-alias-profiling",
+    cl::desc("Instrument alias profiling for dependences that can't be solved"
+             " statically"),
+    cl::init(false), cl::ZeroOrMore, cl::cat(PollyCategory));
+
+polly::AliasInstrumenterMode polly::PollyAliasInstrumenterMode;
+static cl::opt<polly::AliasInstrumenterMode, true> AliasInstrumenterMode(
+    "polly-alias-instrumenter",
+    cl::desc("Select the alias check instrumentation strategy"),
+    cl::values(
+      clEnumValN(polly::InstrumentAndClone,        "optimize", ""),
+      clEnumValN(polly::MeasureCheckCosts,         "measure-check-costs", ""),
+      clEnumValN(polly::MeasureCheckCostsBaseline, "measure-check-costs-baseline", ""),
+    clEnumValEnd),
+    cl::location(PollyAliasInstrumenterMode),
+    cl::init(polly::InstrumentAndClone),
+    cl::ZeroOrMore,
+    cl::cat(PollyCategory)
+);
 
 static cl::opt<bool> PollyViewer(
     "polly-show",
@@ -182,6 +222,7 @@ void initializePollyPasses(PassRegistry &Registry) {
   initializeNoSpecAAPass(Registry);
 
   initializePollyAaEvalPass(Registry);
+  initializeAliasProfilingPass(Registry);
 }
 
 /// @brief Register Polly passes such that they form a polyhedral optimizer.
@@ -217,8 +258,21 @@ void initializePollyPasses(PassRegistry &Registry) {
 static void registerPollyPasses(llvm::PassManagerBase &PM) {
   registerCanonicalicationPasses(PM, SCEVCodegen);
 
-  if (SCEVAliasInstrumenter) {
-    PM.add(polly::createSCEVAliasInstrumenterPass());
+  AliasCheckFlags checkFlags(
+    UseScevAliasChecks, UseHeapAliasChecks, UseMustAliasChecks
+  );
+
+  if (UseAliasProfiling || checkFlags || UseStaticAaEval)
+    PM.add(llvm::createFullInstructionNamerPass());
+
+  if (UseStaticAaEval)
+    PM.add(polly::createPollyAaEvalPass());
+
+  if (UseAliasProfiling)
+    PM.add(polly::createAliasProfilingPass());
+
+  if (checkFlags) {
+    PM.add(polly::createSCEVAliasInstrumenterPass(checkFlags));
     PM.add(llvm::createLICMPass());
   }
 

@@ -52,44 +52,98 @@ struct PollyAaEval final : FunctionPass {
     aa  = &getAnalysis<AliasAnalysis>();
     se  = &getAnalysis<ScalarEvolution>();
     dt  = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
-    pdt = &getAnalysis<PostDominatorTree>();
-    df  = &getAnalysis<DominanceFrontier>();
     saa = &getAnalysis<SpeculativeAliasAnalysis>();
 
+    AliasCheckFlags flags;
     std::vector<std::unique_ptr<AliasInstrumentationContext>> targetRegions;
 
-    findAliasInstrumentableRegions(
-      ri->getTopLevelRegion(),
-      se, aa, li, dt, pdt, df,
-      targetRegions
-    );
+    size_t dummy = 0;
+
+    targetRegions.clear();
+    flags = AliasCheckFlags();
+    flags.UseSCEVAliasChecks = true;
+    findAliasInstrumentableRegions(targetRegions, flags, numScevRegions, dummy);
+
+    targetRegions.clear();
+    flags = AliasCheckFlags();
+    flags.UseHeapAliasChecks = true;
+    findAliasInstrumentableRegions(targetRegions, flags, numHeapRegions, dummy);
+
+    targetRegions.clear();
+    flags = AliasCheckFlags::allTrue();
+    findAliasInstrumentableRegions(targetRegions, flags, numBothRegions,
+      numRegionsWithoutChecks);
 
     for (auto& context : targetRegions) {
-      evalRegion(*context);
+      evalRegion(&F, *context);
     }
 
     return false;
   }
 
+  void findAliasInstrumentableRegions(
+            std::vector<std::unique_ptr<AliasInstrumentationContext>>& regions,
+            AliasCheckFlags flags,
+            size_t &numRegionsWithChecks,
+            size_t &numRegionsWithoutChecks
+  ) {
+    polly::findAliasInstrumentableRegions(
+      ri->getTopLevelRegion(),
+      se, aa, saa, li, dt,
+      flags,
+      regions
+    );
+
+    for (auto& context : regions) {
+      bool empty = true;
+
+      empty &= context->scevChecks.ptrPairsToCheck.empty();
+      empty &= context->heapChecks.ptrPairsToCheck.empty();
+      empty &= context->artificialBECounts.empty();
+      empty &= context->scevChecks.storeTargets.empty();
+      empty &= context->heapChecks.storeTargets.empty();
+
+      if (empty)
+        numRegionsWithoutChecks++;
+      else
+        numRegionsWithChecks++;
+    }
+  }
+
   bool doInitialization(Module &M) override {
-    numRegions = numPairs = numStaticNoAlias = numStaticMayAlias =
-    numStaticMustAlias = numDynamicNoHeapAlias = numDynamicNoRangeAlias =
-    numDynamicProbablyAlias = numDynamicMustAlias = 0;
+    numBothRegions = numScevRegions = numHeapRegions = numRegionsWithoutChecks =
+    numPairs =
+    numStaticNoAlias = numStaticMayAlias = numStaticMustAlias =
+    numDynamicNoAlias = numDynamicNoHeapAlias = numDynamicNoRangeAlias =
+    numDynamicProbablyAlias = numDynamicMustAlias = numDynamicDontKnow = 0;
 
     return false;
   }
 
   bool doFinalization(Module &M) override {
-    errs() << "regions:                " << numRegions              << "\n";
-    errs() << "pairs:                  " << numPairs                << "\n";
-    errs() << "static-no-alias:        " << numStaticNoAlias        << "\n";
-    errs() << "static-may-alias:       " << numStaticMayAlias       << "\n";
-    errs() << "static-must-alias:      " << numStaticMustAlias      << "\n";
-    errs() << "dynamic-no-heap-alias:  " << numDynamicNoHeapAlias   << "\n";
-    errs() << "dynamic-no-range-alias: " << numDynamicNoRangeAlias  << "\n";
-    errs() << "dynamic-probably-alias: " << numDynamicProbablyAlias << "\n";
-    errs() << "dynamic-must-alias:     " << numDynamicMustAlias     << "\n";
-    errs() << "\n";
+    errs() << "---\n";
+    errs() << "regions-with-both-checks: " << numBothRegions          << "\n";
+    errs() << "regions-scev-only:        " << numScevRegions          << "\n";
+    errs() << "regions-heap-only:        " << numHeapRegions          << "\n";
+    errs() << "regions-without-checks:   " << numRegionsWithoutChecks << "\n";
+    errs() << "pairs:                    " << numPairs                << "\n";
+    errs() << "static-no-alias:          " << numStaticNoAlias        << "\n";
+    errs() << "static-may-alias:         " << numStaticMayAlias       << "\n";
+    errs() << "static-must-alias:        " << numStaticMustAlias      << "\n";
+    errs() << "dynamic-no-alias:         " << numDynamicNoAlias       << "\n";
+    errs() << "dynamic-no-heap-alias:    " << numDynamicNoHeapAlias   << "\n";
+    errs() << "dynamic-no-range-alias:   " << numDynamicNoRangeAlias  << "\n";
+    errs() << "dynamic-probably-alias:   " << numDynamicProbablyAlias << "\n";
+    errs() << "dynamic-must-alias:       " << numDynamicMustAlias     << "\n";
+
+    // just printing the don't know is a bit unfair, since we only profile
+    // may-alias pairs
+    // so we substract the number of must- and no-aliases
+    // errs() << "dynamic-don't-know:     ";
+    // errs() << (numDynamicDontKnow - numStaticMustAlias - numStaticNoAlias);
+    // errs() << "\n";
+
+    errs() << "...\n";
 
     return false;
   }
@@ -107,16 +161,8 @@ struct PollyAaEval final : FunctionPass {
     AU.setPreservesAll();
   }
 private:
-  void evalRegion(AliasInstrumentationContext& ctx) {
-    numRegions++;
-
-    const auto region = ctx.region;
+  void evalRegion(Function *f, AliasInstrumentationContext& ctx) {
     std::set<std::pair<Value *, Value *>> ptrPairs;
-
-    AliasSetTracker ast(*aa);
-
-    for (BasicBlock *bb : region->blocks())
-      ast.add(*bb);
 
     for (const auto& memAccess1 : ctx.memAccesses) {
       auto* ptr1 = memAccess1.first;
@@ -132,10 +178,10 @@ private:
     }
 
     for (auto& pair : ptrPairs)
-      evalPair(pair.first, pair.second);
+      evalPair(f, pair.first, pair.second);
   }
 
-  void evalPair(Value *ptr1, Value *ptr2) {
+  void evalPair(Function *f, Value *ptr1, Value *ptr2) {
     numPairs++;
 
     switch (aa->alias(ptr1, ptr2)) {
@@ -152,7 +198,7 @@ private:
         break;
     }
 
-    switch (saa->speculativeAlias(ptr1, ptr2)) {
+    switch (saa->speculativeAlias(f, ptr1, ptr2)) {
       case SpeculativeAliasResult::NoHeapAlias:
         numDynamicNoHeapAlias++;
         break;
@@ -160,8 +206,7 @@ private:
         numDynamicNoRangeAlias++;
         break;
       case SpeculativeAliasResult::NoAlias:
-        numDynamicNoHeapAlias++;
-        numDynamicNoRangeAlias++;
+        numDynamicNoAlias++;
         break;
       case SpeculativeAliasResult::ExactAlias:
         numDynamicMustAlias++;
@@ -169,7 +214,8 @@ private:
       case SpeculativeAliasResult::ProbablyAlias:
         numDynamicProbablyAlias++;
         break;
-      default:
+      case SpeculativeAliasResult::DontKnow:
+        numDynamicDontKnow++;
         break;
     }
   }
@@ -181,13 +227,13 @@ private:
   LoopInfo *li;
   RegionInfo *ri;
   DominatorTree *dt;
-  DominanceFrontier *df;
-  PostDominatorTree *pdt;
 
-  size_t numRegions;
+  size_t numScevRegions, numHeapRegions, numBothRegions,
+         numRegionsWithoutChecks;
   size_t numPairs;
   size_t numStaticNoAlias, numStaticMayAlias, numStaticMustAlias;
-  size_t numDynamicNoHeapAlias, numDynamicNoRangeAlias, numDynamicProbablyAlias, numDynamicMustAlias;
+  size_t numDynamicNoAlias, numDynamicNoHeapAlias, numDynamicNoRangeAlias,
+         numDynamicProbablyAlias, numDynamicMustAlias, numDynamicDontKnow;
 };
 
 // } // end anoymous namespace
@@ -198,17 +244,15 @@ Pass *polly::createPollyAaEvalPass() {
   return new PollyAaEval();
 }
 
-INITIALIZE_PASS_BEGIN(PollyAaEval, "polly-aa-eval",
+INITIALIZE_PASS_BEGIN(PollyAaEval, "polly-aa-eval-pass",
                       "Polly - Evaluate static alias analysis in Scops",
                       false, false);
 INITIALIZE_AG_DEPENDENCY(AliasAnalysis);
 INITIALIZE_AG_DEPENDENCY(SpeculativeAliasAnalysis);
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass);
 INITIALIZE_PASS_DEPENDENCY(LoopInfo);
-INITIALIZE_PASS_DEPENDENCY(PostDominatorTree);
-INITIALIZE_PASS_DEPENDENCY(DominanceFrontier);
 INITIALIZE_PASS_DEPENDENCY(RegionInfoPass);
 INITIALIZE_PASS_DEPENDENCY(ScalarEvolution);
-INITIALIZE_PASS_END(PollyAaEval, "polly-aa-eval",
+INITIALIZE_PASS_END(PollyAaEval, "polly-aa-eval-pass",
                     "Polly - Evaluate static alias analysis in Scops",
                     false, false)
