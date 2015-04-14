@@ -63,8 +63,6 @@ using namespace llvm;
 class ScopDetection;
 class DetectionContext;
 class AliasProfilingFeedback;
-class SpeculativeAliasAnalysis;
-enum class SpeculativeAliasResult;
 
 class MustAliasSets {
 public:
@@ -150,7 +148,6 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Analyses used.
   ScalarEvolution *se;
   AliasAnalysis *aa;
-  SpeculativeAliasAnalysis *saa;
   LoopInfo *li;
   RegionInfo *ri;
   DominatorTree *dt;

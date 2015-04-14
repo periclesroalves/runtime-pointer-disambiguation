@@ -15,7 +15,6 @@
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
 #include "polly/SCEVAliasInstrumenter.h"
-#include "polly/SpeculativeAliasAnalysis.h"
 #include "polly/LinkAllPasses.h"
 #include "polly/ScopDetection.h"
 #include "polly/Support/ScopHelper.h"
@@ -76,6 +75,10 @@ void SCEVAliasInstrumenter::fixAliasInfo(Region *r) {
 
     // Set the alias metadata for each memory access instruction in the region.
     for (auto memInst : pair.second) {
+      // Check that the instruction was not removed from the region.
+      if (!memInst->getParent())
+        continue;
+
       // A memory instruction always aliases its base pointer.
       memInst->setMetadata(LLVMContext::MD_alias_scope, MDNode::concatenate(
         memInst->getMetadata(LLVMContext::MD_alias_scope),
@@ -123,7 +126,9 @@ void SCEVAliasInstrumenter::simplifyRegion(Region *r) {
 
   // Create a new entering block to host the checks. If an entering block
   // already exists, just reuse it. If not, create one from the region entry.
-  if (entering && (entering != &(entering->getParent()->getEntryBlock()))) {
+  if (entering && (entering != &entering->getParent()->getEntryBlock()) &&
+      isa<BranchInst>(entering->getTerminator()) &&
+      dyn_cast<BranchInst>(entering->getTerminator())->isUnconditional()) {
     SplitBlock(entering, entering->getTerminator(), li);
   } else {
     BasicBlock *entry = r->getEntry();
@@ -148,7 +153,7 @@ void SCEVAliasInstrumenter::buildNoAliasClone(InstrumentationContext &context,
   Region *clonedRegion = cloneRegion(&r, nullptr, ri, dt, df);
 
   // Build the conditional brach based on the dynamic test result.
-  Instruction *br = &r.getEnteringBlock()->back();
+  TerminatorInst *br = r.getEnteringBlock()->getTerminator();
   BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
   builder.SetInsertPoint(br);
   builder.CreateCondBr(checkResult, r.getEntry(), clonedRegion->getEntry());
@@ -310,9 +315,6 @@ bool SCEVAliasInstrumenter::collectDependencyData(
 
   AliasSetTracker ast(*aa);
 
-  // build alias sets
-  // TODO: this does yet another pass over the blocks of the region,
-  //       can we reuse context.memAccesses, or something like it?
   for (BasicBlock *bb : r.blocks())
     ast.add(*bb);
 
@@ -359,23 +361,7 @@ bool SCEVAliasInstrumenter::collectDependencyData(
 
           // Guarantees ordered pairs (avoids repetition).
           auto pair = make_ordered_pair(basePtrValue, aliasValue);
-
-          switch (saa->speculativeAlias(basePtrValue, aliasValue)) {
-            case SpeculativeAliasResult::NoRangeOverlap:
-            // TODO: decide which check to use for these cases
-            case SpeculativeAliasResult::NoAlias:
-            case SpeculativeAliasResult::DontKnow:
-            // TODO: implement heap checks
-            case SpeculativeAliasResult::NoHeapAlias:
-            // TODO: don't insert checks for these cases
-            case SpeculativeAliasResult::ProbablyAlias:
-              context.ptrPairsToCheckOnRange.insert(pair);
-              break;
-            case SpeculativeAliasResult::ExactAlias:
-              auto& set = context.equalityChecks.getSetFor(pair.first);
-              set.insert(pair.second);
-              break;
-          }
+          context.ptrPairsToCheckOnRange.insert(pair);
         }
       }
     }
@@ -408,9 +394,6 @@ bool SCEVAliasInstrumenter::isValidInstruction(Instruction &inst) {
   return false;
 }
 
-// TODO: insert checks for the load address.
-// TODO: after cloning, replace uses of the old load in the cloned region
-//       be the new load and eliminate the old load.
 bool SCEVAliasInstrumenter::createArtificialInvariantBECount(Loop *l,
                             InstrumentationContext &context) {
   Region &r = context.r;
@@ -567,7 +550,6 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   li = &getAnalysis<LoopInfo>();
   ri = &getAnalysis<RegionInfoPass>().getRegionInfo();
   aa = &getAnalysis<AliasAnalysis>();
-  saa = &getAnalysis<SpeculativeAliasAnalysis>();
   se = &getAnalysis<ScalarEvolution>();
   dt = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
   pdt = &getAnalysis<PostDominatorTree>();
@@ -595,7 +577,6 @@ void SCEVAliasInstrumenter::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequired<LoopInfo>();
   AU.addRequired<ScalarEvolution>();
   AU.addRequired<AliasAnalysis>();
-  AU.addRequired<SpeculativeAliasAnalysis>();
   AU.addRequired<RegionInfoPass>();
 
   // Changing the CFG like we do doesn't preserve anything.
