@@ -45,7 +45,10 @@ void SCEVAliasInstrumenter::fixAliasInfo(Region *r) {
         continue;
 
       Value *basePtrValue = getBasePtrValue(inst, *r);
-      assert(basePtrValue && "Bad load/store in cloned region.");
+
+      if (!basePtrValue || !isa<Argument>(basePtrValue))
+        continue;
+
       memAccesses[basePtrValue].insert(i);
     }
   }
@@ -328,10 +331,9 @@ bool SCEVAliasInstrumenter::collectDependencyData(
 
       Value *basePtrValue = getBasePtrValue(inst, r);
 
-      // If we can't define the base pointer, then it's not possible to define
-      // the dependencies.
-      if (!basePtrValue)
-        return false;
+      // We are only interested in function parameters.
+      if (!basePtrValue || !isa<Argument>(basePtrValue))
+        continue;
 
       // Store this access expression.
       Value *ptr = getPointerOperand(inst);
@@ -352,7 +354,8 @@ bool SCEVAliasInstrumenter::collectDependencyData(
         for (const auto &aliasPointer : as) {
           Value *aliasValue = aliasPointer.getValue();
 
-          if (basePtrValue == aliasValue)
+          // We only care about parameters.
+          if ((basePtrValue == aliasValue) || !isa<Argument>(aliasValue))
             continue;
 
           // We only need to check against pointers accessed within the region.
@@ -371,12 +374,9 @@ bool SCEVAliasInstrumenter::collectDependencyData(
 }
 
 bool SCEVAliasInstrumenter::isValidInstruction(Instruction &inst) {
-  if (CallInst *CI = dyn_cast<CallInst>(&inst)) {
-    if (ScopDetection::isValidCallInst(*CI))
-      return true;
-
-    return false;
-  }
+  // Calls don't affect the analysis.
+  if (CallInst *CI = dyn_cast<CallInst>(&inst))
+    return true;
 
   // Anything that doesn't access memory is valid.
   if (!inst.mayWriteToMemory() && !inst.mayReadFromMemory()) {
@@ -496,10 +496,8 @@ bool SCEVAliasInstrumenter::canInstrument(InstrumentationContext &context) {
   for (BasicBlock *bb : r.blocks()) {
     Loop *l = li->getLoopFor(bb);
 
-    // If a loop doesn't have a defined limit, try to create an artificial one.
     if (l && (l->getHeader() == bb) &&
-        !se->hasLoopInvariantBackedgeTakenCount(l) &&
-        !createArtificialInvariantBECount(l, context))
+        !se->hasLoopInvariantBackedgeTakenCount(l))
       return false;
   }
 
@@ -556,16 +554,27 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   df = &getAnalysis<DominanceFrontier>();
 
   currFn = &F;
-  Region *topRegion = ri->getTopLevelRegion();
 
+  // Instrumentation needs to be inserted right after the function entry.
+  BasicBlock *targetEntry = F.getEntryBlock().getUniqueSuccessor();
+
+  if (!targetEntry)
+    return true;
+
+  Region *targetRegion = ri->getTopLevelRegion()->getSubRegionNode(targetEntry);
+
+  if (!targetRegion)
+    return true;
+
+  InstrumentationContext context(*targetRegion);
   releaseMemory();
-  findTargetRegions(*topRegion);
 
-  // Instrument and clone each target region.
-  for (auto context : targetRegions) {
-    Instruction *checkResult = insertDynamicChecks(context);
-    buildNoAliasClone(context, checkResult);
-  }
+  // Check if the whole function can be instrumented.
+  if (!canInstrument(context))
+    return true;
+
+  Instruction *checkResult = insertDynamicChecks(context);
+  buildNoAliasClone(context, checkResult);
   
   return true;
 }
