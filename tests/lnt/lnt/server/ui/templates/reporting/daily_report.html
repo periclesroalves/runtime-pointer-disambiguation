@@ -1,0 +1,163 @@
+{% if not only_html_body %}
+<html>
+<head>
+   <title>Daily Report: {{
+     '%04d-%02d-%02d' % (report.year, report.month, report.day) }}</title>
+</head>
+<body style="{{ styles['body'] }}">
+{% endif %}
+
+{% set hour_offset = report.day_start_offset.seconds // 3600 %}
+
+<center><h2>{#
+  #}(<a href="{{ts_url}}/daily_report/{{
+                 report.prior_days[1].year}}/{{
+                 report.prior_days[1].month}}/{{
+                 report.prior_days[1].day}}?day_start={{
+		 hour_offset
+		 }}">prev</a>){#
+  #}<b>&nbsp;<a href="{{ts_url}}/daily_report/{{
+                 report.prior_days[0].year}}/{{
+                 report.prior_days[0].month}}/{{
+                 report.prior_days[0].day}}?day_start={{
+		 hour_offset
+		 }}">{#
+        #}Daily Report {{ '%04d-%02d-%02d' % (
+          report.prior_days[0].year, report.prior_days[0].month,
+          report.prior_days[0].day) }}</a>&nbsp;</b>{#
+  #}(<a href="{{ts_url}}/daily_report/{{
+                 report.next_day.year}}/{{
+                 report.next_day.month}}/{{
+                 report.next_day.day}}?day_start={{
+		 hour_offset
+		 }}">next</a>){#
+#}</h2>
+(day start is considered to be at UTC+{{ "%02d:%02d" % (
+    hour_offset,
+    (report.day_start_offset.seconds // 60) % 60,)}})
+</center>
+
+{% if report.error is not none %}
+
+<p>An error was encountered while producing the daily report: {{
+  report.error }}.</p>
+
+{% else %}
+
+{# Generate the table showing which run orders we are reporting on, for each
+   machine. #}
+<h3 style={{ "styles.h3" }}>Reported Machine Order</h3>
+<table border="1" style="{{ styles.table }}">
+  <thead>
+    <tr>
+      <th style="{{ styles.th }}">Machine Name</th>
+{% for i in range(report.num_prior_days_to_include)|reverse %}
+      <th style="{{ styles.th }}">Day - {{i}}</th>
+{% endfor %}
+    </tr>
+  </thead>
+{% for machine in report.reporting_machines %}
+  <tr>
+    <td style="{{ styles.td }}">{{machine.name}}</td>
+{% for i in range(report.num_prior_days_to_include)|reverse %}
+{%   set key_run = report.get_key_run(machine, i) %}
+{%   if key_run %}
+    {# FIXME: Don't hard code field name. #}
+    <td style="{{ styles.td }}">
+      <a href="{{ ts_url }}/{{ key_run.id }}">{{
+        key_run.order.llvm_project_revision}}</a></td>
+{%   else %}
+    <td style="{{ styles.td }}" bgcolor="#FF0000">N/A</td>
+{%   endif %}
+{% endfor %}
+  </tr>
+{% endfor %}
+</table>
+
+{% macro get_initial_cell_value(cr) %}
+{% set test_status = cr.get_test_status() %}
+
+{% if (test_status == analysis.REGRESSED or
+       test_status == analysis.UNCHANGED_FAIL) %}
+    <td style="{{ styles.td }}" bgcolor="#e98080">FAIL</td>
+{% else %}
+    <td style="{{ styles.td }}" bgcolor="#d2d2d2">
+      {{ ("%.4f" % cr.current) if cr.current != none else "N/A" }}</td>
+{% endif %}
+
+{% endmacro %}
+
+{% macro get_cell_value(cr) %}
+{% set test_status = cr.get_test_status() %}
+{% set value_status = cr.get_value_status() %}
+
+{% if (test_status == analysis.REGRESSED or
+       test_status == analysis.UNCHANGED_FAIL) %}
+    <td style="{{ styles.td }}" bgcolor="#e98080">FAIL</td>
+{% elif test_status == analysis.IMPROVED %}
+    <td style="{{ styles.td }}" bgcolor="#8fdf5f">PASS</td>
+{% else %}
+
+{% if (value_status == analysis.REGRESSED or
+       value_status == analysis.IMPROVED) %}
+    {{ cr.pct_delta|aspctcell|safe }}
+{% else %}
+    <td style="{{ styles.td }}">-</td>
+{% endif %}
+
+{% endif %}
+{% endmacro %}
+
+{# Generate the table showing the raw sample data. #}
+
+{# If the report is for mail, we put the table header on each test. This is
+   ugly, however it makes it much easier to inline comments in replies to the
+   email. Given that is the primary purpose of the email, we trade off wasted
+   space for convenience. #}
+{% macro result_header() %}
+<table border="1" style="{{ styles.table }}; width: {{
+                            400 + report.num_prior_days_to_include*80}}px;">
+  <thead>
+    <tr>
+      <th style="{{ styles.th }}; width: 100px;">Test Name</th>
+      <th style="{{ styles.th }}; width: 300px;">Machine Name</th>
+{% for i in range(report.num_prior_days_to_include)|reverse %}
+      <th style="{{ styles.th }}">Day - {{i}}</th>
+{% endfor %}
+  </thead>
+{% endmacro %}
+
+{% for field,field_results in report.result_table|reverse %}
+<h3>Result Table ({{ field.name }})</h3>
+{{ result_header() if not report.for_mail }}
+{% for test,visible_results in field_results %}
+{{ result_header() if report.for_mail }}
+  <tr>
+    <td style="{{ styles.td }}" colspan="2"> <b>{{test.name}}</b></td>
+    <td style="{{ styles.td }}" colspan="{{report.num_prior_days_to_include}}">&nbsp;</td>
+  </tr>
+{%   for machine,day_results in visible_results %}
+{%   set key_run = report.get_key_run(machine, 0) %}
+  <tr>
+    <td style="{{ styles.td }}">&nbsp;</td>
+    <td style="{{ styles.td }}"><a href="{{
+      ts_url}}/graph?plot.0={{machine.id}}.{{test.id}}.{{
+        field.index}}&highlight_run={{key_run.id}}">{{
+          machine.name}}</a></td>
+    {{ get_initial_cell_value(day_results[-1]) }}
+{%     for day_result in day_results[:-1]|reverse %}
+    {{ get_cell_value(day_result) }}
+{%     endfor %}
+  </tr>
+{%   endfor %}
+{{ "</table><p>" if report.for_mail }}
+{% endfor %}
+{{ "</table>" if not report.for_mail }}
+{% endfor %}
+
+{% endif %}
+
+{% if not only_html_body %}
+</body>
+</html>
+{% endif %}

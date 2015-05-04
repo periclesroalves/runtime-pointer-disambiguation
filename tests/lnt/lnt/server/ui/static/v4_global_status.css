@@ -1,0 +1,113 @@
+
+/* Page Header Styles */
+
+#settings-wrench {
+    float: right;
+    border-right: 1px solid #DFE0E3;
+    box-shadow: 1px 0 0 #BFC3C3, -1px 0 0 #BFC3C3; /* block-shadow both sides */
+    border-left: 1px solid #DFE0E3;
+    line-height: 20px;
+    padding: 4.5px 10px 3px 10px;
+    margin-right: -10px;
+}
+
+#settings-wrench:hover {
+    -webkit-box-shadow: 0px 0px 20px rgba(255,255,255,0.8);
+    -moz-box-shadow: 0px 0px 20px rgba(255,255,255,0.8);
+    box-shadow: 0px 0px 20px rgba(255,255,255,0.8);
+}
+
+#nav-dbselector {
+    padding-left: 0px;
+}
+
+/* Table Styles */
+table#data-table tr {
+    width: 100%;
+}
+
+table#data-table th {
+    outline: rgba(0, 0, 0, 0.3) solid 1px;
+}
+
+table#data-table {
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+    margin-right: 10px;
+    cursor: default;
+}
+
+table#data-table td {
+    border: rgba(0, 0, 0, 0.3) solid 1px;
+}
+
+table#data-table td.data-cell, table#data-table th {
+    text-align: center;
+}
+
+table#data-table td.data-cell, table#data-table th.data-header {
+    min-width: 15em;
+    max-width: 15em;
+    width: 15em;
+}
+
+table#data-table td.row-head {
+    min-width: 30em;
+    max-width: 30em;
+    width: 30em;
+}
+
+table#data-table th.label-header {
+    width: auto;
+}
+
+table#data-table td.row-head {
+    text-align: left;
+    overflow: hidden;
+}
+
+/* Generic control panel styles */
+
+div.control-panel {
+    background-color: #cccccc;
+    border: solid 1px;
+    width: 35em;
+    margin-bottom: 0.5em;
+}
+
+div.control-panel h3,
+div.control-panel div {
+    margin-left: 1em;
+}
+
+div.control-panel ul {
+     list-style-type: none;
+     margin: 0px;     
+     padding: 0px;
+     margin-left: 1em;
+     margin-top: -0.25em;
+     margin-bottom: 1em;
+}
+
+
+div.control-panel table {
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+    margin-left: 1em;
+}
+
+/* Main control panel container styles */
+
+#emperor-control {
+    height: 22em;
+}
+
+#right-king-control {
+    float: right;
+    margin: 0px;
+    padding: 0px;    
+}
+

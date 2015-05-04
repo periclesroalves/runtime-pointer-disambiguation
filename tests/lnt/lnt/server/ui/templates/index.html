@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% set components = [] %}
+{% block title %}Overview{% endblock %}
+{% block body %}
+
+{# Display available test result suites. #}
+<h3>Test Suites</h3>
+{% for name in request.get_db().testsuite %}
+  <a href="{{db_url_for('v4_recent_activity', testsuite_name=name)}}">{{name}}</a><br>
+{% endfor %}
+
+{% endblock %}

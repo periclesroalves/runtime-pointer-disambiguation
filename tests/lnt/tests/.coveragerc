@@ -1,0 +1,17 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+parallel = True
+source = lnt
+
+[html]
+directory = coverage_html_report
+
+[report]
+# Exclude external code from the coverage report. Note that this is relative to
+# our location.
+#
+# We also exclude Jinja templates from the coverage report, the coverage module
+# isn't equipped to handle them.
+omit = ../lnt/external/*
+       ../lnt/server/ui/templates/*

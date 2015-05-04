@@ -1,0 +1,65 @@
+{% extends "layout.html" %}{
+{% set components = [("report", db_url_for("v4_summary_report"))] %}
+{% block head %}
+  <script src="{{ url_for('.static', filename='popup.js') }}"></script>
+  <script src="{{ url_for('.static',filename='json2.js')}}"></script>
+  <script language="javascript" type="text/javascript"
+           src="{{ url_for('.static',
+                           filename='jquery/1.7.2/jquery-1.7.2.min.js') }}"></script>
+  <script src="{{ url_for('.static',filename='v4_summary_report_ui.js')}}"></script>
+
+
+<script>
+  g.config = {{ config|tojson(indent=2)|safe }};
+  g.all_orders = {{ all_orders|tojson(indent=2)|safe }};
+  g.all_machines = {{ all_machines|tojson(indent=2)|safe }};
+  g.save_url = {{ db_url_for("v4_summary_report_ui")|tojson|safe }};
+</script>
+
+<style>
+/* Base class */
+.smbox {
+  position: relative;
+  height: 550px;
+  margin: 15px 0;
+  padding: 39px 19px 14px;
+  *padding-top: 19px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+  
+}
+</style>
+
+{% endblock %}
+{% block title %}Summary Report Editor{% endblock %}
+{% block body %}
+
+<div class="span2 smbox">
+  <h3><center>Report Orders</center></h3>
+  <div class="btn-group btn-group-vertical" style="width:100%"  id="report-order-list">
+  </div>
+  <br>
+  <br>
+  <input type="button" value="Add" onclick="add_order();">
+</div>
+
+<div  class="span4 smbox">
+  <h3><center>Order Items</center></h3>
+  <div class="ui-box"  id="report-order-items">
+  </div>
+</div>
+
+<div class="span4 smbox">
+  <h3><center>Machines</center></h3>
+  <div class="ui-box"  id="report-machines">
+  </div>
+</div>
+
+<div class="span9 form-actions" >
+  <button type="submit" class="btn btn-primary" onclick="save_config();">Save changes</button>
+  <button type="button" class="btn" onClick="document.location.reload(true)">Cancel</button>
+</div>
+{% endblock %}

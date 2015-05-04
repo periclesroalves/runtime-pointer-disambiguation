@@ -1,0 +1,23 @@
+{% macro render_popup_begin(id, title, hidden, depth=1) -%}
+  <div class="accordion" id="{{id}}-accordion">
+    <div class="accordion-group">
+      <div class="accordion-heading">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#{{id}}-accordion" href="#{{id}}-collapse">{{ title }}</a>
+      </div>
+      <div id="{{id}}-collapse" class="accordion-body {{ 'collapse' if hidden else 'collapse in' }}">
+        <div class="accordion-inner">
+{%- endmacro %}
+{% macro render_popup_end() -%}
+        </div>
+      </div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{% macro render_result(r) -%}
+<a href="{{v4_url_for('v4_run', id=r.id)}}">View Results</a>
+{%- endmacro %}
+
+{% macro render_machine(m) -%}
+<a href="{{v4_url_for('v4_machine', id=m.id)}}">{{m.name}}:{{m.id}}</a>
+{%- endmacro %}
