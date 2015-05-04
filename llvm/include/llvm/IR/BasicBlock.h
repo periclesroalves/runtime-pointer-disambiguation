@@ -190,8 +190,6 @@ public:
   /// \pre \a getParent() is \c nullptr.
   void insertInto(Function *Parent, BasicBlock *InsertBefore = nullptr);
 
-  BasicBlock *getUniqueSuccessor();
-
   /// \brief Return the predecessor of this block if it has a single predecessor
   /// block. Otherwise return a null pointer.
   BasicBlock *getSinglePredecessor();

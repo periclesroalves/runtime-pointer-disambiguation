@@ -220,20 +220,6 @@ void BasicBlock::dropAllReferences() {
     I->dropAllReferences();
 }
 
-BasicBlock *BasicBlock::getUniqueSuccessor() {
-  succ_iterator SI = succ_begin(this), E = succ_end(this);
-  if (SI == E) return NULL; // No successors
-  BasicBlock *SuccBB = *SI;
-  ++SI;
-  for (;SI != E; ++SI) {
-    if (*SI != SuccBB)
-      return NULL;
-    // The same successor appears multiple times in the successor list.
-    // This is OK.
-  }
-  return SuccBB;
-}
-
 /// getSinglePredecessor - If this basic block has a single predecessor block,
 /// return the block, otherwise return a null pointer.
 BasicBlock *BasicBlock::getSinglePredecessor() {
