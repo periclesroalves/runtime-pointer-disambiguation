@@ -29,6 +29,14 @@ tests/*.ll
 tests/*.s
 tests/speccpu2006/
 
+tests/base-noinline-sandbox/
+tests/base-sandbox/
+tests/mysandbox/
+tests/opt-noinline-sandbox/
+tests/opt-sandbox/
+tests/starbench/
+tests/polybench-c-4.0/a.out
+
 llvm/grep
 tests/ptrdist-1.1/Makefile-clean
 tests/ptrdist-1.1/Makefile-opt
