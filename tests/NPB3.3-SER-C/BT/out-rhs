@@ -1,0 +1,2819 @@
+make[1]: Entering directory `/mnt/global/LCSE/sanyam/SPEC_tests/SNU_NPB-1.0.3/NPB3.3-SER-C/sys'
+icc  -o setparams setparams.c
+make[1]: Leaving directory `/mnt/global/LCSE/sanyam/SPEC_tests/SNU_NPB-1.0.3/NPB3.3-SER-C/sys'
+../sys/setparams bt D
+make[1]: Entering directory `/mnt/global/LCSE/sanyam/SPEC_tests/SNU_NPB-1.0.3/NPB3.3-SER-C/BT'
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  bt.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):BOTTOM(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<bt.c;93:236;IPO INLINING;main;0>
+INLINING REPORT: (main) [1/1=100.0%]
+
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> timer_read(EXTERN)
+  -> printf(EXTERN)
+  -> print_results(EXTERN)
+  -> verify(EXTERN)
+  -> printf(EXTERN)
+  -> adi(EXTERN)
+  -> timer_read(EXTERN)
+  -> timer_stop(EXTERN)
+  -> timer_clear(EXTERN)
+  -> timer_start(EXTERN)
+  -> initialize(EXTERN)
+  -> adi(EXTERN)
+  -> timer_clear(EXTERN)
+  -> exact_rhs(EXTERN)
+  -> initialize(EXTERN)
+  -> set_constants(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> fgetc(EXTERN)
+  -> fgetc(EXTERN)
+  -> fscanf(EXTERN)
+  -> fgetc(EXTERN)
+  -> fscanf(EXTERN)
+  -> fgetc(EXTERN)
+  -> fscanf(EXTERN)
+  -> fclose(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> fopen(EXTERN)
+  -> printf(EXTERN)
+  -> fclose(EXTERN)
+  -> fopen(EXTERN)
+
+
+HPO THREADIZER REPORT (main) LOG OPENED ON Sun Jul 20 13:32:37 2014
+
+
+<bt.c;-1:-1;hpo_threadization;main;0>
+HPO Threadizer Report (main)
+
+bt.c(131:5-131:5):PAR:main:  loop was not parallelized: loop is not a parallelization candidate
+bt.c(133:5-133:5):PAR:main:  loop was not parallelized: loop is not a parallelization candidate
+bt.c(161:3-161:3):PAR:main:  loop was not parallelized: existence of parallel dependence
+bt.c(175:3-175:3):PAR:main:  loop was not parallelized: existence of parallel dependence
+bt.c(180:3-180:3):PAR:main:  loop was not parallelized: loop is not a parallelization candidate
+bt.c(212:5-212:5):PAR:main:  loop was not parallelized: existence of parallel dependence
+bt.c(218:5-218:5):PAR:main:  loop was not parallelized: existence of parallel dependence
+
+HPO VECTORIZER REPORT (main) LOG OPENED ON Sun Jul 20 13:32:37 2014
+
+
+<bt.c;-1:-1;hpo_vectorization;main;0>
+HPO Vectorizer Report (main)
+
+bt.c(131:5-131:5):VEC:main:  loop was not vectorized: unsupported loop structure
+bt.c(133:5-133:5):VEC:main:  loop was not vectorized: unsupported loop structure
+bt.c(162:5-162:5):VEC:main:  vectorization support: call to function timer_clear cannot be vectorized
+bt.c(161:3-161:3):VEC:main:  loop was not vectorized: existence of vector dependence
+bt.c(176:5-176:5):VEC:main:  vectorization support: call to function timer_clear cannot be vectorized
+bt.c(175:3-175:3):VEC:main:  loop was not vectorized: existence of vector dependence
+bt.c(180:3-180:3):VEC:main:  loop was not vectorized: unsupported loop structure
+bt.c(213:18-213:18):VEC:main:  vectorization support: call to function timer_read cannot be vectorized
+bt.c(212:5-212:5):VEC:main:  loop was not vectorized: existence of vector dependence
+bt.c(219:7-219:7):VEC:main:  vectorization support: call to function printf cannot be vectorized
+bt.c(218:5-218:5):VEC:main:  loop was not vectorized: existence of vector dependence
+bt.c(219:7-219:7):VEC:main:  vectorization support: call to function printf cannot be vectorized
+bt.c(218:5-218:5):VEC:main:  loop was not vectorized: existence of vector dependence
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:37 2014
+
+
+<bt.c;-1:-1;hlo;main;0>
+High Level Optimizer Report (main)
+
+<bt.c;218:218;hlo_scalar_replacement;in main;0>
+#of Array Refs Scalar Replaced in main at line 218=1
+#of Array Refs Scalar Replaced in main at line 218=1
+
+Predicate unswitching Report:
+(Condition and loop line numbers)
+
+<bt.c;218:221;hlo_opt_pred;main;0>
+Condition at line 221 hoisted from loop at line 218 
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<bt.c;218:218;hlo_unroll;main;0>
+Loop at line 218 peeled iterations: 1    (pre-vector) 
+
+<bt.c;-1:-1;PGO;main;0>
+  STATIC:bt.c  main
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  initialize.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(2):BOTTOM(1)OTHER(1)
+
+  CI-REF: TOTAL(2):OTHER(2)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<initialize.c;41:195;IPO INLINING;initialize;0>
+INLINING REPORT: (initialize) [1/2=50.0%]
+
+  -> exact_solution(EXTERN)
+  -> exact_solution(EXTERN)
+  -> exact_solution(EXTERN)
+  -> exact_solution(EXTERN)
+  -> exact_solution(EXTERN)
+  -> exact_solution(EXTERN)
+  -> exact_solution(EXTERN)
+  -> exact_solution(EXTERN)
+  -> exact_solution(EXTERN)
+
+
+HPO THREADIZER REPORT (initialize) LOG OPENED ON Sun Jul 20 13:32:38 2014
+
+
+<initialize.c;-1:-1;hpo_threadization;initialize;0>
+HPO Threadizer Report (initialize)
+
+initialize.c(51:3-51:3):PAR:initialize:  loop was not parallelized: insufficient computational work
+initialize.c(52:5-52:5):PAR:initialize:  loop was not parallelized: insufficient computational work
+initialize.c(53:7-53:7):PAR:initialize:  loop was not parallelized: insufficient computational work
+initialize.c(54:9-54:9):PAR:initialize:  loop was not parallelized: insufficient computational work
+initialize.c(64:3-64:3):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(66:5-66:5):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(68:7-68:7):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(71:9-71:9):PAR:initialize:  loop was not parallelized: existence of parallel dependence
+initialize.c(75:9-75:9):PAR:initialize:  loop was not parallelized: existence of parallel dependence
+initialize.c(79:9-79:9):PAR:initialize:  loop was not parallelized: existence of parallel dependence
+initialize.c(83:9-83:9):PAR:initialize:  loop was not parallelized: insufficient computational work
+initialize.c(105:3-105:3):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(107:5-107:5):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(110:7-110:7):PAR:initialize:  loop was not parallelized: insufficient computational work
+initialize.c(121:3-121:3):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(123:5-123:5):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(126:7-126:7):PAR:initialize:  loop was not parallelized: insufficient computational work
+initialize.c(137:3-137:3):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(139:5-139:5):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(142:7-142:7):PAR:initialize:  loop was not parallelized: insufficient computational work
+initialize.c(153:3-153:3):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(155:5-155:5):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(158:7-158:7):PAR:initialize:  loop was not parallelized: insufficient computational work
+initialize.c(169:3-169:3):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(171:5-171:5):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(174:7-174:7):PAR:initialize:  loop was not parallelized: insufficient computational work
+initialize.c(185:3-185:3):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(187:5-187:5):PAR:initialize:  loop was not parallelized: loop is not a parallelization candidate
+initialize.c(190:7-190:7):PAR:initialize:  loop was not parallelized: insufficient computational work
+
+HPO VECTORIZER REPORT (initialize) LOG OPENED ON Sun Jul 20 13:32:38 2014
+
+
+<initialize.c;-1:-1;hpo_vectorization;initialize;0>
+HPO Vectorizer Report (initialize)
+
+initialize.c(54:9-54:9):VEC:initialize:  loop was not vectorized: vectorization possible but seems inefficient
+initialize.c(53:7-53:7):VEC:initialize:  loop was not vectorized: vectorization possible but seems inefficient
+initialize.c(52:5-52:5):VEC:initialize:  loop was not vectorized: vectorization possible but seems inefficient
+initialize.c(51:3-51:3):VEC:initialize:  loop was not vectorized: vectorization possible but seems inefficient
+initialize.c(72:11-72:11):VEC:initialize:  vectorization support: call to function exact_solution cannot be vectorized
+initialize.c(71:9-71:9):VEC:initialize:  loop was not vectorized: existence of vector dependence
+initialize.c(76:11-76:11):VEC:initialize:  vectorization support: call to function exact_solution cannot be vectorized
+initialize.c(75:9-75:9):VEC:initialize:  loop was not vectorized: existence of vector dependence
+initialize.c(80:11-80:11):VEC:initialize:  vectorization support: call to function exact_solution cannot be vectorized
+initialize.c(79:9-79:9):VEC:initialize:  loop was not vectorized: existence of vector dependence
+initialize.c(83:9-83:9):VEC:initialize:  LOOP WAS VECTORIZED
+initialize.c(68:7-68:7):VEC:initialize:  loop was not vectorized: not inner loop
+initialize.c(66:5-66:5):VEC:initialize:  loop was not vectorized: not inner loop
+initialize.c(64:3-64:3):VEC:initialize:  loop was not vectorized: not inner loop
+initialize.c(110:7-110:7):VEC:initialize:  loop was not vectorized: vectorization possible but seems inefficient
+initialize.c(107:5-107:5):VEC:initialize:  loop was not vectorized: unsupported loop structure
+initialize.c(105:3-105:3):VEC:initialize:  loop was not vectorized: unsupported loop structure
+initialize.c(126:7-126:7):VEC:initialize:  loop was not vectorized: vectorization possible but seems inefficient
+initialize.c(123:5-123:5):VEC:initialize:  loop was not vectorized: unsupported loop structure
+initialize.c(121:3-121:3):VEC:initialize:  loop was not vectorized: unsupported loop structure
+initialize.c(142:7-142:7):VEC:initialize:  loop was not vectorized: vectorization possible but seems inefficient
+initialize.c(139:5-139:5):VEC:initialize:  loop was not vectorized: unsupported loop structure
+initialize.c(137:3-137:3):VEC:initialize:  loop was not vectorized: unsupported loop structure
+initialize.c(158:7-158:7):VEC:initialize:  loop was not vectorized: vectorization possible but seems inefficient
+initialize.c(155:5-155:5):VEC:initialize:  loop was not vectorized: unsupported loop structure
+initialize.c(153:3-153:3):VEC:initialize:  loop was not vectorized: unsupported loop structure
+initialize.c(174:7-174:7):VEC:initialize:  loop was not vectorized: vectorization possible but seems inefficient
+initialize.c(171:5-171:5):VEC:initialize:  loop was not vectorized: unsupported loop structure
+initialize.c(169:3-169:3):VEC:initialize:  loop was not vectorized: unsupported loop structure
+initialize.c(190:7-190:7):VEC:initialize:  loop was not vectorized: vectorization possible but seems inefficient
+initialize.c(187:5-187:5):VEC:initialize:  loop was not vectorized: unsupported loop structure
+initialize.c(185:3-185:3):VEC:initialize:  loop was not vectorized: unsupported loop structure
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:38 2014
+
+
+<initialize.c;-1:-1;hlo;initialize;0>
+High Level Optimizer Report (initialize)
+
+<initialize.c;107:107;hlo_scalar_replacement;in initialize;0>
+#of Array Refs Scalar Replaced in initialize at line 107=1
+
+<initialize.c;123:123;hlo_scalar_replacement;in initialize;0>
+#of Array Refs Scalar Replaced in initialize at line 123=1
+
+<initialize.c;139:139;hlo_scalar_replacement;in initialize;0>
+#of Array Refs Scalar Replaced in initialize at line 139=1
+
+<initialize.c;155:155;hlo_scalar_replacement;in initialize;0>
+#of Array Refs Scalar Replaced in initialize at line 155=1
+
+<initialize.c;171:171;hlo_scalar_replacement;in initialize;0>
+#of Array Refs Scalar Replaced in initialize at line 171=1
+
+<initialize.c;187:187;hlo_scalar_replacement;in initialize;0>
+#of Array Refs Scalar Replaced in initialize at line 187=1
+
+
+<initialize.c;53:53;hlo_linear_trans;initialize;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 53 
+
+<initialize.c;71:71;hlo_linear_trans;initialize;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 71 
+
+<initialize.c;75:75;hlo_linear_trans;initialize;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 75 
+
+<initialize.c;79:79;hlo_linear_trans;initialize;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 79 
+
+<initialize.c;107:107;hlo_linear_trans;initialize;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 107 
+
+<initialize.c;123:123;hlo_linear_trans;initialize;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 123 
+
+<initialize.c;139:139;hlo_linear_trans;initialize;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 139 
+
+<initialize.c;155:155;hlo_linear_trans;initialize;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 155 
+
+<initialize.c;171:171;hlo_linear_trans;initialize;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 171 
+
+<initialize.c;187:187;hlo_linear_trans;initialize;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 187 
+
+
+<initialize.c;110:110;hlo_reroll;initialize;0>
+Loop at line:110     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<initialize.c;126:126;hlo_reroll;initialize;0>
+Loop at line:126     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<initialize.c;142:142;hlo_reroll;initialize;0>
+Loop at line:142     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<initialize.c;158:158;hlo_reroll;initialize;0>
+Loop at line:158     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<initialize.c;174:174;hlo_reroll;initialize;0>
+Loop at line:174     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<initialize.c;190:190;hlo_reroll;initialize;0>
+Loop at line:190     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<initialize.c;110:110;hlo_reroll;initialize;0>
+Loop at line:110     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<initialize.c;126:126;hlo_reroll;initialize;0>
+Loop at line:126     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<initialize.c;142:142;hlo_reroll;initialize;0>
+Loop at line:142     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<initialize.c;158:158;hlo_reroll;initialize;0>
+Loop at line:158     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<initialize.c;174:174;hlo_reroll;initialize;0>
+Loop at line:174     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<initialize.c;190:190;hlo_reroll;initialize;0>
+Loop at line:190     memcopy(with guard) throttled memop:: small-iter loop. 
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<initialize.c;54:54;hlo_unroll;initialize;0>
+Loop at line 54 completely unrolled by 5   
+
+<initialize.c;83:83;hlo_unroll;initialize;0>
+Loop at line 83 completely unrolled by 1   
+
+<initialize.c;110:110;hlo_unroll;initialize;0>
+Loop at line 110 completely unrolled by 5   
+
+<initialize.c;126:126;hlo_unroll;initialize;0>
+Loop at line 126 completely unrolled by 5   
+
+<initialize.c;142:142;hlo_unroll;initialize;0>
+Loop at line 142 completely unrolled by 5   
+
+<initialize.c;158:158;hlo_unroll;initialize;0>
+Loop at line 158 completely unrolled by 5   
+
+<initialize.c;174:174;hlo_unroll;initialize;0>
+Loop at line 174 completely unrolled by 5   
+
+<initialize.c;190:190;hlo_unroll;initialize;0>
+Loop at line 190 completely unrolled by 5   
+
+<initialize.c;199:224;IPO INLINING;lhsinit;0>
+INLINING REPORT: (lhsinit) [2/2=100.0%]
+
+
+
+HPO THREADIZER REPORT (lhsinit) LOG OPENED ON Sun Jul 20 13:32:38 2014
+
+
+<initialize.c;-1:-1;hpo_threadization;lhsinit;0>
+HPO Threadizer Report (lhsinit)
+
+initialize.c(206:3-206:3):PAR:lhsinit:  loop was not parallelized: existence of parallel dependence
+initialize.c(207:5-207:5):PAR:lhsinit:  loop was not parallelized: existence of parallel dependence
+initialize.c(220:3-220:3):PAR:lhsinit:  loop was not parallelized: existence of parallel dependence
+
+HPO VECTORIZER REPORT (lhsinit) LOG OPENED ON Sun Jul 20 13:32:38 2014
+
+
+<initialize.c;-1:-1;hpo_vectorization;lhsinit;0>
+HPO Vectorizer Report (lhsinit)
+
+initialize.c(207:5-207:5):VEC:lhsinit:  loop was not vectorized: existence of vector dependence
+initialize.c(206:3-206:3):VEC:lhsinit:  loop was not vectorized: not inner loop
+initialize.c(220:3-220:3):VEC:lhsinit:  loop was not vectorized: existence of vector dependence
+
+
+<initialize.c;-1:-1;hlo;lhsinit;0>
+High Level Optimizer Report (lhsinit)
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<initialize.c;206:206;hlo_unroll;lhsinit;0>
+Loop at line 206 completely unrolled by 5   
+
+<initialize.c;207:207;hlo_unroll;lhsinit;0>
+Loop at line 207 completely unrolled by 5   
+
+<initialize.c;220:220;hlo_unroll;lhsinit;0>
+Loop at line 220 completely unrolled by 5   
+
+<initialize.c;-1:-1;PGO;lhsinit;0>
+  STATIC:initialize.c  lhsinit
+
+<initialize.c;-1:-1;PGO;initialize;0>
+  STATIC:initialize.c  initialize
+
+<;-1:-1;PGO;;0>
+
+      2 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  exact_solution.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):OTHER(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<exact_solution.c;40:50;IPO INLINING;exact_solution;0>
+INLINING REPORT: (exact_solution) [1/1=100.0%]
+
+
+
+HPO THREADIZER REPORT (exact_solution) LOG OPENED ON Sun Jul 20 13:32:38 2014
+
+
+<exact_solution.c;-1:-1;hpo_threadization;exact_solution;0>
+HPO Threadizer Report (exact_solution)
+
+exact_solution.c(43:3-43:3):PAR:exact_solution:  loop was not parallelized: existence of parallel dependence
+
+HPO VECTORIZER REPORT (exact_solution) LOG OPENED ON Sun Jul 20 13:32:38 2014
+
+
+<exact_solution.c;-1:-1;hpo_vectorization;exact_solution;0>
+HPO Vectorizer Report (exact_solution)
+
+exact_solution.c(43:3-43:3):VEC:exact_solution:  loop was not vectorized: existence of vector dependence
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:38 2014
+
+
+<exact_solution.c;-1:-1;hlo;exact_solution;0>
+High Level Optimizer Report (exact_solution)
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<exact_solution.c;43:43;hlo_unroll;exact_solution;0>
+Loop at line 43 completely unrolled by 5   
+
+<exact_solution.c;-1:-1;PGO;exact_solution;0>
+  STATIC:exact_solution.c  exact_solution
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  exact_rhs.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):BOTTOM(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<exact_rhs.c;40:355;IPO INLINING;exact_rhs;0>
+INLINING REPORT: (exact_rhs) [1/1=100.0%]
+
+  -> exact_solution(EXTERN)
+  -> exact_solution(EXTERN)
+  -> exact_solution(EXTERN)
+
+
+HPO THREADIZER REPORT (exact_rhs) LOG OPENED ON Sun Jul 20 13:32:39 2014
+
+
+<exact_rhs.c;-1:-1;hpo_threadization;exact_rhs;0>
+HPO Threadizer Report (exact_rhs)
+
+exact_rhs.c(47:3-47:3):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(48:5-48:5):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(49:7-49:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(50:9-50:9):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(60:3-60:3):PAR:exact_rhs:  loop was not parallelized: loop is not a parallelization candidate
+exact_rhs.c(62:5-62:5):PAR:exact_rhs:  loop was not parallelized: loop is not a parallelization candidate
+exact_rhs.c(65:7-65:7):PAR:exact_rhs:  loop was not parallelized: loop is not a parallelization candidate
+exact_rhs.c(69:9-69:9):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(75:9-75:9):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(85:7-85:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(122:7-122:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(132:7-132:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(133:9-133:9):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(140:7-140:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(155:3-155:3):PAR:exact_rhs:  loop was not parallelized: loop is not a parallelization candidate
+exact_rhs.c(157:5-157:5):PAR:exact_rhs:  loop was not parallelized: loop is not a parallelization candidate
+exact_rhs.c(160:7-160:7):PAR:exact_rhs:  loop was not parallelized: loop is not a parallelization candidate
+exact_rhs.c(164:9-164:9):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(170:9-170:9):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(180:7-180:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(217:7-217:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(227:7-227:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(228:9-228:9):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(235:7-235:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(250:3-250:3):PAR:exact_rhs:  loop was not parallelized: loop is not a parallelization candidate
+exact_rhs.c(252:5-252:5):PAR:exact_rhs:  loop was not parallelized: loop is not a parallelization candidate
+exact_rhs.c(255:7-255:7):PAR:exact_rhs:  loop was not parallelized: loop is not a parallelization candidate
+exact_rhs.c(259:9-259:9):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(265:9-265:9):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(275:7-275:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(312:7-312:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(322:7-322:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(323:9-323:9):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(330:7-330:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(346:3-346:3):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(347:5-347:5):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(348:7-348:7):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+exact_rhs.c(349:9-349:9):PAR:exact_rhs:  loop was not parallelized: insufficient computational work
+
+HPO VECTORIZER REPORT (exact_rhs) LOG OPENED ON Sun Jul 20 13:32:39 2014
+
+
+<exact_rhs.c;-1:-1;hpo_vectorization;exact_rhs;0>
+HPO Vectorizer Report (exact_rhs)
+
+exact_rhs.c(50:9-50:9):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(49:7-49:7):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(48:5-48:5):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(47:3-47:3):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(69:9-69:9):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(75:9-75:9):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(65:7-65:7):VEC:exact_rhs:  loop was not vectorized: unsupported loop structure
+exact_rhs.c(85:7-85:7):VEC:exact_rhs:  LOOP WAS VECTORIZED
+exact_rhs.c(122:7-122:7):VEC:exact_rhs:  loop was not vectorized: low trip count
+exact_rhs.c(133:9-133:9):VEC:exact_rhs:  loop was not vectorized: low trip count
+exact_rhs.c(132:7-132:7):VEC:exact_rhs:  OUTER LOOP WAS VECTORIZED
+exact_rhs.c(140:7-140:7):VEC:exact_rhs:  loop was not vectorized: low trip count
+exact_rhs.c(62:5-62:5):VEC:exact_rhs:  loop was not vectorized: not inner loop
+exact_rhs.c(60:3-60:3):VEC:exact_rhs:  loop was not vectorized: not inner loop
+exact_rhs.c(164:9-164:9):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(170:9-170:9):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(160:7-160:7):VEC:exact_rhs:  loop was not vectorized: unsupported loop structure
+exact_rhs.c(180:7-180:7):VEC:exact_rhs:  LOOP WAS VECTORIZED
+exact_rhs.c(217:7-217:7):VEC:exact_rhs:  loop was not vectorized: low trip count
+exact_rhs.c(228:9-228:9):VEC:exact_rhs:  loop was not vectorized: low trip count
+exact_rhs.c(227:7-227:7):VEC:exact_rhs:  OUTER LOOP WAS VECTORIZED
+exact_rhs.c(235:7-235:7):VEC:exact_rhs:  loop was not vectorized: low trip count
+exact_rhs.c(157:5-157:5):VEC:exact_rhs:  loop was not vectorized: not inner loop
+exact_rhs.c(155:3-155:3):VEC:exact_rhs:  loop was not vectorized: not inner loop
+exact_rhs.c(259:9-259:9):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(265:9-265:9):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(255:7-255:7):VEC:exact_rhs:  loop was not vectorized: unsupported loop structure
+exact_rhs.c(275:7-275:7):VEC:exact_rhs:  LOOP WAS VECTORIZED
+exact_rhs.c(312:7-312:7):VEC:exact_rhs:  loop was not vectorized: low trip count
+exact_rhs.c(323:9-323:9):VEC:exact_rhs:  loop was not vectorized: low trip count
+exact_rhs.c(322:7-322:7):VEC:exact_rhs:  OUTER LOOP WAS VECTORIZED
+exact_rhs.c(330:7-330:7):VEC:exact_rhs:  loop was not vectorized: low trip count
+exact_rhs.c(252:5-252:5):VEC:exact_rhs:  loop was not vectorized: not inner loop
+exact_rhs.c(250:3-250:3):VEC:exact_rhs:  loop was not vectorized: not inner loop
+exact_rhs.c(349:9-349:9):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(348:7-348:7):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(347:5-347:5):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+exact_rhs.c(346:3-346:3):VEC:exact_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:39 2014
+
+
+<exact_rhs.c;-1:-1;hlo;exact_rhs;0>
+High Level Optimizer Report (exact_rhs)
+
+
+<exact_rhs.c;49:49;hlo_linear_trans;exact_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 49 
+
+<exact_rhs.c;85:85;hlo_linear_trans;exact_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 85 
+
+<exact_rhs.c;132:132;hlo_linear_trans;exact_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 132 
+
+<exact_rhs.c;180:180;hlo_linear_trans;exact_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 180 
+
+<exact_rhs.c;227:227;hlo_linear_trans;exact_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 227 
+
+<exact_rhs.c;275:275;hlo_linear_trans;exact_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 275 
+
+<exact_rhs.c;322:322;hlo_linear_trans;exact_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 322 
+
+<exact_rhs.c;348:348;hlo_linear_trans;exact_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 348 
+
+
+<exact_rhs.c;50:50;hlo_reroll;exact_rhs;0>
+Loop at line:50       memset throttled memop:: small-iter loop. 
+
+<exact_rhs.c;69:69;hlo_reroll;exact_rhs;0>
+Loop at line:69      memcopy(with guard) throttled memop:: small-iter loop. 
+
+<exact_rhs.c;164:164;hlo_reroll;exact_rhs;0>
+Loop at line:164     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<exact_rhs.c;259:259;hlo_reroll;exact_rhs;0>
+Loop at line:259     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<exact_rhs.c;50:50;hlo_reroll;exact_rhs;0>
+Loop at line:50       memset throttled memop:: small-iter loop. 
+
+<exact_rhs.c;69:69;hlo_reroll;exact_rhs;0>
+Loop at line:69      memcopy(with guard) throttled memop:: small-iter loop. 
+
+<exact_rhs.c;164:164;hlo_reroll;exact_rhs;0>
+Loop at line:164     memcopy(with guard) throttled memop:: small-iter loop. 
+
+<exact_rhs.c;259:259;hlo_reroll;exact_rhs;0>
+Loop at line:259     memcopy(with guard) throttled memop:: small-iter loop. 
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<exact_rhs.c;50:50;hlo_unroll;exact_rhs;0>
+Loop at line 50 completely unrolled by 5   
+
+<exact_rhs.c;75:75;hlo_unroll;exact_rhs;0>
+Loop at line 75 completely unrolled by 4   
+
+<exact_rhs.c;122:122;hlo_unroll;exact_rhs;0>
+Loop at line 122 completely unrolled by 5   
+
+<exact_rhs.c;133:133;hlo_unroll;exact_rhs;0>
+Loop at line 133 completely unrolled by 5   
+
+<exact_rhs.c;140:140;hlo_unroll;exact_rhs;0>
+Loop at line 140 completely unrolled by 5   
+
+<exact_rhs.c;170:170;hlo_unroll;exact_rhs;0>
+Loop at line 170 completely unrolled by 4   
+
+<exact_rhs.c;217:217;hlo_unroll;exact_rhs;0>
+Loop at line 217 completely unrolled by 5   
+
+<exact_rhs.c;228:228;hlo_unroll;exact_rhs;0>
+Loop at line 228 completely unrolled by 5   
+
+<exact_rhs.c;235:235;hlo_unroll;exact_rhs;0>
+Loop at line 235 completely unrolled by 5   
+
+<exact_rhs.c;265:265;hlo_unroll;exact_rhs;0>
+Loop at line 265 completely unrolled by 4   
+
+<exact_rhs.c;312:312;hlo_unroll;exact_rhs;0>
+Loop at line 312 completely unrolled by 5   
+
+<exact_rhs.c;323:323;hlo_unroll;exact_rhs;0>
+Loop at line 323 completely unrolled by 5   
+
+<exact_rhs.c;330:330;hlo_unroll;exact_rhs;0>
+Loop at line 330 completely unrolled by 5   
+
+<exact_rhs.c;349:349;hlo_unroll;exact_rhs;0>
+Loop at line 349 completely unrolled by 5   
+
+<exact_rhs.c;-1:-1;PGO;exact_rhs;0>
+  STATIC:exact_rhs.c  exact_rhs
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  set_constants.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):OTHER(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<set_constants.c;37:225;IPO INLINING;set_constants;0>
+INLINING REPORT: (set_constants) [1/1=100.0%]
+
+
+
+HPO THREADIZER REPORT (set_constants) LOG OPENED ON Sun Jul 20 13:32:40 2014
+
+
+<set_constants.c;-1:-1;hpo_threadization;set_constants;0>
+HPO Threadizer Report (set_constants)
+
+set_constants.c(38:3-38:3):PAR:set_constants:  loop was not parallelized: existence of parallel dependence
+loop was not parallelized: insufficient computational work
+set_constants.c(52:3-52:3):PAR:set_constants:  loop was not parallelized: existence of parallel dependence
+loop was not parallelized: insufficient computational work
+set_constants.c(66:3-66:3):PAR:set_constants:  loop was not parallelized: existence of parallel dependence
+loop was not parallelized: insufficient computational work
+set_constants.c(80:3-80:3):PAR:set_constants:  loop was not parallelized: existence of parallel dependence
+loop was not parallelized: insufficient computational work
+set_constants.c(94:3-94:3):PAR:set_constants:  loop was not parallelized: existence of parallel dependence
+loop was not parallelized: insufficient computational work
+
+HPO VECTORIZER REPORT (set_constants) LOG OPENED ON Sun Jul 20 13:32:40 2014
+
+
+<set_constants.c;-1:-1;hpo_vectorization;set_constants;0>
+HPO Vectorizer Report (set_constants)
+
+set_constants.c(38:3-38:3):VEC:set_constants:  BLOCK WAS VECTORIZED
+loop was not vectorized: not inner loop
+set_constants.c(52:3-52:3):VEC:set_constants:  BLOCK WAS VECTORIZED
+loop was not vectorized: not inner loop
+set_constants.c(66:3-66:3):VEC:set_constants:  BLOCK WAS VECTORIZED
+loop was not vectorized: not inner loop
+set_constants.c(80:3-80:3):VEC:set_constants:  BLOCK WAS VECTORIZED
+loop was not vectorized: not inner loop
+set_constants.c(94:3-94:3):VEC:set_constants:  BLOCK WAS VECTORIZED
+loop was not vectorized: not inner loop
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:40 2014
+
+
+<set_constants.c;-1:-1;hlo;set_constants;0>
+High Level Optimizer Report (set_constants)
+
+
+<set_constants.c;38:38;hlo_reroll;set_constants;0>
+Loop at line:38      memcopy(with guard) generated  
+
+<set_constants.c;52:52;hlo_reroll;set_constants;0>
+Loop at line:52      memcopy(with guard) generated  
+
+<set_constants.c;66:66;hlo_reroll;set_constants;0>
+Loop at line:66      memcopy(with guard) generated  
+
+<set_constants.c;80:80;hlo_reroll;set_constants;0>
+Loop at line:80      memcopy(with guard) generated  
+
+<set_constants.c;94:94;hlo_reroll;set_constants;0>
+Loop at line:94      memcopy(with guard) generated  
+set_constants.c(38:3-38:3):CG:set_constants:  call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (8, 0)
+set_constants.c(52:3-52:3):CG:set_constants:  call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (8, 0)
+set_constants.c(66:3-66:3):CG:set_constants:  call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (8, 0)
+set_constants.c(80:3-80:3):CG:set_constants:  call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (8, 0)
+set_constants.c(94:3-94:3):CG:set_constants:  call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (8, 0)
+
+<set_constants.c;-1:-1;PGO;set_constants;0>
+  STATIC:set_constants.c  set_constants
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  adi.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):BOTTOM(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<adi.c;37:47;IPO INLINING;adi;0>
+INLINING REPORT: (adi) [1/1=100.0%]
+
+  -> add(EXTERN)
+  -> z_solve(EXTERN)
+  -> y_solve(EXTERN)
+  -> x_solve(EXTERN)
+  -> compute_rhs(EXTERN)
+
+
+<adi.c;-1:-1;PGO;adi;0>
+  STATIC:adi.c  adi
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  rhs.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):BOTTOM(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<rhs.c;38:419;IPO INLINING;compute_rhs;0>
+INLINING REPORT: (compute_rhs) [1/1=100.0%]
+
+  -> timer_stop(EXTERN)
+  -> timer_stop(EXTERN)
+  -> timer_start(EXTERN)
+  -> timer_stop(EXTERN)
+  -> timer_start(EXTERN)
+  -> timer_stop(EXTERN)
+  -> timer_start(EXTERN)
+  -> timer_start(EXTERN)
+
+
+HPO THREADIZER REPORT (compute_rhs) LOG OPENED ON Sun Jul 20 13:32:41 2014
+
+
+<rhs.c;-1:-1;hpo_threadization;compute_rhs;0>
+HPO Threadizer Report (compute_rhs)
+
+rhs.c(47:3-47:3):PAR:compute_rhs:  LOOP WAS AUTO-PARALLELIZED
+rhs.c(48:5-48:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(49:7-49:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(69:3-69:3):PAR:compute_rhs:  loop was not parallelized: insufficient computational work
+rhs.c(70:5-70:5):PAR:compute_rhs:  loop was not parallelized: insufficient computational work
+rhs.c(71:7-71:7):PAR:compute_rhs:  loop was not parallelized: insufficient computational work
+rhs.c(72:9-72:9):PAR:compute_rhs:  loop was not parallelized: insufficient computational work
+rhs.c(83:3-83:3):PAR:compute_rhs:  LOOP WAS AUTO-PARALLELIZED
+rhs.c(84:5-84:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(85:7-85:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(141:5-141:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(157:5-157:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(158:7-158:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(159:9-159:9):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(168:5-168:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(190:3-190:3):PAR:compute_rhs:  LOOP WAS AUTO-PARALLELIZED
+rhs.c(191:5-191:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(192:7-192:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(244:5-244:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(245:7-245:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(253:5-253:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(254:7-254:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(261:5-261:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(262:7-262:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(263:9-263:9):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(273:5-273:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(274:7-274:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(282:5-282:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(283:7-283:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(296:3-296:3):PAR:compute_rhs:  LOOP WAS AUTO-PARALLELIZED
+rhs.c(297:5-297:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(298:7-298:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(352:3-352:3):PAR:compute_rhs:  FUSED LOOP WAS AUTO-PARALLELIZED
+rhs.c(353:5-353:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(354:7-354:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(364:5-364:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(365:7-365:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(373:3-373:3):PAR:compute_rhs:  LOOP WAS AUTO-PARALLELIZED
+rhs.c(374:5-374:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(375:7-375:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(376:9-376:9):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(387:3-387:3):PAR:compute_rhs:  FUSED LOOP WAS AUTO-PARALLELIZED
+rhs.c(388:5-388:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(389:7-389:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(399:5-399:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(400:7-400:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(409:3-409:3):PAR:compute_rhs:  LOOP WAS AUTO-PARALLELIZED
+rhs.c(410:5-410:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(411:7-411:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(412:9-412:9):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+
+HPO VECTORIZER REPORT (compute_rhs) LOG OPENED ON Sun Jul 20 13:32:41 2014
+
+
+<rhs.c;-1:-1;hpo_vectorization;compute_rhs;0>
+HPO Vectorizer Report (compute_rhs)
+
+rhs.c(49:7-49:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(48:5-48:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(47:3-47:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(72:9-72:9):VEC:compute_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+rhs.c(71:7-71:7):VEC:compute_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+rhs.c(70:5-70:5):VEC:compute_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+rhs.c(69:3-69:3):VEC:compute_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+rhs.c(85:7-85:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(84:5-84:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(141:5-141:5):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(159:9-159:9):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(158:7-158:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(157:5-157:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(168:5-168:5):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(83:3-83:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(192:7-192:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(191:5-191:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(245:7-245:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(244:5-244:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(254:7-254:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(253:5-253:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(263:9-263:9):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(262:7-262:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(261:5-261:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(274:7-274:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(273:5-273:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(283:7-283:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(282:5-282:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(190:3-190:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(298:7-298:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(297:5-297:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(296:3-296:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(354:7-354:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(353:5-353:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(365:7-365:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(364:5-364:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(352:3-352:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(376:9-376:9):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(375:7-375:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(374:5-374:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(373:3-373:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(389:7-389:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(388:5-388:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(400:7-400:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(399:5-399:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(387:3-387:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(412:9-412:9):VEC:compute_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+rhs.c(411:7-411:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(410:5-410:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(409:3-409:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(49:7-49:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(48:5-48:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(47:3-47:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(85:7-85:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(84:5-84:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(141:5-141:5):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(159:9-159:9):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(158:7-158:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(157:5-157:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(168:5-168:5):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(83:3-83:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(192:7-192:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(191:5-191:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(245:7-245:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(244:5-244:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(254:7-254:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(253:5-253:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(263:9-263:9):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(262:7-262:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(261:5-261:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(274:7-274:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(273:5-273:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(283:7-283:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(282:5-282:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(190:3-190:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(298:7-298:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(297:5-297:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(296:3-296:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(354:7-354:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(353:5-353:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(365:7-365:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(364:5-364:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(352:3-352:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(376:9-376:9):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(375:7-375:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(374:5-374:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(373:3-373:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(389:7-389:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(388:5-388:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(400:7-400:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(399:5-399:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(387:3-387:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(412:9-412:9):VEC:compute_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+rhs.c(411:7-411:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(410:5-410:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(409:3-409:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:41 2014
+
+
+<rhs.c;-1:-1;hlo;compute_rhs;0>
+High Level Optimizer Report (compute_rhs)
+
+<rhs.c;49:49;hlo_scalar_replacement;in compute_rhs;0>
+#of Array Refs Scalar Replaced in compute_rhs at line 49=1
+#of Array Refs Scalar Replaced in compute_rhs at line 49=1
+
+<rhs.c;85:85;hlo_distribution;in compute_rhs;0>
+LOOP STMT REORDER in compute_rhs at line 85
+LOOP STMT REORDER in compute_rhs at line 85
+LOOP STMT REORDER in compute_rhs at line 85
+
+<rhs.c;192:192;hlo_distribution;in compute_rhs;0>
+LOOP STMT REORDER in compute_rhs at line 192
+LOOP STMT REORDER in compute_rhs at line 192
+LOOP STMT REORDER in compute_rhs at line 192
+
+<rhs.c;298:298;hlo_distribution;in compute_rhs;0>
+LOOP STMT REORDER in compute_rhs at line 298
+LOOP STMT REORDER in compute_rhs at line 298
+LOOP STMT REORDER in compute_rhs at line 298
+
+
+<rhs.c;49:49;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 49 
+
+<rhs.c;71:71;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 71 
+
+<rhs.c;85:85;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 85 
+
+<rhs.c;141:141;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 141 
+
+<rhs.c;168:168;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 168 
+
+<rhs.c;192:192;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 192 
+
+<rhs.c;298:298;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 298 
+
+<rhs.c;49:49;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 49 
+
+<rhs.c;85:85;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 85 
+
+<rhs.c;141:141;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 141 
+
+<rhs.c;168:168;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 168 
+
+<rhs.c;192:192;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 192 
+
+<rhs.c;298:298;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 298 
+
+Fusion loop partitions: (loop line numbers)
+
+Fused Loops: ( 387 398 )
+Fused Loops: ( 352 363 )
+
+
+<rhs.c;72:72;hlo_reroll;compute_rhs;0>
+Loop at line:72      memcopy(with guard) throttled memop:: small-iter loop. 
+Loop at line:72      memcopy(with guard) throttled memop:: small-iter loop. 
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<rhs.c;143:143;hlo_unroll;compute_rhs;0>
+Loop at line 143 completely unrolled by 5    (pre-vector) 
+
+<rhs.c;150:150;hlo_unroll;compute_rhs;0>
+Loop at line 150 completely unrolled by 5    (pre-vector) 
+
+<rhs.c;170:170;hlo_unroll;compute_rhs;0>
+Loop at line 170 completely unrolled by 5    (pre-vector) 
+
+<rhs.c;177:177;hlo_unroll;compute_rhs;0>
+Loop at line 177 completely unrolled by 5    (pre-vector) 
+
+<rhs.c;72:72;hlo_unroll;compute_rhs;0>
+Loop at line 72 completely unrolled by 5   
+
+<rhs.c;-1:-1;PGO;compute_rhs;0>
+  STATIC:rhs.c  compute_rhs
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  x_solve.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):BOTTOM(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<x_solve.c;50:395;IPO INLINING;x_solve;0>
+INLINING REPORT: (x_solve) [1/1=100.0%]
+
+  -> binvcrhs(EXTERN)
+  -> matmul_sub(EXTERN)
+  -> matvec_sub(EXTERN)
+  -> lhsinit(EXTERN)
+  -> binvcrhs(EXTERN)
+  -> matvec_sub(EXTERN)
+  -> matmul_sub(EXTERN)
+  -> binvrhs(EXTERN)
+  -> timer_stop(EXTERN)
+  -> timer_start(EXTERN)
+
+
+HPO THREADIZER REPORT (x_solve) LOG OPENED ON Sun Jul 20 13:32:45 2014
+
+
+<x_solve.c;-1:-1;hpo_threadization;x_solve;0>
+HPO Threadizer Report (x_solve)
+
+x_solve.c(70:3-70:3):PAR:x_solve:  loop was not parallelized: loop is not a parallelization candidate
+x_solve.c(71:5-71:5):PAR:x_solve:  loop was not parallelized: loop is not a parallelization candidate
+x_solve.c(72:7-72:7):PAR:x_solve:  loop was not parallelized: insufficient computational work
+x_solve.c(152:7-152:7):PAR:x_solve:  loop was not parallelized: insufficient computational work
+x_solve.c(344:7-344:7):PAR:x_solve:  loop was not parallelized: existence of parallel dependence
+x_solve.c(384:7-384:7):PAR:x_solve:  loop was not parallelized: existence of parallel dependence
+x_solve.c(385:9-385:9):PAR:x_solve:  loop was not parallelized: insufficient computational work
+x_solve.c(386:11-386:11):PAR:x_solve:  loop was not parallelized: existence of parallel dependence
+
+HPO VECTORIZER REPORT (x_solve) LOG OPENED ON Sun Jul 20 13:32:45 2014
+
+
+<x_solve.c;-1:-1;hpo_vectorization;x_solve;0>
+HPO Vectorizer Report (x_solve)
+
+x_solve.c(72:7-72:7):VEC:x_solve:  LOOP WAS VECTORIZED
+x_solve.c(152:7-152:7):VEC:x_solve:  LOOP WAS VECTORIZED
+x_solve.c(348:9-348:9):VEC:x_solve:  vectorization support: call to function matvec_sub cannot be vectorized
+x_solve.c(353:9-353:9):VEC:x_solve:  vectorization support: call to function matmul_sub cannot be vectorized
+x_solve.c(360:9-360:9):VEC:x_solve:  vectorization support: call to function binvcrhs cannot be vectorized
+x_solve.c(344:7-344:7):VEC:x_solve:  loop was not vectorized: existence of vector dependence
+x_solve.c(386:11-386:11):VEC:x_solve:  loop was not vectorized: existence of vector dependence
+x_solve.c(385:9-385:9):VEC:x_solve:  loop was not vectorized: vectorization possible but seems inefficient
+x_solve.c(384:7-384:7):VEC:x_solve:  loop was not vectorized: not inner loop
+x_solve.c(71:5-71:5):VEC:x_solve:  loop was not vectorized: not inner loop
+x_solve.c(70:3-70:3):VEC:x_solve:  loop was not vectorized: not inner loop
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:45 2014
+
+
+<x_solve.c;-1:-1;hlo;x_solve;0>
+High Level Optimizer Report (x_solve)
+
+<x_solve.c;72:72;hlo_distribution;in x_solve;0>
+LOOP STMT REORDER in x_solve at line 72
+LOOP STMT REORDER in x_solve at line 72
+LOOP STMT REORDER in x_solve at line 72
+
+<x_solve.c;384:384;hlo_scalar_replacement;in x_solve;0>
+#of Array Refs Scalar Replaced in x_solve at line 384=65
+
+Loopnest Preprocessing Report:
+
+<x_solve.c;72:73;hlo;x_solve;0>
+Preprocess Loopnests <x_solve>: Moving Out Store @Line<73> in Loop @Line<72>
+
+<x_solve.c;72:74;hlo;x_solve;0>
+Preprocess Loopnests <x_solve>: Moving Out Store @Line<74> in Loop @Line<72>
+
+<x_solve.c;72:75;hlo;x_solve;0>
+Preprocess Loopnests <x_solve>: Moving Out Store @Line<75> in Loop @Line<72>
+
+<x_solve.c;152:153;hlo;x_solve;0>
+Preprocess Loopnests <x_solve>: Moving Out Store @Line<153> in Loop @Line<152>
+
+<x_solve.c;152:154;hlo;x_solve;0>
+Preprocess Loopnests <x_solve>: Moving Out Store @Line<154> in Loop @Line<152>
+
+
+<x_solve.c;72:72;hlo_linear_trans;x_solve;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 72 
+
+<x_solve.c;152:152;hlo_linear_trans;x_solve;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 152 
+
+<x_solve.c;344:344;hlo_linear_trans;x_solve;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 344 
+
+<x_solve.c;384:384;hlo_linear_trans;x_solve;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 384 
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<x_solve.c;385:385;hlo_unroll;x_solve;0>
+Loop at line 385 completely unrolled by 5   
+
+<x_solve.c;386:386;hlo_unroll;x_solve;0>
+Loop at line 386 completely unrolled by 5   
+
+<x_solve.c;-1:-1;PGO;x_solve;0>
+  STATIC:x_solve.c  x_solve
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  y_solve.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):BOTTOM(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<y_solve.c;48:392;IPO INLINING;y_solve;0>
+INLINING REPORT: (y_solve) [1/1=100.0%]
+
+  -> binvcrhs(EXTERN)
+  -> matmul_sub(EXTERN)
+  -> matvec_sub(EXTERN)
+  -> lhsinit(EXTERN)
+  -> binvcrhs(EXTERN)
+  -> matvec_sub(EXTERN)
+  -> matmul_sub(EXTERN)
+  -> binvrhs(EXTERN)
+  -> timer_stop(EXTERN)
+  -> timer_start(EXTERN)
+
+
+HPO THREADIZER REPORT (y_solve) LOG OPENED ON Sun Jul 20 13:32:47 2014
+
+
+<y_solve.c;-1:-1;hpo_threadization;y_solve;0>
+HPO Threadizer Report (y_solve)
+
+y_solve.c(69:3-69:3):PAR:y_solve:  loop was not parallelized: loop is not a parallelization candidate
+y_solve.c(70:5-70:5):PAR:y_solve:  loop was not parallelized: loop is not a parallelization candidate
+y_solve.c(71:7-71:7):PAR:y_solve:  loop was not parallelized: insufficient computational work
+y_solve.c(150:7-150:7):PAR:y_solve:  loop was not parallelized: insufficient computational work
+y_solve.c(338:7-338:7):PAR:y_solve:  loop was not parallelized: existence of parallel dependence
+y_solve.c(381:7-381:7):PAR:y_solve:  loop was not parallelized: existence of parallel dependence
+y_solve.c(382:9-382:9):PAR:y_solve:  loop was not parallelized: insufficient computational work
+y_solve.c(383:11-383:11):PAR:y_solve:  loop was not parallelized: existence of parallel dependence
+
+HPO VECTORIZER REPORT (y_solve) LOG OPENED ON Sun Jul 20 13:32:47 2014
+
+
+<y_solve.c;-1:-1;hpo_vectorization;y_solve;0>
+HPO Vectorizer Report (y_solve)
+
+y_solve.c(71:7-71:7):VEC:y_solve:  LOOP WAS VECTORIZED
+y_solve.c(150:7-150:7):VEC:y_solve:  LOOP WAS VECTORIZED
+y_solve.c(344:9-344:9):VEC:y_solve:  vectorization support: call to function matvec_sub cannot be vectorized
+y_solve.c(349:9-349:9):VEC:y_solve:  vectorization support: call to function matmul_sub cannot be vectorized
+y_solve.c(355:9-355:9):VEC:y_solve:  vectorization support: call to function binvcrhs cannot be vectorized
+y_solve.c(338:7-338:7):VEC:y_solve:  loop was not vectorized: existence of vector dependence
+y_solve.c(383:11-383:11):VEC:y_solve:  loop was not vectorized: existence of vector dependence
+y_solve.c(382:9-382:9):VEC:y_solve:  loop was not vectorized: vectorization possible but seems inefficient
+y_solve.c(381:7-381:7):VEC:y_solve:  loop was not vectorized: not inner loop
+y_solve.c(70:5-70:5):VEC:y_solve:  loop was not vectorized: not inner loop
+y_solve.c(69:3-69:3):VEC:y_solve:  loop was not vectorized: not inner loop
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:47 2014
+
+
+<y_solve.c;-1:-1;hlo;y_solve;0>
+High Level Optimizer Report (y_solve)
+
+<y_solve.c;71:71;hlo_distribution;in y_solve;0>
+LOOP STMT REORDER in y_solve at line 71
+LOOP STMT REORDER in y_solve at line 71
+
+<y_solve.c;381:381;hlo_scalar_replacement;in y_solve;0>
+#of Array Refs Scalar Replaced in y_solve at line 381=65
+
+Loopnest Preprocessing Report:
+
+<y_solve.c;71:72;hlo;y_solve;0>
+Preprocess Loopnests <y_solve>: Moving Out Store @Line<72> in Loop @Line<71>
+
+<y_solve.c;71:73;hlo;y_solve;0>
+Preprocess Loopnests <y_solve>: Moving Out Store @Line<73> in Loop @Line<71>
+
+<y_solve.c;71:74;hlo;y_solve;0>
+Preprocess Loopnests <y_solve>: Moving Out Store @Line<74> in Loop @Line<71>
+
+<y_solve.c;150:151;hlo;y_solve;0>
+Preprocess Loopnests <y_solve>: Moving Out Store @Line<151> in Loop @Line<150>
+
+<y_solve.c;150:152;hlo;y_solve;0>
+Preprocess Loopnests <y_solve>: Moving Out Store @Line<152> in Loop @Line<150>
+
+
+<y_solve.c;71:71;hlo_linear_trans;y_solve;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 71 
+
+<y_solve.c;150:150;hlo_linear_trans;y_solve;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 150 
+
+<y_solve.c;338:338;hlo_linear_trans;y_solve;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 338 
+
+<y_solve.c;381:381;hlo_linear_trans;y_solve;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 381 
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<y_solve.c;382:382;hlo_unroll;y_solve;0>
+Loop at line 382 completely unrolled by 5   
+
+<y_solve.c;383:383;hlo_unroll;y_solve;0>
+Loop at line 383 completely unrolled by 5   
+
+<y_solve.c;-1:-1;PGO;y_solve;0>
+  STATIC:y_solve.c  y_solve
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  solve_subs.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(4):OTHER(4)
+
+  CI-REF: TOTAL(4):OTHER(4)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<solve_subs.c;38:68;IPO INLINING;matvec_sub;0>
+INLINING REPORT: (matvec_sub) [1/4=25.0%]
+
+
+
+HPO THREADIZER REPORT (matvec_sub) LOG OPENED ON Sun Jul 20 13:32:49 2014
+
+
+<solve_subs.c;-1:-1;hpo_threadization;matvec_sub;0>
+HPO Threadizer Report (matvec_sub)
+
+solve_subs.c(43:3-43:3):PAR:matvec_sub:  loop was not parallelized: existence of parallel dependence
+
+HPO VECTORIZER REPORT (matvec_sub) LOG OPENED ON Sun Jul 20 13:32:49 2014
+
+
+<solve_subs.c;-1:-1;hpo_vectorization;matvec_sub;0>
+HPO Vectorizer Report (matvec_sub)
+
+solve_subs.c(43:3-43:3):VEC:matvec_sub:  loop was not vectorized: existence of vector dependence
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:49 2014
+
+
+<solve_subs.c;-1:-1;hlo;matvec_sub;0>
+High Level Optimizer Report (matvec_sub)
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<solve_subs.c;43:43;hlo_unroll;matvec_sub;0>
+Loop at line 43 completely unrolled by 5   
+
+<solve_subs.c;75:201;IPO INLINING;matmul_sub;0>
+INLINING REPORT: (matmul_sub) [2/4=50.0%]
+
+
+
+HPO THREADIZER REPORT (matmul_sub) LOG OPENED ON Sun Jul 20 13:32:49 2014
+
+
+<solve_subs.c;-1:-1;hpo_threadization;matmul_sub;0>
+HPO Threadizer Report (matmul_sub)
+
+solve_subs.c(76:3-76:3):PAR:matmul_sub:  loop was not parallelized: existence of parallel dependence
+solve_subs.c(101:3-101:3):PAR:matmul_sub:  loop was not parallelized: existence of parallel dependence
+solve_subs.c(126:3-126:3):PAR:matmul_sub:  loop was not parallelized: existence of parallel dependence
+solve_subs.c(151:3-151:3):PAR:matmul_sub:  loop was not parallelized: existence of parallel dependence
+solve_subs.c(176:3-176:3):PAR:matmul_sub:  loop was not parallelized: existence of parallel dependence
+
+HPO VECTORIZER REPORT (matmul_sub) LOG OPENED ON Sun Jul 20 13:32:49 2014
+
+
+<solve_subs.c;-1:-1;hpo_vectorization;matmul_sub;0>
+HPO Vectorizer Report (matmul_sub)
+
+solve_subs.c(76:3-76:3):VEC:matmul_sub:  loop was not vectorized: existence of vector dependence
+solve_subs.c(101:3-101:3):VEC:matmul_sub:  loop was not vectorized: existence of vector dependence
+solve_subs.c(126:3-126:3):VEC:matmul_sub:  loop was not vectorized: existence of vector dependence
+solve_subs.c(151:3-151:3):VEC:matmul_sub:  loop was not vectorized: existence of vector dependence
+solve_subs.c(176:3-176:3):VEC:matmul_sub:  loop was not vectorized: existence of vector dependence
+
+
+<solve_subs.c;-1:-1;hlo;matmul_sub;0>
+High Level Optimizer Report (matmul_sub)
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<solve_subs.c;76:76;hlo_unroll;matmul_sub;0>
+Loop at line 76 completely unrolled by 5   
+
+<solve_subs.c;101:101;hlo_unroll;matmul_sub;0>
+Loop at line 101 completely unrolled by 5   
+
+<solve_subs.c;126:126;hlo_unroll;matmul_sub;0>
+Loop at line 126 completely unrolled by 5   
+
+<solve_subs.c;151:151;hlo_unroll;matmul_sub;0>
+Loop at line 151 completely unrolled by 5   
+
+<solve_subs.c;176:176;hlo_unroll;matmul_sub;0>
+Loop at line 176 completely unrolled by 5   
+
+<solve_subs.c;205:461;IPO INLINING;binvcrhs;0>
+INLINING REPORT: (binvcrhs) [3/4=75.0%]
+
+
+
+<solve_subs.c;465:596;IPO INLINING;binvrhs;0>
+INLINING REPORT: (binvrhs) [4/4=100.0%]
+
+
+
+<solve_subs.c;-1:-1;PGO;binvrhs;0>
+  STATIC:solve_subs.c  binvrhs
+
+<solve_subs.c;-1:-1;PGO;binvcrhs;0>
+  STATIC:solve_subs.c  binvcrhs
+
+<solve_subs.c;-1:-1;PGO;matmul_sub;0>
+  STATIC:solve_subs.c  matmul_sub
+
+<solve_subs.c;-1:-1;PGO;matvec_sub;0>
+  STATIC:solve_subs.c  matvec_sub
+
+<;-1:-1;PGO;;0>
+
+      4 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  z_solve.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):BOTTOM(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<z_solve.c;48:406;IPO INLINING;z_solve;0>
+INLINING REPORT: (z_solve) [1/1=100.0%]
+
+  -> binvcrhs(EXTERN)
+  -> matmul_sub(EXTERN)
+  -> matvec_sub(EXTERN)
+  -> lhsinit(EXTERN)
+  -> binvcrhs(EXTERN)
+  -> matvec_sub(EXTERN)
+  -> matmul_sub(EXTERN)
+  -> binvrhs(EXTERN)
+  -> timer_stop(EXTERN)
+  -> timer_start(EXTERN)
+
+
+HPO THREADIZER REPORT (z_solve) LOG OPENED ON Sun Jul 20 13:32:50 2014
+
+
+<z_solve.c;-1:-1;hpo_threadization;z_solve;0>
+HPO Threadizer Report (z_solve)
+
+z_solve.c(69:3-69:3):PAR:z_solve:  loop was not parallelized: loop is not a parallelization candidate
+z_solve.c(70:5-70:5):PAR:z_solve:  loop was not parallelized: loop is not a parallelization candidate
+z_solve.c(71:7-71:7):PAR:z_solve:  loop was not parallelized: insufficient computational work
+z_solve.c(151:7-151:7):PAR:z_solve:  loop was not parallelized: insufficient computational work
+z_solve.c(343:7-343:7):PAR:z_solve:  loop was not parallelized: existence of parallel dependence
+z_solve.c(395:7-395:7):PAR:z_solve:  loop was not parallelized: existence of parallel dependence
+z_solve.c(396:9-396:9):PAR:z_solve:  loop was not parallelized: insufficient computational work
+z_solve.c(397:11-397:11):PAR:z_solve:  loop was not parallelized: existence of parallel dependence
+
+HPO VECTORIZER REPORT (z_solve) LOG OPENED ON Sun Jul 20 13:32:50 2014
+
+
+<z_solve.c;-1:-1;hpo_vectorization;z_solve;0>
+HPO Vectorizer Report (z_solve)
+
+z_solve.c(71:7-71:7):VEC:z_solve:  LOOP WAS VECTORIZED
+z_solve.c(151:7-151:7):VEC:z_solve:  LOOP WAS VECTORIZED
+z_solve.c(349:9-349:9):VEC:z_solve:  vectorization support: call to function matvec_sub cannot be vectorized
+z_solve.c(355:9-355:9):VEC:z_solve:  vectorization support: call to function matmul_sub cannot be vectorized
+z_solve.c(361:9-361:9):VEC:z_solve:  vectorization support: call to function binvcrhs cannot be vectorized
+z_solve.c(343:7-343:7):VEC:z_solve:  loop was not vectorized: existence of vector dependence
+z_solve.c(397:11-397:11):VEC:z_solve:  loop was not vectorized: existence of vector dependence
+z_solve.c(396:9-396:9):VEC:z_solve:  loop was not vectorized: vectorization possible but seems inefficient
+z_solve.c(395:7-395:7):VEC:z_solve:  loop was not vectorized: not inner loop
+z_solve.c(70:5-70:5):VEC:z_solve:  loop was not vectorized: not inner loop
+z_solve.c(69:3-69:3):VEC:z_solve:  loop was not vectorized: not inner loop
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:50 2014
+
+
+<z_solve.c;-1:-1;hlo;z_solve;0>
+High Level Optimizer Report (z_solve)
+
+<z_solve.c;71:71;hlo_distribution;in z_solve;0>
+LOOP STMT REORDER in z_solve at line 71
+LOOP STMT REORDER in z_solve at line 71
+
+<z_solve.c;395:395;hlo_scalar_replacement;in z_solve;0>
+#of Array Refs Scalar Replaced in z_solve at line 395=65
+
+Loopnest Preprocessing Report:
+
+<z_solve.c;71:72;hlo;z_solve;0>
+Preprocess Loopnests <z_solve>: Moving Out Store @Line<72> in Loop @Line<71>
+
+<z_solve.c;71:73;hlo;z_solve;0>
+Preprocess Loopnests <z_solve>: Moving Out Store @Line<73> in Loop @Line<71>
+
+<z_solve.c;71:74;hlo;z_solve;0>
+Preprocess Loopnests <z_solve>: Moving Out Store @Line<74> in Loop @Line<71>
+
+<z_solve.c;151:152;hlo;z_solve;0>
+Preprocess Loopnests <z_solve>: Moving Out Store @Line<152> in Loop @Line<151>
+
+<z_solve.c;151:153;hlo;z_solve;0>
+Preprocess Loopnests <z_solve>: Moving Out Store @Line<153> in Loop @Line<151>
+
+
+<z_solve.c;71:71;hlo_linear_trans;z_solve;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 71 
+
+<z_solve.c;151:151;hlo_linear_trans;z_solve;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 151 
+
+<z_solve.c;343:343;hlo_linear_trans;z_solve;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 343 
+
+<z_solve.c;395:395;hlo_linear_trans;z_solve;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 395 
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<z_solve.c;396:396;hlo_unroll;z_solve;0>
+Loop at line 396 completely unrolled by 5   
+
+<z_solve.c;397:397;hlo_unroll;z_solve;0>
+Loop at line 397 completely unrolled by 5   
+
+<z_solve.c;-1:-1;PGO;z_solve;0>
+  STATIC:z_solve.c  z_solve
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  add.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):BOTTOM(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<add.c;41:55;IPO INLINING;add;0>
+INLINING REPORT: (add) [1/1=100.0%]
+
+  -> timer_stop(EXTERN)
+  -> timer_start(EXTERN)
+
+
+HPO THREADIZER REPORT (add) LOG OPENED ON Sun Jul 20 13:32:52 2014
+
+
+<add.c;-1:-1;hpo_threadization;add;0>
+HPO Threadizer Report (add)
+
+add.c(45:3-45:3):PAR:add:  LOOP WAS AUTO-PARALLELIZED
+add.c(46:5-46:5):PAR:add:  loop was not parallelized: insufficient inner loop
+add.c(47:7-47:7):PAR:add:  loop was not parallelized: insufficient inner loop
+add.c(48:9-48:9):PAR:add:  loop was not parallelized: insufficient inner loop
+
+HPO VECTORIZER REPORT (add) LOG OPENED ON Sun Jul 20 13:32:52 2014
+
+
+<add.c;-1:-1;hpo_vectorization;add;0>
+HPO Vectorizer Report (add)
+
+add.c(48:9-48:9):VEC:add:  LOOP WAS VECTORIZED
+add.c(47:7-47:7):VEC:add:  loop was not vectorized: not inner loop
+add.c(46:5-46:5):VEC:add:  loop was not vectorized: not inner loop
+add.c(45:3-45:3):VEC:add:  loop was not vectorized: not inner loop
+add.c(48:9-48:9):VEC:add:  LOOP WAS VECTORIZED
+add.c(47:7-47:7):VEC:add:  loop was not vectorized: not inner loop
+add.c(46:5-46:5):VEC:add:  loop was not vectorized: not inner loop
+add.c(45:3-45:3):VEC:add:  loop was not vectorized: not inner loop
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:52 2014
+
+
+<add.c;-1:-1;hlo;add;0>
+High Level Optimizer Report (add)
+
+<add.c;-1:-1;PGO;add;0>
+  STATIC:add.c  add
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  error.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(2):BOTTOM(1)OTHER(1)
+
+  CI-REF: TOTAL(2):OTHER(2)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<error.c;42:72;IPO INLINING;error_norm;0>
+INLINING REPORT: (error_norm) [1/2=50.0%]
+
+  -> exact_solution(EXTERN)
+
+
+HPO THREADIZER REPORT (error_norm) LOG OPENED ON Sun Jul 20 13:32:52 2014
+
+
+<error.c;-1:-1;hpo_threadization;error_norm;0>
+HPO Threadizer Report (error_norm)
+
+error.c(46:3-46:3):PAR:error_norm:  loop was not parallelized: insufficient computational work
+error.c(50:3-50:3):PAR:error_norm:  loop was not parallelized: loop is not a parallelization candidate
+error.c(52:5-52:5):PAR:error_norm:  loop was not parallelized: loop is not a parallelization candidate
+error.c(54:7-54:7):PAR:error_norm:  loop was not parallelized: loop is not a parallelization candidate
+error.c(58:9-58:9):PAR:error_norm:  loop was not parallelized: existence of parallel dependence
+error.c(66:3-66:3):PAR:error_norm:  loop was not parallelized: existence of parallel dependence
+error.c(67:5-67:5):PAR:error_norm:  loop was not parallelized: existence of parallel dependence
+
+HPO VECTORIZER REPORT (error_norm) LOG OPENED ON Sun Jul 20 13:32:52 2014
+
+
+<error.c;-1:-1;hpo_vectorization;error_norm;0>
+HPO Vectorizer Report (error_norm)
+
+error.c(46:3-46:3):VEC:error_norm:  LOOP WAS VECTORIZED
+error.c(58:9-58:9):VEC:error_norm:  loop was not vectorized: existence of vector dependence
+error.c(54:7-54:7):VEC:error_norm:  loop was not vectorized: unsupported loop structure
+error.c(52:5-52:5):VEC:error_norm:  loop was not vectorized: unsupported loop structure
+error.c(50:3-50:3):VEC:error_norm:  loop was not vectorized: unsupported loop structure
+error.c(67:5-67:5):VEC:error_norm:  loop was not vectorized: existence of vector dependence
+error.c(66:3-66:3):VEC:error_norm:  loop was not vectorized: not inner loop
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:52 2014
+
+
+<error.c;-1:-1;hlo;error_norm;0>
+High Level Optimizer Report (error_norm)
+
+<error.c;54:54;hlo_scalar_replacement;in error_norm;0>
+#of Array Refs Scalar Replaced in error_norm at line 54=1
+
+
+<error.c;54:54;hlo_linear_trans;error_norm;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 54 
+
+
+<error.c;46:46;hlo_reroll;error_norm;0>
+Loop at line:46       memset throttled memop:: small-iter loop. 
+Loop at line:46       memset throttled memop:: small-iter loop. 
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<error.c;46:46;hlo_unroll;error_norm;0>
+Loop at line 46 completely unrolled by 1   
+
+<error.c;58:58;hlo_unroll;error_norm;0>
+Loop at line 58 completely unrolled by 5   
+
+<error.c;66:66;hlo_unroll;error_norm;0>
+Loop at line 66 completely unrolled by 5   
+
+<error.c;67:67;hlo_unroll;error_norm;0>
+Loop at line 67 completely unrolled by 3   
+
+<error.c;76:101;IPO INLINING;rhs_norm;0>
+INLINING REPORT: (rhs_norm) [2/2=100.0%]
+
+
+
+HPO THREADIZER REPORT (rhs_norm) LOG OPENED ON Sun Jul 20 13:32:52 2014
+
+
+<error.c;-1:-1;hpo_threadization;rhs_norm;0>
+HPO Threadizer Report (rhs_norm)
+
+error.c(80:3-80:3):PAR:rhs_norm:  loop was not parallelized: insufficient computational work
+error.c(84:3-84:3):PAR:rhs_norm:  loop was not parallelized: loop is not a parallelization candidate
+error.c(85:5-85:5):PAR:rhs_norm:  loop was not parallelized: loop is not a parallelization candidate
+error.c(86:7-86:7):PAR:rhs_norm:  loop was not parallelized: loop is not a parallelization candidate
+error.c(87:9-87:9):PAR:rhs_norm:  loop was not parallelized: existence of parallel dependence
+error.c(95:3-95:3):PAR:rhs_norm:  loop was not parallelized: existence of parallel dependence
+error.c(96:5-96:5):PAR:rhs_norm:  loop was not parallelized: existence of parallel dependence
+
+HPO VECTORIZER REPORT (rhs_norm) LOG OPENED ON Sun Jul 20 13:32:52 2014
+
+
+<error.c;-1:-1;hpo_vectorization;rhs_norm;0>
+HPO Vectorizer Report (rhs_norm)
+
+error.c(80:3-80:3):VEC:rhs_norm:  LOOP WAS VECTORIZED
+error.c(87:9-87:9):VEC:rhs_norm:  loop was not vectorized: existence of vector dependence
+error.c(86:7-86:7):VEC:rhs_norm:  loop was not vectorized: unsupported loop structure
+error.c(85:5-85:5):VEC:rhs_norm:  loop was not vectorized: unsupported loop structure
+error.c(84:3-84:3):VEC:rhs_norm:  loop was not vectorized: unsupported loop structure
+error.c(96:5-96:5):VEC:rhs_norm:  loop was not vectorized: existence of vector dependence
+error.c(95:3-95:3):VEC:rhs_norm:  loop was not vectorized: not inner loop
+
+
+<error.c;-1:-1;hlo;rhs_norm;0>
+High Level Optimizer Report (rhs_norm)
+
+<error.c;86:86;hlo_scalar_replacement;in rhs_norm;0>
+#of Array Refs Scalar Replaced in rhs_norm at line 86=1
+
+
+<error.c;86:86;hlo_linear_trans;rhs_norm;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 86 
+
+
+<error.c;80:80;hlo_reroll;rhs_norm;0>
+Loop at line:80       memset throttled memop:: small-iter loop. 
+Loop at line:80       memset throttled memop:: small-iter loop. 
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<error.c;80:80;hlo_unroll;rhs_norm;0>
+Loop at line 80 completely unrolled by 1   
+
+<error.c;87:87;hlo_unroll;rhs_norm;0>
+Loop at line 87 completely unrolled by 5   
+
+<error.c;95:95;hlo_unroll;rhs_norm;0>
+Loop at line 95 completely unrolled by 5   
+
+<error.c;96:96;hlo_unroll;rhs_norm;0>
+Loop at line 96 completely unrolled by 3   
+
+<error.c;-1:-1;PGO;rhs_norm;0>
+  STATIC:error.c  rhs_norm
+
+<error.c;-1:-1;PGO;error_norm;0>
+  STATIC:error.c  error_norm
+
+<;-1:-1;PGO;;0>
+
+      2 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  verify.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):BOTTOM(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<verify.c;42:343;IPO INLINING;verify;0>
+INLINING REPORT: (verify) [1/1=100.0%]
+
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> rhs_norm(EXTERN)
+  -> compute_rhs(EXTERN)
+  -> error_norm(EXTERN)
+
+
+HPO THREADIZER REPORT (verify) LOG OPENED ON Sun Jul 20 13:32:53 2014
+
+
+<verify.c;-1:-1;hpo_threadization;verify;0>
+HPO Threadizer Report (verify)
+
+verify.c(60:3-60:3):PAR:verify:  loop was not parallelized: insufficient computational work
+verify.c(84:5-84:5):PAR:verify:  loop was not parallelized: insufficient computational work
+verify.c(111:5-111:5):PAR:verify:  loop was not parallelized: insufficient computational work
+verify.c(138:5-138:5):PAR:verify:  loop was not parallelized: insufficient computational work
+verify.c(166:5-166:5):PAR:verify:  loop was not parallelized: insufficient computational work
+verify.c(194:5-194:5):PAR:verify:  loop was not parallelized: insufficient computational work
+verify.c(222:5-222:5):PAR:verify:  loop was not parallelized: insufficient computational work
+verify.c(250:5-250:5):PAR:verify:  loop was not parallelized: insufficient computational work
+verify.c(277:3-277:3):PAR:verify:  loop was not parallelized: insufficient computational work
+verify.c(303:3-303:3):PAR:verify:  loop was not parallelized: existence of parallel dependence
+verify.c(322:3-322:3):PAR:verify:  loop was not parallelized: existence of parallel dependence
+
+HPO VECTORIZER REPORT (verify) LOG OPENED ON Sun Jul 20 13:32:53 2014
+
+
+<verify.c;-1:-1;hpo_vectorization;verify;0>
+HPO Vectorizer Report (verify)
+
+verify.c(60:3-60:3):VEC:verify:  FUSED LOOP WAS VECTORIZED
+verify.c(84:5-84:5):VEC:verify:  FUSED LOOP WAS VECTORIZED
+verify.c(111:5-111:5):VEC:verify:  FUSED LOOP WAS VECTORIZED
+verify.c(138:5-138:5):VEC:verify:  FUSED LOOP WAS VECTORIZED
+verify.c(166:5-166:5):VEC:verify:  FUSED LOOP WAS VECTORIZED
+verify.c(194:5-194:5):VEC:verify:  FUSED LOOP WAS VECTORIZED
+verify.c(222:5-222:5):VEC:verify:  FUSED LOOP WAS VECTORIZED
+verify.c(250:5-250:5):VEC:verify:  FUSED LOOP WAS VECTORIZED
+verify.c(277:3-277:3):VEC:verify:  LOOP WAS VECTORIZED
+verify.c(305:7-305:7):VEC:verify:  vectorization support: call to function printf cannot be vectorized
+verify.c(307:7-307:7):VEC:verify:  vectorization support: call to function printf cannot be vectorized
+verify.c(311:7-311:7):VEC:verify:  vectorization support: call to function printf cannot be vectorized
+vectorization support: call to function printf cannot be vectorized
+verify.c(303:3-303:3):VEC:verify:  loop was not vectorized: existence of vector dependence
+verify.c(324:7-324:7):VEC:verify:  vectorization support: call to function printf cannot be vectorized
+verify.c(326:7-326:7):VEC:verify:  vectorization support: call to function printf cannot be vectorized
+verify.c(330:7-330:7):VEC:verify:  vectorization support: call to function printf cannot be vectorized
+vectorization support: call to function printf cannot be vectorized
+verify.c(322:3-322:3):VEC:verify:  loop was not vectorized: existence of vector dependence
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:32:53 2014
+
+
+<verify.c;-1:-1;hlo;verify;0>
+High Level Optimizer Report (verify)
+
+Fusion loop partitions: (loop line numbers)
+
+Fused Loops: ( 250 259 )
+Fused Loops: ( 222 231 )
+Fused Loops: ( 194 203 )
+Fused Loops: ( 166 175 )
+Fused Loops: ( 138 147 )
+Fused Loops: ( 111 120 )
+Fused Loops: ( 84 93 )
+Fused Loops: ( 60 67 )
+
+
+<verify.c;84:84;hlo_reroll;verify;0>
+Loop at line:84      memcopy throttled memop:: small-iter loop. 
+
+<verify.c;93:93;hlo_reroll;verify;0>
+Loop at line:93      memcopy throttled memop:: small-iter loop. 
+
+<verify.c;111:111;hlo_reroll;verify;0>
+Loop at line:111     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;120:120;hlo_reroll;verify;0>
+Loop at line:120     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;138:138;hlo_reroll;verify;0>
+Loop at line:138     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;147:147;hlo_reroll;verify;0>
+Loop at line:147     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;166:166;hlo_reroll;verify;0>
+Loop at line:166     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;175:175;hlo_reroll;verify;0>
+Loop at line:175     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;194:194;hlo_reroll;verify;0>
+Loop at line:194     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;203:203;hlo_reroll;verify;0>
+Loop at line:203     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;222:222;hlo_reroll;verify;0>
+Loop at line:222     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;231:231;hlo_reroll;verify;0>
+Loop at line:231     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;250:250;hlo_reroll;verify;0>
+Loop at line:250     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;259:259;hlo_reroll;verify;0>
+Loop at line:259     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;84:84;hlo_reroll;verify;0>
+Loop at line:84      memcopy throttled memop:: small-iter loop. 
+
+<verify.c;93:93;hlo_reroll;verify;0>
+Loop at line:93      memcopy throttled memop:: small-iter loop. 
+
+<verify.c;111:111;hlo_reroll;verify;0>
+Loop at line:111     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;120:120;hlo_reroll;verify;0>
+Loop at line:120     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;138:138;hlo_reroll;verify;0>
+Loop at line:138     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;147:147;hlo_reroll;verify;0>
+Loop at line:147     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;166:166;hlo_reroll;verify;0>
+Loop at line:166     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;175:175;hlo_reroll;verify;0>
+Loop at line:175     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;194:194;hlo_reroll;verify;0>
+Loop at line:194     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;203:203;hlo_reroll;verify;0>
+Loop at line:203     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;222:222;hlo_reroll;verify;0>
+Loop at line:222     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;231:231;hlo_reroll;verify;0>
+Loop at line:231     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;250:250;hlo_reroll;verify;0>
+Loop at line:250     memcopy throttled memop:: small-iter loop. 
+
+<verify.c;259:259;hlo_reroll;verify;0>
+Loop at line:259     memcopy throttled memop:: small-iter loop. 
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<verify.c;60:60;hlo_unroll;verify;0>
+Loop at line 60 completely unrolled by 1   
+
+<verify.c;84:84;hlo_unroll;verify;0>
+Loop at line 84 completely unrolled by 1   
+
+<verify.c;111:111;hlo_unroll;verify;0>
+Loop at line 111 completely unrolled by 1   
+
+<verify.c;138:138;hlo_unroll;verify;0>
+Loop at line 138 completely unrolled by 1   
+
+<verify.c;166:166;hlo_unroll;verify;0>
+Loop at line 166 completely unrolled by 1   
+
+<verify.c;194:194;hlo_unroll;verify;0>
+Loop at line 194 completely unrolled by 1   
+
+<verify.c;222:222;hlo_unroll;verify;0>
+Loop at line 222 completely unrolled by 1   
+
+<verify.c;250:250;hlo_unroll;verify;0>
+Loop at line 250 completely unrolled by 1   
+
+<verify.c;277:277;hlo_unroll;verify;0>
+Loop at line 277 completely unrolled by 1   
+
+<verify.c;303:303;hlo_unroll;verify;0>
+Loop at line 303 completely unrolled by 5   
+
+<verify.c;322:322;hlo_unroll;verify;0>
+Loop at line 322 completely unrolled by 5   
+
+<verify.c;-1:-1;PGO;verify;0>
+  STATIC:verify.c  verify
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+cd ../common; icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  print_results.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):BOTTOM(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<print_results.c;10:65;IPO INLINING;print_results;0>
+INLINING REPORT: (print_results) [1/1=100.0%]
+
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> sprintf(EXTERN)
+  -> exp2(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+  -> printf(EXTERN)
+
+
+<print_results.c;-1:-1;PGO;print_results;0>
+  STATIC:print_results.c  print_results
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+cd ../common; icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel  c_timers.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO VAR ADDRESSES;;0>
+  VAR ADDRESS:VARS (2)PACKS (2)
+
+  VAR ADDRESS:VARS (4)PACKS (4)
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(5):EMPTY(1)BOTTOM(3)OTHER(1)
+
+  CI-REF: TOTAL(5):OTHER(5)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<c_timers.c;-1:-1;IPO DEAD STATIC FUNCTION ELIMINATION;elapsed_time;0>
+DEAD STATIC FUNCTION ELIMINATION: 
+  (elapsed_time)
+  Routine is dead static
+
+
+<c_timers.c;26:28;IPO INLINING;timer_clear;0>
+INLINING REPORT: (timer_clear) [2/5=40.0%]
+
+
+
+<c_timers.c;35:37;IPO INLINING;timer_start;0>
+INLINING REPORT: (timer_start) [3/5=60.0%]
+
+  -> INLINE: elapsed_time(7) (isz = 2) (sz = 7 (3+4))
+    -> wtime_(EXTERN)
+
+
+<c_timers.c;58:59;IPO INLINING;timer_read;0>
+INLINING REPORT: (timer_read) [4/5=80.0%]
+
+
+
+<c_timers.c;44:51;IPO INLINING;timer_stop;0>
+INLINING REPORT: (timer_stop) [5/5=100.0%]
+
+  -> INLINE: elapsed_time(6) (isz = 2) (sz = 7 (3+4))
+    -> wtime_(EXTERN)
+
+
+<c_timers.c;44:51;IPO FORWARD SUBSTITUTION;timer_stop;0>
+  SUBSTITUTION: TOTAL(2):REPLACE(1)REMOVE(1)
+
+
+<c_timers.c;-1:-1;PGO;timer_read;0>
+  STATIC:c_timers.c  timer_read
+
+<c_timers.c;-1:-1;PGO;timer_stop;0>
+  STATIC:c_timers.c  timer_stop
+
+<c_timers.c;-1:-1;PGO;timer_start;0>
+  STATIC:c_timers.c  timer_start
+
+<c_timers.c;-1:-1;PGO;timer_clear;0>
+  STATIC:c_timers.c  timer_clear
+
+<c_timers.c;-1:-1;PGO;elapsed_time;0>
+  STATIC:c_timers.c  elapsed_time
+
+<;-1:-1;PGO;;0>
+
+      5 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+cd ../common; icc  -c -I../common -g -O3 -opt-report-phase6 -mcmodel=medium -parallel   -o wtime.o ../common/wtime.c
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):BOTTOM(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<../common/wtime.c;8:14;IPO INLINING;wtime_;0>
+INLINING REPORT: (wtime_) [1/1=100.0%]
+
+  -> gettimeofday(EXTERN)
+
+
+<../common/wtime.c;-1:-1;PGO;wtime_;0>
+  STATIC:../common/wtime.c  wtime_
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+icc -parallel  -o ../bin/bt.D.x bt.o  initialize.o exact_solution.o exact_rhs.o set_constants.o adi.o  rhs.o x_solve.o y_solve.o solve_subs.o z_solve.o add.o error.o verify.o ../common/print_results.o ../common/c_timers.o ../common/wtime.o -lm -w
+make[1]: Leaving directory `/mnt/global/LCSE/sanyam/SPEC_tests/SNU_NPB-1.0.3/NPB3.3-SER-C/BT'

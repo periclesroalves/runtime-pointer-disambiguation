@@ -1,0 +1,341 @@
+icc: command line warning #10128: invalid value '6' for '-opt-report-phase'; ignoring
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES PROPAGATION;;0>
+  ROUTINE ATTRIBUTE PROPAGATION TOTALS: 
+
+      RDECL: NSE(0->0) AR(0->0) NORET(0->0) DR(0->0) NT(0->0)
+      RDECL: MF(0->0) OMPPAR(0->0)
+      ENTRY: SE(0->0) DSE(0->0) IR(0->0) DIR(0->0) AR(0->0)
+      ENTRY: MX(0->0) DR(0->0) DDR(0->0) TRIV(0->0) DTRIV(0->0)
+      ENTRY: NT(0->0) DNT(0->0) MF(0->0) DMF(0->0) NDR(0->0)
+      ENTRY: DNDR(0->0) INLOOP(0->0) INASYNCHTRY(0->0)
+      ENTRY: LOCTHIS(0->0) OMPPAR(0->0)
+
+
+
+<;-1:-1;IPO ROUTINE ATTRIBUTES LATE PROPAGATION;;0>
+  ROUTINE ATTRIBUTE LATE PROPAGATION TOTALS: 
+
+      ENTRY: CP(0->0)
+
+
+
+<;-1:-1;IPO MODREF;;0>
+  CI-MOD: TOTAL(1):BOTTOM(1)
+
+  CI-REF: TOTAL(1):OTHER(1)
+
+
+<;-1:-1;IPO;;0>
+WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+
+WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+
+WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+<rhs.c;38:419;IPO INLINING;compute_rhs;0>
+INLINING REPORT: (compute_rhs) [1/1=100.0%]
+
+  -> timer_stop(EXTERN)
+  -> timer_stop(EXTERN)
+  -> timer_start(EXTERN)
+  -> timer_stop(EXTERN)
+  -> timer_start(EXTERN)
+  -> timer_stop(EXTERN)
+  -> timer_start(EXTERN)
+  -> timer_start(EXTERN)
+
+
+HPO THREADIZER REPORT (compute_rhs) LOG OPENED ON Sun Jul 20 13:34:22 2014
+
+
+<rhs.c;-1:-1;hpo_threadization;compute_rhs;0>
+HPO Threadizer Report (compute_rhs)
+
+rhs.c(47:3-47:3):PAR:compute_rhs:  LOOP WAS AUTO-PARALLELIZED
+rhs.c(48:5-48:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(49:7-49:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(69:3-69:3):PAR:compute_rhs:  loop was not parallelized: insufficient computational work
+rhs.c(70:5-70:5):PAR:compute_rhs:  loop was not parallelized: insufficient computational work
+rhs.c(71:7-71:7):PAR:compute_rhs:  loop was not parallelized: insufficient computational work
+rhs.c(72:9-72:9):PAR:compute_rhs:  loop was not parallelized: insufficient computational work
+rhs.c(83:3-83:3):PAR:compute_rhs:  LOOP WAS AUTO-PARALLELIZED
+rhs.c(84:5-84:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(85:7-85:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(141:5-141:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(157:5-157:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(158:7-158:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(159:9-159:9):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(168:5-168:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(190:3-190:3):PAR:compute_rhs:  LOOP WAS AUTO-PARALLELIZED
+rhs.c(191:5-191:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(192:7-192:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(244:5-244:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(245:7-245:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(253:5-253:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(254:7-254:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(261:5-261:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(262:7-262:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(263:9-263:9):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(273:5-273:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(274:7-274:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(282:5-282:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(283:7-283:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(296:3-296:3):PAR:compute_rhs:  LOOP WAS AUTO-PARALLELIZED
+rhs.c(297:5-297:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(298:7-298:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(352:3-352:3):PAR:compute_rhs:  FUSED LOOP WAS AUTO-PARALLELIZED
+rhs.c(353:5-353:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(354:7-354:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(364:5-364:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(365:7-365:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(373:3-373:3):PAR:compute_rhs:  LOOP WAS AUTO-PARALLELIZED
+rhs.c(374:5-374:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(375:7-375:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(376:9-376:9):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(387:3-387:3):PAR:compute_rhs:  FUSED LOOP WAS AUTO-PARALLELIZED
+rhs.c(388:5-388:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(389:7-389:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(399:5-399:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(400:7-400:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(409:3-409:3):PAR:compute_rhs:  LOOP WAS AUTO-PARALLELIZED
+rhs.c(410:5-410:5):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(411:7-411:7):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+rhs.c(412:9-412:9):PAR:compute_rhs:  loop was not parallelized: insufficient inner loop
+
+HPO VECTORIZER REPORT (compute_rhs) LOG OPENED ON Sun Jul 20 13:34:22 2014
+
+
+<rhs.c;-1:-1;hpo_vectorization;compute_rhs;0>
+HPO Vectorizer Report (compute_rhs)
+
+rhs.c(49:7-49:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(48:5-48:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(47:3-47:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(72:9-72:9):VEC:compute_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+rhs.c(71:7-71:7):VEC:compute_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+rhs.c(70:5-70:5):VEC:compute_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+rhs.c(69:3-69:3):VEC:compute_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+rhs.c(85:7-85:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(84:5-84:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(141:5-141:5):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(159:9-159:9):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(158:7-158:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(157:5-157:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(168:5-168:5):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(83:3-83:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(192:7-192:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(191:5-191:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(245:7-245:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(244:5-244:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(254:7-254:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(253:5-253:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(263:9-263:9):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(262:7-262:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(261:5-261:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(274:7-274:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(273:5-273:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(283:7-283:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(282:5-282:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(190:3-190:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(298:7-298:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(297:5-297:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(296:3-296:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(354:7-354:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(353:5-353:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(365:7-365:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(364:5-364:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(352:3-352:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(376:9-376:9):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(375:7-375:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(374:5-374:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(373:3-373:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(389:7-389:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(388:5-388:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(400:7-400:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(399:5-399:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(387:3-387:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(412:9-412:9):VEC:compute_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+rhs.c(411:7-411:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(410:5-410:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(409:3-409:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(49:7-49:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(48:5-48:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(47:3-47:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(85:7-85:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(84:5-84:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(141:5-141:5):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(159:9-159:9):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(158:7-158:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(157:5-157:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(168:5-168:5):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(83:3-83:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(192:7-192:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(191:5-191:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(245:7-245:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(244:5-244:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(254:7-254:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(253:5-253:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(263:9-263:9):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(262:7-262:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(261:5-261:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(274:7-274:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(273:5-273:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(283:7-283:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(282:5-282:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(190:3-190:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(298:7-298:7):VEC:compute_rhs:  LOOP WAS VECTORIZED
+rhs.c(297:5-297:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(296:3-296:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(354:7-354:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(353:5-353:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(365:7-365:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(364:5-364:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(352:3-352:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(376:9-376:9):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(375:7-375:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(374:5-374:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(373:3-373:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(389:7-389:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(388:5-388:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(400:7-400:7):VEC:compute_rhs:  loop was not vectorized: low trip count
+rhs.c(399:5-399:5):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(387:3-387:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(412:9-412:9):VEC:compute_rhs:  loop was not vectorized: vectorization possible but seems inefficient
+rhs.c(411:7-411:7):VEC:compute_rhs:  OUTER LOOP WAS VECTORIZED
+rhs.c(410:5-410:5):VEC:compute_rhs:  loop was not vectorized: not inner loop
+rhs.c(409:3-409:3):VEC:compute_rhs:  loop was not vectorized: not inner loop
+
+HLO REPORT LOG OPENED ON Sun Jul 20 13:34:22 2014
+
+
+<rhs.c;-1:-1;hlo;compute_rhs;0>
+High Level Optimizer Report (compute_rhs)
+
+<rhs.c;49:49;hlo_scalar_replacement;in compute_rhs;0>
+#of Array Refs Scalar Replaced in compute_rhs at line 49=1
+#of Array Refs Scalar Replaced in compute_rhs at line 49=1
+
+<rhs.c;85:85;hlo_distribution;in compute_rhs;0>
+LOOP STMT REORDER in compute_rhs at line 85
+LOOP STMT REORDER in compute_rhs at line 85
+LOOP STMT REORDER in compute_rhs at line 85
+
+<rhs.c;192:192;hlo_distribution;in compute_rhs;0>
+LOOP STMT REORDER in compute_rhs at line 192
+LOOP STMT REORDER in compute_rhs at line 192
+LOOP STMT REORDER in compute_rhs at line 192
+
+<rhs.c;298:298;hlo_distribution;in compute_rhs;0>
+LOOP STMT REORDER in compute_rhs at line 298
+LOOP STMT REORDER in compute_rhs at line 298
+LOOP STMT REORDER in compute_rhs at line 298
+
+
+<rhs.c;49:49;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 49 
+
+<rhs.c;71:71;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 71 
+
+<rhs.c;85:85;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 85 
+
+<rhs.c;141:141;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 141 
+
+<rhs.c;168:168;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 168 
+
+<rhs.c;192:192;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 192 
+
+<rhs.c;298:298;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 298 
+
+<rhs.c;49:49;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 49 
+
+<rhs.c;85:85;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 85 
+
+<rhs.c;141:141;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 141 
+
+<rhs.c;168:168;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 168 
+
+<rhs.c;192:192;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 192 
+
+<rhs.c;298:298;hlo_linear_trans;compute_rhs;0>
+Poor memory locality: Non-unit-stride memory reference detected
+Advice: Data transposing might help loopnest at lines: 298 
+
+Fusion loop partitions: (loop line numbers)
+
+Fused Loops: ( 387 398 )
+Fused Loops: ( 352 363 )
+
+
+<rhs.c;72:72;hlo_reroll;compute_rhs;0>
+Loop at line:72      memcopy(with guard) throttled memop:: small-iter loop. 
+Loop at line:72      memcopy(with guard) throttled memop:: small-iter loop. 
+
+Block, Unroll, Jam Report:
+(loop line numbers, unroll factors and type of transformation)
+
+<rhs.c;143:143;hlo_unroll;compute_rhs;0>
+Loop at line 143 completely unrolled by 5    (pre-vector) 
+
+<rhs.c;150:150;hlo_unroll;compute_rhs;0>
+Loop at line 150 completely unrolled by 5    (pre-vector) 
+
+<rhs.c;170:170;hlo_unroll;compute_rhs;0>
+Loop at line 170 completely unrolled by 5    (pre-vector) 
+
+<rhs.c;177:177;hlo_unroll;compute_rhs;0>
+Loop at line 177 completely unrolled by 5    (pre-vector) 
+
+<rhs.c;72:72;hlo_unroll;compute_rhs;0>
+Loop at line 72 completely unrolled by 5   
+
+<rhs.c;-1:-1;PGO;compute_rhs;0>
+  STATIC:rhs.c  compute_rhs
+
+<;-1:-1;PGO;;0>
+
+      1 FUNCTIONS HAD VALID STATIC PROFILES
+
+  IPO CURRENT  QUALITY METRIC:  50.0%
+  IPO POSSIBLE QUALITY METRIC:  50.0%
+  IPO QUALITY  METRIC RATIO:   100.0%
+
+
+W: 3.82
+S: 0.11
+U: 3.27
+CPU: 88%
+Max: 475552
+
