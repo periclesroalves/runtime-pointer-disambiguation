@@ -215,10 +215,8 @@ void initializePollyPasses(PassRegistry &Registry) {
 static void registerPollyPasses(llvm::PassManagerBase &PM) {
   registerCanonicalicationPasses(PM, SCEVCodegen);
 
-  if (SCEVAliasInstrumenter) {
+  if (SCEVAliasInstrumenter)
     PM.add(polly::createSCEVAliasInstrumenterPass());
-    PM.add(llvm::createLICMPass());
-  }
 
   PM.add(polly::createScopInfoPass());
 
