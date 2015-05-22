@@ -11,6 +11,8 @@ build-*/
 .svn
 *.swp
 
+*.x
+
 # Office Temp Files
 ~$*
 
