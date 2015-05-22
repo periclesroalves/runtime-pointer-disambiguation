@@ -482,16 +482,6 @@ bool SCEVAliasInstrumenter::canInstrument(InstrumentationContext &context) {
   if (r.isTopLevelRegion())
     return false;
 
-  bool hasLoop = false;
-
-  // Do not instrument regions without loops.
-  for (const BasicBlock *bb : r.blocks())
-    if (r.contains(li->getLoopFor(bb)))
-      hasLoop = true;
-
-  if (!hasLoop)
-    return false;
-
   // Make sure that all loops in the region have a symbolic limit.
   for (BasicBlock *bb : r.blocks()) {
     Loop *l = li->getLoopFor(bb);
