@@ -1,0 +1,30 @@
+CLEAN VERSION
+=============
+
+mkdir build-clean
+mkdir bin-clean
+cd build-clean
+
+cmake ../opencv-2.4.10-src/ \
+  -DCMAKE_C_COMPILER="/Users/periclesalves/ufmg-research/build-release/Release/bin/clang" \
+  -DCMAKE_CXX_COMPILER="/Users/periclesalves/ufmg-research/build-release/Release/bin/clang++" \
+  -DCMAKE_C_FLAGS="-Xclang -load -Xclang /Users/periclesalves/ufmg-research/build-release/tools/polly/Release/lib/LLVMPolly.dylib -O3 -mllvm -polly -mllvm -polly-code-generator=none -mllvm -polly-optimizer=none" \
+  -DCMAKE_CXX_FLAGS="-Xclang -load -Xclang /Users/periclesalves/ufmg-research/build-release/tools/polly/Release/lib/LLVMPolly.dylib -O3 -mllvm -polly -mllvm -polly-code-generator=none -mllvm -polly-optimizer=none" \
+  -DCMAKE_BUILD_TYPE=RELEASE \
+  -DCMAKE_INSTALL_PREFIX=/Users/periclesalves/Downloads/opencv/bin-clean
+
+
+OPT VERSION
+===========
+
+mkdir build-opt
+mkdir bin-opt
+cd build-opt
+
+cmake ../opencv-2.4.10-src/ \
+  -DCMAKE_C_COMPILER="/Users/periclesalves/ufmg-research/build-release/Release/bin/clang" \
+  -DCMAKE_CXX_COMPILER="/Users/periclesalves/ufmg-research/build-release/Release/bin/clang++" \
+  -DCMAKE_C_FLAGS="-Xclang -load -Xclang /Users/periclesalves/ufmg-research/build-release/tools/polly/Release/lib/LLVMPolly.dylib -O3 -mllvm -polly -mllvm -polly-code-generator=none -mllvm -polly-optimizer=none -mllvm -polly-use-scev-alias-checks" \
+  -DCMAKE_CXX_FLAGS="-Xclang -load -Xclang /Users/periclesalves/ufmg-research/build-release/tools/polly/Release/lib/LLVMPolly.dylib -O3 -mllvm -polly -mllvm -polly-code-generator=none -mllvm -polly-optimizer=none -mllvm -polly-use-scev-alias-checks" \
+  -DCMAKE_BUILD_TYPE=RELEASE \
+  -DCMAKE_INSTALL_PREFIX=/Users/periclesalves/Downloads/opencv/bin-opt

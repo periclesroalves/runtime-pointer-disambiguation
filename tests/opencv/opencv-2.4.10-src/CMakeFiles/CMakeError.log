@@ -1,0 +1,253 @@
+Determining if the system is big endian passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec4199905436/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec4199905436.dir/build.make CMakeFiles/cmTryCompileExec4199905436.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec4199905436.dir/TestEndianess.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec4199905436.dir/TestEndianess.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/TestEndianess.c
+Linking C executable cmTryCompileExec4199905436
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec4199905436.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec4199905436.dir/TestEndianess.c.o  -o cmTryCompileExec4199905436  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+TestEndianess.c:
+/* A 16 bit integer is required. */
+typedef unsigned short cmakeint16;
+
+/* On a little endian machine, these 16bit ints will give "THIS IS LITTLE ENDIAN."
+   On a big endian machine the characters will be exchanged pairwise. */
+const cmakeint16 info_little[] =  {0x4854, 0x5349, 0x4920, 0x2053, 0x494c, 0x5454, 0x454c, 0x4520, 0x444e, 0x4149, 0x2e4e, 0x0000};
+
+/* on a big endian machine, these 16bit ints will give "THIS IS BIG ENDIAN."
+   On a little endian machine the characters will be exchanged pairwise. */
+const cmakeint16 info_big[] =     {0x5448, 0x4953, 0x2049, 0x5320, 0x4249, 0x4720, 0x454e, 0x4449, 0x414e, 0x2e2e, 0x0000};
+
+#ifdef __CLASSIC_C__
+int main(argc, argv) int argc; char *argv[];
+#else
+int main(int argc, char *argv[])
+#endif
+{
+  int require = 0;
+  require += info_little[argc];
+  require += info_big[argc];
+  (void)argv;
+  return require;
+}
+
+
+Determining size of off64_t failed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec3434993364/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec3434993364.dir/build.make CMakeFiles/cmTryCompileExec3434993364.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3434993364.dir/OFF64_T.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec3434993364.dir/OFF64_T.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/OFF64_T.c
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/OFF64_T.c:19:12: error: use of undeclared identifier 'off64_t'; did you mean 'off_t'?
+  ('0' + ((SIZE / 10000)%10)),
+           ^
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/OFF64_T.c:17:22: note: expanded from macro 'SIZE'
+#define SIZE (sizeof(off64_t))
+                     ^
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/OFF64_T.c:20:12: error: use of undeclared identifier 'off64_t'; did you mean 'off_t'?
+  ('0' + ((SIZE / 1000)%10)),
+           ^
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/OFF64_T.c:17:22: note: expanded from macro 'SIZE'
+#define SIZE (sizeof(off64_t))
+                     ^
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/OFF64_T.c:21:12: error: use of undeclared identifier 'off64_t'; did you mean 'off_t'?
+  ('0' + ((SIZE / 100)%10)),
+           ^
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/OFF64_T.c:17:22: note: expanded from macro 'SIZE'
+#define SIZE (sizeof(off64_t))
+                     ^
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/OFF64_T.c:22:12: error: use of undeclared identifier 'off64_t'; did you mean 'off_t'?
+  ('0' + ((SIZE / 10)%10)),
+           ^
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/OFF64_T.c:17:22: note: expanded from macro 'SIZE'
+#define SIZE (sizeof(off64_t))
+                     ^
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/OFF64_T.c:23:12: error: use of undeclared identifier 'off64_t'; did you mean 'off_t'?
+  ('0' +  (SIZE    % 10)),
+           ^
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/OFF64_T.c:17:22: note: expanded from macro 'SIZE'
+#define SIZE (sizeof(off64_t))
+                     ^
+5 errors generated.
+CMakeFiles/cmTryCompileExec3434993364.dir/build.make:57: recipe for target 'CMakeFiles/cmTryCompileExec3434993364.dir/OFF64_T.c.o' failed
+gmake[1]: *** [CMakeFiles/cmTryCompileExec3434993364.dir/OFF64_T.c.o] Error 1
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+Makefile:118: recipe for target 'cmTryCompileExec3434993364/fast' failed
+gmake: *** [cmTryCompileExec3434993364/fast] Error 2
+
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/OFF64_T.c:
+#include <sys/types.h>
+#include <stdint.h>
+#include <stddef.h>
+
+
+#undef KEY
+#if defined(__i386)
+# define KEY '_','_','i','3','8','6'
+#elif defined(__x86_64)
+# define KEY '_','_','x','8','6','_','6','4'
+#elif defined(__ppc__)
+# define KEY '_','_','p','p','c','_','_'
+#elif defined(__ppc64__)
+# define KEY '_','_','p','p','c','6','4','_','_'
+#endif
+
+#define SIZE (sizeof(off64_t))
+char info_size[] =  {'I', 'N', 'F', 'O', ':', 's','i','z','e','[',
+  ('0' + ((SIZE / 10000)%10)),
+  ('0' + ((SIZE / 1000)%10)),
+  ('0' + ((SIZE / 100)%10)),
+  ('0' + ((SIZE / 10)%10)),
+  ('0' +  (SIZE    % 10)),
+  ']',
+#ifdef KEY
+  ' ','k','e','y','[', KEY, ']',
+#endif
+  '\0'};
+
+#ifdef __CLASSIC_C__
+int main(argc, argv) int argc; char *argv[];
+#else
+int main(int argc, char *argv[])
+#endif
+{
+  int require = 0;
+  require += info_size[argc];
+  (void)argv;
+  return require;
+}
+
+
+Determining if the include file io.h exists failed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec1769546707/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec1769546707.dir/build.make CMakeFiles/cmTryCompileExec1769546707.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1769546707.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec1769546707.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c:1:10: fatal error: 'io.h' file not found
+#include <io.h>
+         ^
+1 error generated.
+CMakeFiles/cmTryCompileExec1769546707.dir/build.make:57: recipe for target 'CMakeFiles/cmTryCompileExec1769546707.dir/CheckIncludeFile.c.o' failed
+gmake[1]: *** [CMakeFiles/cmTryCompileExec1769546707.dir/CheckIncludeFile.c.o] Error 1
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+Makefile:118: recipe for target 'cmTryCompileExec1769546707/fast' failed
+gmake: *** [cmTryCompileExec1769546707/fast] Error 2
+
+
+Determining if the function jbg_newlen exists failed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec916455976/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec916455976.dir/build.make CMakeFiles/cmTryCompileExec916455976.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec916455976.dir/CheckFunctionExists.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3 -DCHECK_FUNCTION_EXISTS=jbg_newlen -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec916455976.dir/CheckFunctionExists.c.o   -c /usr/local/Cellar/cmake/3.0.2/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec916455976
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec916455976.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3 -DCHECK_FUNCTION_EXISTS=jbg_newlen -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec916455976.dir/CheckFunctionExists.c.o  -o cmTryCompileExec916455976  
+Undefined symbols for architecture x86_64:
+  "_jbg_newlen", referenced from:
+      _main in CheckFunctionExists.c.o
+ld: symbol(s) not found for architecture x86_64
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+CMakeFiles/cmTryCompileExec916455976.dir/build.make:88: recipe for target 'cmTryCompileExec916455976' failed
+gmake[1]: *** [cmTryCompileExec916455976] Error 1
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+Makefile:118: recipe for target 'cmTryCompileExec916455976/fast' failed
+gmake: *** [cmTryCompileExec916455976/fast] Error 2
+
+
+Determining if the include file linux/videodev.h exists failed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec582720448/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec582720448.dir/build.make CMakeFiles/cmTryCompileExec582720448.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec582720448.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec582720448.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c:1:10: fatal error: 'linux/videodev.h' file not found
+#include <linux/videodev.h>
+         ^
+1 error generated.
+CMakeFiles/cmTryCompileExec582720448.dir/build.make:57: recipe for target 'CMakeFiles/cmTryCompileExec582720448.dir/CheckIncludeFile.c.o' failed
+gmake[1]: *** [CMakeFiles/cmTryCompileExec582720448.dir/CheckIncludeFile.c.o] Error 1
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+Makefile:118: recipe for target 'cmTryCompileExec582720448/fast' failed
+gmake: *** [cmTryCompileExec582720448/fast] Error 2
+
+
+Determining if the include file linux/videodev2.h exists failed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec2576009904/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec2576009904.dir/build.make CMakeFiles/cmTryCompileExec2576009904.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2576009904.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec2576009904.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c:1:10: fatal error: 'linux/videodev2.h' file not found
+#include <linux/videodev2.h>
+         ^
+1 error generated.
+CMakeFiles/cmTryCompileExec2576009904.dir/build.make:57: recipe for target 'CMakeFiles/cmTryCompileExec2576009904.dir/CheckIncludeFile.c.o' failed
+gmake[1]: *** [CMakeFiles/cmTryCompileExec2576009904.dir/CheckIncludeFile.c.o] Error 1
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+Makefile:118: recipe for target 'cmTryCompileExec2576009904/fast' failed
+gmake: *** [cmTryCompileExec2576009904/fast] Error 2
+
+
+Determining if the include file sys/videoio.h exists failed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec99136875/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec99136875.dir/build.make CMakeFiles/cmTryCompileExec99136875.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec99136875.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec99136875.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c:1:10: fatal error: 'sys/videoio.h' file not found
+#include <sys/videoio.h>
+         ^
+1 error generated.
+CMakeFiles/cmTryCompileExec99136875.dir/build.make:57: recipe for target 'CMakeFiles/cmTryCompileExec99136875.dir/CheckIncludeFile.c.o' failed
+gmake[1]: *** [CMakeFiles/cmTryCompileExec99136875.dir/CheckIncludeFile.c.o] Error 1
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+Makefile:118: recipe for target 'cmTryCompileExec99136875/fast' failed
+gmake: *** [cmTryCompileExec99136875/fast] Error 2
+
+
+Determining if the include file ffmpeg/avformat.h exists failed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec1087529354/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec1087529354.dir/build.make CMakeFiles/cmTryCompileExec1087529354.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1087529354.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec1087529354.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c:1:10: fatal error: 'ffmpeg/avformat.h' file not found
+#include <ffmpeg/avformat.h>
+         ^
+1 error generated.
+CMakeFiles/cmTryCompileExec1087529354.dir/build.make:57: recipe for target 'CMakeFiles/cmTryCompileExec1087529354.dir/CheckIncludeFile.c.o' failed
+gmake[1]: *** [CMakeFiles/cmTryCompileExec1087529354.dir/CheckIncludeFile.c.o] Error 1
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+Makefile:118: recipe for target 'cmTryCompileExec1087529354/fast' failed
+gmake: *** [cmTryCompileExec1087529354/fast] Error 2
+
+

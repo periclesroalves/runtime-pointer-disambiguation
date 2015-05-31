@@ -1,0 +1,412 @@
+The system is: Darwin - 12.0.0 - x86_64
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: /usr/bin/clang++ 
+Build flags: 
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+
+The CXX compiler identification is AppleClang, found in "/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/3.0.2/CompilerIdCXX/a.out"
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /usr/bin/clang 
+Build flags: 
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is AppleClang, found in "/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/3.0.2/CompilerIdC/a.out"
+
+Determining if the CXX compiler works passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec2643400423/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec2643400423.dir/build.make CMakeFiles/cmTryCompileExec2643400423.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building CXX object CMakeFiles/cmTryCompileExec2643400423.dir/testCXXCompiler.cxx.o
+/usr/bin/clang++     -o CMakeFiles/cmTryCompileExec2643400423.dir/testCXXCompiler.cxx.o -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTryCompileExec2643400423
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2643400423.dir/link.txt --verbose=1
+/usr/bin/clang++     -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec2643400423.dir/testCXXCompiler.cxx.o  -o cmTryCompileExec2643400423  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec2667910684/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec2667910684.dir/build.make CMakeFiles/cmTryCompileExec2667910684.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building CXX object CMakeFiles/cmTryCompileExec2667910684.dir/CMakeCXXCompilerABI.cpp.o
+/usr/bin/clang++     -o CMakeFiles/cmTryCompileExec2667910684.dir/CMakeCXXCompilerABI.cpp.o -c /usr/local/Cellar/cmake/3.0.2/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+Linking CXX executable cmTryCompileExec2667910684
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2667910684.dir/link.txt --verbose=1
+/usr/bin/clang++     -Wl,-search_paths_first -Wl,-headerpad_max_install_names -v -Wl,-v CMakeFiles/cmTryCompileExec2667910684.dir/CMakeCXXCompilerABI.cpp.o  -o cmTryCompileExec2667910684   
+Apple LLVM version 4.2 (clang-425.0.24) (based on LLVM 3.2svn)
+Target: x86_64-apple-darwin12.0.0
+Thread model: posix
+ "/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.8.0 -o cmTryCompileExec2667910684 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTryCompileExec2667910684.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lSystem /usr/bin/../lib/clang/4.2/lib/darwin/libclang_rt.osx.a
+@(#)PROGRAM:ld  PROJECT:ld64-136
+configured to support archs: armv6 armv7 armv7s i386 x86_64
+Library search paths:
+	/usr/lib
+	/usr/local/lib
+Framework search paths:
+	/Library/Frameworks/
+	/System/Library/Frameworks/
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec2667910684/fast"]
+  ignore line: [/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec2667910684.dir/build.make CMakeFiles/cmTryCompileExec2667910684.dir/build]
+  ignore line: [gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1]
+  ignore line: [Building CXX object CMakeFiles/cmTryCompileExec2667910684.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/usr/bin/clang++     -o CMakeFiles/cmTryCompileExec2667910684.dir/CMakeCXXCompilerABI.cpp.o -c /usr/local/Cellar/cmake/3.0.2/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Linking CXX executable cmTryCompileExec2667910684]
+  ignore line: [/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2667910684.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/clang++     -Wl,-search_paths_first -Wl,-headerpad_max_install_names -v -Wl,-v CMakeFiles/cmTryCompileExec2667910684.dir/CMakeCXXCompilerABI.cpp.o  -o cmTryCompileExec2667910684   ]
+  ignore line: [Apple LLVM version 4.2 (clang-425.0.24) (based on LLVM 3.2svn)]
+  ignore line: [Target: x86_64-apple-darwin12.0.0]
+  ignore line: [Thread model: posix]
+  link line: [ "/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.8.0 -o cmTryCompileExec2667910684 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTryCompileExec2667910684.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lSystem /usr/bin/../lib/clang/4.2/lib/darwin/libclang_rt.osx.a]
+    arg [/usr/bin/ld] ==> ignore
+    arg [-demangle] ==> ignore
+    arg [-dynamic] ==> ignore
+    arg [-arch] ==> ignore
+    arg [x86_64] ==> ignore
+    arg [-macosx_version_min] ==> ignore
+    arg [10.8.0] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTryCompileExec2667910684] ==> ignore
+    arg [-search_paths_first] ==> ignore
+    arg [-headerpad_max_install_names] ==> ignore
+    arg [-v] ==> ignore
+    arg [CMakeFiles/cmTryCompileExec2667910684.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-lstdc++] ==> lib [stdc++]
+    arg [-lSystem] ==> lib [System]
+    arg [/usr/bin/../lib/clang/4.2/lib/darwin/libclang_rt.osx.a] ==> lib [/usr/bin/../lib/clang/4.2/lib/darwin/libclang_rt.osx.a]
+  Library search paths: [;/usr/lib;/usr/local/lib]
+  Framework search paths: [;/Library/Frameworks/;/System/Library/Frameworks/]
+  remove lib [System]
+  collapse lib [/usr/bin/../lib/clang/4.2/lib/darwin/libclang_rt.osx.a] ==> [/usr/lib/clang/4.2/lib/darwin/libclang_rt.osx.a]
+  collapse library dir [/usr/lib] ==> [/usr/lib]
+  collapse library dir [/usr/local/lib] ==> [/usr/local/lib]
+  collapse framework dir [/Library/Frameworks/] ==> [/Library/Frameworks]
+  collapse framework dir [/System/Library/Frameworks/] ==> [/System/Library/Frameworks]
+  implicit libs: [stdc++;/usr/lib/clang/4.2/lib/darwin/libclang_rt.osx.a]
+  implicit dirs: [/usr/lib;/usr/local/lib]
+  implicit fwks: [/Library/Frameworks;/System/Library/Frameworks]
+
+
+Determining if the C compiler works passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec1980314863/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec1980314863.dir/build.make CMakeFiles/cmTryCompileExec1980314863.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1980314863.dir/testCCompiler.c.o
+/usr/bin/clang    -o CMakeFiles/cmTryCompileExec1980314863.dir/testCCompiler.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTryCompileExec1980314863
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1980314863.dir/link.txt --verbose=1
+/usr/bin/clang    -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec1980314863.dir/testCCompiler.c.o  -o cmTryCompileExec1980314863  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec1350272082/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec1350272082.dir/build.make CMakeFiles/cmTryCompileExec1350272082.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1350272082.dir/CMakeCCompilerABI.c.o
+/usr/bin/clang    -o CMakeFiles/cmTryCompileExec1350272082.dir/CMakeCCompilerABI.c.o   -c /usr/local/Cellar/cmake/3.0.2/share/cmake/Modules/CMakeCCompilerABI.c
+Linking C executable cmTryCompileExec1350272082
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1350272082.dir/link.txt --verbose=1
+/usr/bin/clang    -Wl,-search_paths_first -Wl,-headerpad_max_install_names -v -Wl,-v CMakeFiles/cmTryCompileExec1350272082.dir/CMakeCCompilerABI.c.o  -o cmTryCompileExec1350272082   
+Apple LLVM version 4.2 (clang-425.0.24) (based on LLVM 3.2svn)
+Target: x86_64-apple-darwin12.0.0
+Thread model: posix
+ "/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.8.0 -o cmTryCompileExec1350272082 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTryCompileExec1350272082.dir/CMakeCCompilerABI.c.o -lSystem /usr/bin/../lib/clang/4.2/lib/darwin/libclang_rt.osx.a
+@(#)PROGRAM:ld  PROJECT:ld64-136
+configured to support archs: armv6 armv7 armv7s i386 x86_64
+Library search paths:
+	/usr/lib
+	/usr/local/lib
+Framework search paths:
+	/Library/Frameworks/
+	/System/Library/Frameworks/
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec1350272082/fast"]
+  ignore line: [/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec1350272082.dir/build.make CMakeFiles/cmTryCompileExec1350272082.dir/build]
+  ignore line: [gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1]
+  ignore line: [Building C object CMakeFiles/cmTryCompileExec1350272082.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/usr/bin/clang    -o CMakeFiles/cmTryCompileExec1350272082.dir/CMakeCCompilerABI.c.o   -c /usr/local/Cellar/cmake/3.0.2/share/cmake/Modules/CMakeCCompilerABI.c]
+  ignore line: [Linking C executable cmTryCompileExec1350272082]
+  ignore line: [/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1350272082.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/clang    -Wl,-search_paths_first -Wl,-headerpad_max_install_names -v -Wl,-v CMakeFiles/cmTryCompileExec1350272082.dir/CMakeCCompilerABI.c.o  -o cmTryCompileExec1350272082   ]
+  ignore line: [Apple LLVM version 4.2 (clang-425.0.24) (based on LLVM 3.2svn)]
+  ignore line: [Target: x86_64-apple-darwin12.0.0]
+  ignore line: [Thread model: posix]
+  link line: [ "/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.8.0 -o cmTryCompileExec1350272082 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTryCompileExec1350272082.dir/CMakeCCompilerABI.c.o -lSystem /usr/bin/../lib/clang/4.2/lib/darwin/libclang_rt.osx.a]
+    arg [/usr/bin/ld] ==> ignore
+    arg [-demangle] ==> ignore
+    arg [-dynamic] ==> ignore
+    arg [-arch] ==> ignore
+    arg [x86_64] ==> ignore
+    arg [-macosx_version_min] ==> ignore
+    arg [10.8.0] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTryCompileExec1350272082] ==> ignore
+    arg [-search_paths_first] ==> ignore
+    arg [-headerpad_max_install_names] ==> ignore
+    arg [-v] ==> ignore
+    arg [CMakeFiles/cmTryCompileExec1350272082.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-lSystem] ==> lib [System]
+    arg [/usr/bin/../lib/clang/4.2/lib/darwin/libclang_rt.osx.a] ==> lib [/usr/bin/../lib/clang/4.2/lib/darwin/libclang_rt.osx.a]
+  Library search paths: [;/usr/lib;/usr/local/lib]
+  Framework search paths: [;/Library/Frameworks/;/System/Library/Frameworks/]
+  remove lib [System]
+  collapse lib [/usr/bin/../lib/clang/4.2/lib/darwin/libclang_rt.osx.a] ==> [/usr/lib/clang/4.2/lib/darwin/libclang_rt.osx.a]
+  collapse library dir [/usr/lib] ==> [/usr/lib]
+  collapse library dir [/usr/local/lib] ==> [/usr/local/lib]
+  collapse framework dir [/Library/Frameworks/] ==> [/Library/Frameworks]
+  collapse framework dir [/System/Library/Frameworks/] ==> [/System/Library/Frameworks]
+  implicit libs: [/usr/lib/clang/4.2/lib/darwin/libclang_rt.osx.a]
+  implicit dirs: [/usr/lib;/usr/local/lib]
+  implicit fwks: [/Library/Frameworks;/System/Library/Frameworks]
+
+
+Determining if the include file sys/types.h exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec161683278/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec161683278.dir/build.make CMakeFiles/cmTryCompileExec161683278.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec161683278.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec161683278.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec161683278
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec161683278.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec161683278.dir/CheckIncludeFile.c.o  -o cmTryCompileExec161683278  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file stdint.h exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec2402432098/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec2402432098.dir/build.make CMakeFiles/cmTryCompileExec2402432098.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2402432098.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec2402432098.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec2402432098
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2402432098.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec2402432098.dir/CheckIncludeFile.c.o  -o cmTryCompileExec2402432098  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file stddef.h exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec1813205444/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec1813205444.dir/build.make CMakeFiles/cmTryCompileExec1813205444.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1813205444.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec1813205444.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec1813205444
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1813205444.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec1813205444.dir/CheckIncludeFile.c.o  -o cmTryCompileExec1813205444  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining size of unsigned short passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec2479610202/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec2479610202.dir/build.make CMakeFiles/cmTryCompileExec2479610202.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2479610202.dir/CMAKE_SIZEOF_UNSIGNED_SHORT.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec2479610202.dir/CMAKE_SIZEOF_UNSIGNED_SHORT.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CheckTypeSize/CMAKE_SIZEOF_UNSIGNED_SHORT.c
+Linking C executable cmTryCompileExec2479610202
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2479610202.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec2479610202.dir/CMAKE_SIZEOF_UNSIGNED_SHORT.c.o  -o cmTryCompileExec2479610202  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining if the function fseeko exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec2719810519/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec2719810519.dir/build.make CMakeFiles/cmTryCompileExec2719810519.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2719810519.dir/CheckFunctionExists.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3 -DCHECK_FUNCTION_EXISTS=fseeko -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec2719810519.dir/CheckFunctionExists.c.o   -c /usr/local/Cellar/cmake/3.0.2/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec2719810519
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2719810519.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3 -DCHECK_FUNCTION_EXISTS=fseeko -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec2719810519.dir/CheckFunctionExists.c.o  -o cmTryCompileExec2719810519  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file unistd.h exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec1152659547/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec1152659547.dir/build.make CMakeFiles/cmTryCompileExec1152659547.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1152659547.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec1152659547.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec1152659547
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1152659547.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec1152659547.dir/CheckIncludeFile.c.o  -o cmTryCompileExec1152659547  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file assert.h exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec3320225617/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec3320225617.dir/build.make CMakeFiles/cmTryCompileExec3320225617.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3320225617.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec3320225617.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec3320225617
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3320225617.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec3320225617.dir/CheckIncludeFile.c.o  -o cmTryCompileExec3320225617  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file fcntl.h exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec2194894751/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec2194894751.dir/build.make CMakeFiles/cmTryCompileExec2194894751.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2194894751.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec2194894751.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec2194894751
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2194894751.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec2194894751.dir/CheckIncludeFile.c.o  -o cmTryCompileExec2194894751  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining if the function mmap exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec594072186/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec594072186.dir/build.make CMakeFiles/cmTryCompileExec594072186.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec594072186.dir/CheckFunctionExists.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3 -DCHECK_FUNCTION_EXISTS=mmap -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec594072186.dir/CheckFunctionExists.c.o   -c /usr/local/Cellar/cmake/3.0.2/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec594072186
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec594072186.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3 -DCHECK_FUNCTION_EXISTS=mmap -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec594072186.dir/CheckFunctionExists.c.o  -o cmTryCompileExec594072186  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file search.h exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec977597185/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec977597185.dir/build.make CMakeFiles/cmTryCompileExec977597185.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec977597185.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec977597185.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec977597185
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec977597185.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec977597185.dir/CheckIncludeFile.c.o  -o cmTryCompileExec977597185  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file string.h exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec378256157/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec378256157.dir/build.make CMakeFiles/cmTryCompileExec378256157.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec378256157.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec378256157.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec378256157
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec378256157.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec378256157.dir/CheckIncludeFile.c.o  -o cmTryCompileExec378256157  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file unistd.h exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec1928343200/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec1928343200.dir/build.make CMakeFiles/cmTryCompileExec1928343200.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1928343200.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec1928343200.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec1928343200
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1928343200.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec1928343200.dir/CheckIncludeFile.c.o  -o cmTryCompileExec1928343200  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file semaphore.h exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec761782281/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec761782281.dir/build.make CMakeFiles/cmTryCompileExec761782281.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec761782281.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec761782281.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec761782281
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec761782281.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec761782281.dir/CheckIncludeFile.c.o  -o cmTryCompileExec761782281  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file libavformat/avformat.h exists passed with the following output:
+Change Dir: /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTryCompileExec3720582846/fast"
+/opt/local/bin/gmake -f CMakeFiles/cmTryCompileExec3720582846.dir/build.make CMakeFiles/cmTryCompileExec3720582846.dir/build
+gmake[1]: Entering directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_progress_report /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3720582846.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG   -o CMakeFiles/cmTryCompileExec3720582846.dir/CheckIncludeFile.c.o   -c /Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTryCompileExec3720582846
+/usr/local/Cellar/cmake/3.0.2/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3720582846.dir/link.txt --verbose=1
+/usr/bin/clang     -fsigned-char -W -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -fno-omit-frame-pointer -msse -msse2 -msse3  -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTryCompileExec3720582846.dir/CheckIncludeFile.c.o  -o cmTryCompileExec3720582846  
+gmake[1]: Leaving directory '/Users/periclesalves/Downloads/opencv-2.4.10/CMakeFiles/CMakeTmp'
+
+
