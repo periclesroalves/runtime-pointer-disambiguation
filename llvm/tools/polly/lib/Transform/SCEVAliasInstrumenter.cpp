@@ -545,13 +545,19 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
 
   currFn = &F;
 
-  // Instrumentation needs to be inserted right after the function entry.
-  BasicBlock *targetEntry = F.getEntryBlock().getUniqueSuccessor();
+  // Instrumentation needs to be inserted right at the beginning of the
+  // function, i.e., first subregion of the top-level region.
+  BasicBlock *targetBB = F.getEntryBlock().getUniqueSuccessor();
+  Region *targetRegion = nullptr;
 
-  if (!targetEntry)
-    return true;
+  // Walk the sigle-successor chain of the entry block, looking for the start of
+  // a region. This handles cases where the entry block has been split.
+  while (targetBB) {
+    if (targetRegion = ri->getTopLevelRegion()->getSubRegionNode(targetBB))
+      break;
 
-  Region *targetRegion = ri->getTopLevelRegion()->getSubRegionNode(targetEntry);
+    targetBB = targetBB->getUniqueSuccessor();
+  }
 
   if (!targetRegion)
     return true;
