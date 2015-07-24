@@ -19,7 +19,7 @@
 // We would become the following code:
 //
 //   // Tests if access to A and B do not overlap.
-//   if ((A + N - 1 < B) || (B + N + M - 1 < A)) {
+//   if ((A + N <= B) || (B + N + M <= A)) {
 //     // Version of the loop with no depdendencies.
 //     for (int i = 0; i < N; i++)
 //       A[i] = B[i + M];
@@ -198,7 +198,8 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Generates dynamic checks that compare the access range of every pair of
   // pointers in the region at run-time, thus finding if there is true aliasing.
   // For every pair (A,B) of pointers in the region that may alias, we generate:
-  // - check(A, B) -> upperAddrA < lowerAddrB || upperAddrB < lowerAddrA
+  // - check(A, B) -> upperAddrA + sizeOfA <= lowerAddrB ||
+  //                  upperAddrB + sizeOfB <= lowerAddrA
   // The instructions needed for the checks compuation are inserted in the
   // entering block of the target region, which works as a pre-header. The
   // returned Instruction produces a boolean value that, at run-time, indicates
@@ -210,20 +211,19 @@ class SCEVAliasInstrumenter : public FunctionPass {
   void buildSCEVBounds(InstrumentationContext &context,
                        SCEVRangeBuilder &rangeBuilder);
 
+  // Add the element size to the upper bound of a base pointer, so the new upper
+  // bound will be the first byte after the pointed memory region. 
+  Value *stretchUpperBound(Value *basePtr, Value *upperBound, 
+                           BuilderType &builder, SCEVRangeBuilder &rangeBuilder);
+
   // Inserts a dynamic test to guarantee that accesses to two pointers do not
   // overlap in a specific region, given their access ranges.
-  // E.g.: %pair-no-alias = upper(A) < lower(B) || upper(B) < lower(A)
-  Instruction *buildRangeCheck(std::pair<Value *, Value *> boundsA,
+  // E.g.: %pair-no-alias = (upper(A) + sizeof(A)) <= lower(B) || 
+  //                        (upper(B) + sizeof(B)) <= lower(A)
+  Instruction *buildRangeCheck(Value *basePtrA, Value *basePtrB,
+                               std::pair<Value *, Value *> boundsA,
                                std::pair<Value *, Value *> boundsB,
                                BuilderType &builder,
-                               SCEVRangeBuilder &rangeBuilder);
-
-  // Inserts a dynamic test to guarantee that accesses to a pointer do not alias
-  // a specific address within the region, given the pointer range and the
-  // symbolic address.
-  // E.g.: %loc-no-alias = upper(A) < B || B < lower(A)
-  Instruction *buildRangeCheck(std::pair<Value *, Value *> boundsA,
-                               Value *addrB, BuilderType &builder,
                                SCEVRangeBuilder &rangeBuilder);
 
   // Chain the checks that compare different pairs of pointers to a single

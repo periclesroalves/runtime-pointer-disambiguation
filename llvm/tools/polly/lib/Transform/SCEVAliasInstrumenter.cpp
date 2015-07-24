@@ -67,7 +67,7 @@ void SCEVAliasInstrumenter::fixAliasInfo(Region *r) {
     scopes.insert(std::make_pair(basePointer, scope));
   }
 
-  // Set the actual scoped alias tags for each memory instruction in the region. 
+  // Set the actual scoped alias tags for each memory instruction in the region.
   // A memory instruction always aliases its base pointer and never aliases
   // other pointers in the region.
   for (auto pair : memAccesses) {
@@ -186,41 +186,56 @@ Instruction *SCEVAliasInstrumenter::chainChecks(
   return cast<Instruction>(rhs);
 }
 
-Instruction *SCEVAliasInstrumenter::buildRangeCheck(
-                              std::pair<Value *, Value *> boundsA,
-                              std::pair<Value *, Value *> boundsB,
-                              BuilderType &builder,
-                              SCEVRangeBuilder &rangeBuilder) {
-  // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
-  Type *i8PtrTy = builder.getInt8PtrTy();
-  Value *lowerA = rangeBuilder.InsertNoopCastOfTo(boundsA.first, i8PtrTy);
-  Value *upperA = rangeBuilder.InsertNoopCastOfTo(boundsA.second, i8PtrTy);
-  Value *lowerB = rangeBuilder.InsertNoopCastOfTo(boundsB.first, i8PtrTy);
-  Value *upperB = rangeBuilder.InsertNoopCastOfTo(boundsB.second, i8PtrTy);
+Value *SCEVAliasInstrumenter::stretchUpperBound(Value *basePtr, Value *upperBound,
+                                                BuilderType &builder,
+                                                SCEVRangeBuilder &rangeBuilder) {
+  Type *boundTy = upperBound->getType();
 
-  // Build actual interval comparisons.
-  Value *aIsBeforeB = builder.CreateICmpULT(upperA, lowerB);
-  Value *bIsBeforeA = builder.CreateICmpULT(upperB, lowerA);
+  // We can only perform arithmetic operations on integers types.
+  if (!boundTy->isIntegerTy()) {
+    boundTy = se->getDataLayout()->getIntPtrType(boundTy);
+    upperBound = rangeBuilder.InsertNoopCastOfTo(upperBound, boundTy);
+  }
 
-  Value *check = builder.CreateOr(aIsBeforeB, bIsBeforeA, "pair-no-alias");
+  // As the base pointer might be multi-dimensional, we extract its innermost
+  // element type.
+  Type *elemTy = basePtr->getType();
 
-  return cast<Instruction>(check);
+  while (isa<SequentialType>(elemTy))
+    elemTy = cast<SequentialType>(elemTy)->getElementType();
+
+  Constant *elemSize = ConstantInt::get(boundTy,
+                       se->getDataLayout()->getTypeAllocSize(elemTy));
+  return builder.CreateAdd(upperBound, elemSize);
 }
 
-Instruction *SCEVAliasInstrumenter::buildRangeCheck(std::pair<Value *, Value *>
-                                    boundsA, Value *addrB, BuilderType &builder,
+Instruction *SCEVAliasInstrumenter::buildRangeCheck(
+                                    Value *basePtrA, Value *basePtrB,
+                                    std::pair<Value *, Value *> boundsA,
+                                    std::pair<Value *, Value *> boundsB,
+                                    BuilderType &builder,
                                     SCEVRangeBuilder &rangeBuilder) {
+  Value *lowerA = boundsA.first;
+  Value *upperA = boundsA.second;
+  Value *lowerB = boundsB.first;
+  Value *upperB = boundsB.second;
+
+  // Stretch both upper bounds past the last addressable byte.
+  upperA = stretchUpperBound(basePtrA, upperA, builder, rangeBuilder);
+  upperB = stretchUpperBound(basePtrB, upperB, builder, rangeBuilder);
+
   // Cast all bounds to i8* (equivalent to void*, according to the LLVM manual).
   Type *i8PtrTy = builder.getInt8PtrTy();
-  Value *lowerA = rangeBuilder.InsertNoopCastOfTo(boundsA.first, i8PtrTy);
-  Value *upperA = rangeBuilder.InsertNoopCastOfTo(boundsA.second, i8PtrTy);
-  Value *locB = rangeBuilder.InsertNoopCastOfTo(addrB, i8PtrTy);
+  lowerA = rangeBuilder.InsertNoopCastOfTo(lowerA, i8PtrTy);
+  lowerB = rangeBuilder.InsertNoopCastOfTo(lowerB, i8PtrTy);
+  upperA = rangeBuilder.InsertNoopCastOfTo(upperA, i8PtrTy);
+  upperB = rangeBuilder.InsertNoopCastOfTo(upperB, i8PtrTy);
 
   // Build actual interval comparisons.
-  Value *aIsBeforeB = builder.CreateICmpULT(upperA, locB);
-  Value *bIsBeforeA = builder.CreateICmpULT(locB, lowerA);
+  Value *aIsBeforeB = builder.CreateICmpULE(upperA, lowerB);
+  Value *bIsBeforeA = builder.CreateICmpULE(upperB, lowerA);
 
-  Value *check = builder.CreateOr(aIsBeforeB, bIsBeforeA, "loc-no-alias");
+  Value *check = builder.CreateOr(aIsBeforeB, bIsBeforeA, "pair-no-alias");
 
   return cast<Instruction>(check);
 }
@@ -265,7 +280,8 @@ Instruction *SCEVAliasInstrumenter::insertDynamicChecks(
            context.pointerBounds.count(pair.second) &&
            "SCEV bounds should be available at this point.");
 
-    auto check = buildRangeCheck(context.pointerBounds[pair.first],
+    auto check = buildRangeCheck(pair.first, pair.second,
+                                 context.pointerBounds[pair.first],
                                  context.pointerBounds[pair.second],
                                  builder, rangeBuilder);
     pairChecks.push_back(check);
@@ -275,8 +291,10 @@ Instruction *SCEVAliasInstrumenter::insertDynamicChecks(
   // store in the region alises the hoisted loads.
   for (auto &pair : context.artificialBECounts) {
     for (auto &storeTarget : context.storeTargets) {
-      auto check = buildRangeCheck(context.pointerBounds[storeTarget],
-                                   pair.second.addr, builder, rangeBuilder);
+      auto check = buildRangeCheck(storeTarget, pair.second.addr,
+                   context.pointerBounds[storeTarget],
+                   std::make_pair(pair.second.addr, pair.second.addr),
+                   builder, rangeBuilder);
       pairChecks.push_back(check);
     }
   }
@@ -285,7 +303,7 @@ Instruction *SCEVAliasInstrumenter::insertDynamicChecks(
   return chainChecks(pairChecks, builder);
 }
 
-Value *SCEVAliasInstrumenter::getBasePtrValue(Instruction &inst, 
+Value *SCEVAliasInstrumenter::getBasePtrValue(Instruction &inst,
                                               const Region &r) {
   Value *ptr = getPointerOperand(inst);
   Loop *l = li->getLoopFor(inst.getParent());
@@ -331,6 +349,10 @@ bool SCEVAliasInstrumenter::collectDependencyData(
       // If we can't define the base pointer, then it's not possible to define
       // the dependencies.
       if (!basePtrValue)
+        return false;
+
+      // As full type size info is needed, we can only handle sequential types.
+      if (!isa<SequentialType>(basePtrValue->getType()))
         return false;
 
       // Store this access expression.
@@ -529,7 +551,7 @@ bool SCEVAliasInstrumenter::canInstrument(InstrumentationContext &context) {
       return false;
 
   return true;
-} 
+}
 
 void SCEVAliasInstrumenter::findTargetRegions(Region &r) {
   InstrumentationContext context(r);
@@ -555,6 +577,10 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
   pdt = &getAnalysis<PostDominatorTree>();
   df = &getAnalysis<DominanceFrontier>();
 
+  // We need precise type info, so DataLayout must be available.
+  if (!se->getDataLayout())
+    return true;
+
   currFn = &F;
   Region *topRegion = ri->getTopLevelRegion();
 
@@ -566,7 +592,7 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
     Instruction *checkResult = insertDynamicChecks(context);
     buildNoAliasClone(context, checkResult);
   }
-  
+
   return true;
 }
 
@@ -614,4 +640,5 @@ INITIALIZE_PASS_DEPENDENCY(DominanceFrontier);
 INITIALIZE_PASS_DEPENDENCY(RegionInfoPass);
 INITIALIZE_PASS_DEPENDENCY(ScalarEvolution);
 INITIALIZE_PASS_END(SCEVAliasInstrumenter, "polly-scev-checks",
-                    "Polly - Instrument alias dependencies", false, false) 
+                    "Polly - Instrument alias dependencies", false, false)
+
