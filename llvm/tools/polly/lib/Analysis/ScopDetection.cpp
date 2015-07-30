@@ -142,7 +142,11 @@ StringRef polly::PollySkipFnAttr = "polly.skip.fn";
 //===----------------------------------------------------------------------===//
 // Statistics.
 
-STATISTIC(ValidRegion, "Number of regions that a valid part of Scop");
+// TODO: remove the XXX, it's only here to make grepping easier
+STATISTIC(ValidRegion,    "XXXA-NumRegions");
+STATISTIC(LoopsInRegion,  "XXXB-NumLoops");
+STATISTIC(BlocksInRegion, "XXXC-NumBlocks");
+STATISTIC(InstsInRegion,  "XXXD-NumInsts");
 
 class DiagnosticScopFound : public DiagnosticInfo {
 private:
@@ -620,6 +624,7 @@ static unsigned eraseAllChildren(std::set<const Region *> &Regs,
   for (auto &SubRegion : R) {
     if (Regs.find(SubRegion.get()) != Regs.end()) {
       ++Count;
+      // outs() << "ERASE " << SubRegion->getNameStr() << "\n";
       Regs.erase(SubRegion.get());
     } else {
       Count += eraseAllChildren(Regs, *SubRegion);
@@ -629,6 +634,8 @@ static unsigned eraseAllChildren(std::set<const Region *> &Regs,
 }
 
 void ScopDetection::findScops(Region &R) {
+  // outs() << "ScopDetection::findScops " << R.getNameStr() << "\n";
+
   if (!DetectRegionsWithoutLoops && regionWithoutLoops(R, LI))
     return;
 
@@ -638,7 +645,10 @@ void ScopDetection::findScops(Region &R) {
   if (IsValidRegion && !HasErrors) {
     ++ValidRegion;
     ValidRegions.insert(&R);
+    // outs() << "  SCOP\n";
     return;
+  } else {
+    // outs() << "  Ain't no scop\n";
   }
 
   for (auto &SubRegion : R)
@@ -677,7 +687,9 @@ void ScopDetection::findScops(Region &R) {
 
     // Erase all (direct and indirect) children of ExpandedR from the valid
     // regions and update the number of valid regions.
-    ValidRegion -= eraseAllChildren(ValidRegions, *ExpandedR);
+    unsigned erased = eraseAllChildren(ValidRegions, *ExpandedR);
+    // outs() << "#ERASED " << erased << " SCOPS DUE TO EXPANSION\n";
+    ValidRegion -= erased;
   }
 }
 
@@ -828,6 +840,14 @@ void ScopDetection::emitMissedRemarksForLeaves(const Function &F,
   }
 }
 
+static void countLoopsInRegion(const Region* region, const Loop* loop) {
+  if (region->contains(loop))
+    ++LoopsInRegion;
+
+  for (auto* subLoop : *loop)
+    countLoopsInRegion(region, subLoop);
+}
+
 bool ScopDetection::runOnFunction(llvm::Function &F) {
   LI = &getAnalysis<LoopInfo>();
   RI = &getAnalysis<RegionInfoPass>().getRegionInfo();
@@ -847,6 +867,18 @@ bool ScopDetection::runOnFunction(llvm::Function &F) {
     return false;
 
   findScops(*TopRegion);
+
+#if !defined(NDEBUG) || defined(LLVM_ENABLE_STATS)
+  for (auto* Region : ValidRegions) {
+    for (auto* loop : *LI)
+      countLoopsInRegion(Region, loop);
+
+    for (auto* bb : Region->blocks()) {
+      ++BlocksInRegion;
+      InstsInRegion += bb->size();
+    }
+  }
+#endif // !defined(NDEBUG) || defined(LLVM_ENABLE_STATS)
 
   // Only makes sense when we tracked errors.
   if (PollyTrackFailures) {

@@ -17,6 +17,7 @@
 #include "llvm/IR/TypeBuilder.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Support/CorseCommon.h"
+#include "llvm/Support/Format.h"
 
 #include "polly/CloneRegion.h"
 #include "polly/LinkAllPasses.h"
@@ -76,6 +77,8 @@ private:
   // instrumentation.
   bool canInstrument(AliasInstrumentationContext &context) {
     const auto region = context.region;
+
+    // errs() << "canInstrument? " << region->getNameStr() << "\n";
 
     // ** check basic properties of region
 
@@ -225,11 +228,27 @@ private:
         Value *ptr1 = i->first;
         Value *ptr2 = j->first;
 
+        // bool heap = canBuildHeapCheck(context, ptr1, ptr2);
+        // bool scev = canBuildScevCheck(context, rangeBuilder, ptr1, ptr2);
+
+        // std::string name = context.region->getNameStr();
+
+        // outs() << format("%-40s", name.c_str())
+        //        << " "
+        //        << format("%-15s", ptr1->getName().data())
+        //        << " "
+        //        << format("%-15s", ptr2->getName().data())
+        //        << " "
+        //        << (heap ? "HEAP" : "    ")
+        //        << " "
+        //        << (scev ? "SCEV" : "    ")
+        //        << "\n";
+
         // if (!anyUsersMayAlias(*i, *j))
         //   continue;
-
         switch (saa->speculativeAlias(function, ptr1, ptr2)) {
           case SpeculativeAliasResult::NoHeapAlias:
+            assert(false && "XXX: just here for experiments");
             if (canBuildHeapCheck(context, ptr1, ptr2)) {
               heapChecks.addPair(context, ptr1, ptr2);
             } else if (canBuildScevCheck(context, rangeBuilder, ptr1, ptr2)) {
@@ -256,6 +275,7 @@ private:
             // TODO: do must-alias checks
           case SpeculativeAliasResult::ProbablyAlias:
             // don't insert checks that will only fail anyway
+            assert(false && "XXX: just here for experiments");
             return false;
         }
       }
