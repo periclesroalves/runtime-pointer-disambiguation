@@ -159,6 +159,7 @@ static cl::opt<polly::AliasInstrumenterMode, true> AliasInstrumenterMode(
       clEnumValN(polly::InstrumentAndClone,        "optimize", ""),
       clEnumValN(polly::MeasureCheckCosts,         "measure-check-costs", ""),
       clEnumValN(polly::MeasureCheckCostsBaseline, "measure-check-costs-baseline", ""),
+      clEnumValN(polly::CountScops,                "count-scops", ""),
     clEnumValEnd),
     cl::location(PollyAliasInstrumenterMode),
     cl::init(polly::InstrumentAndClone),

@@ -100,7 +100,8 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // if the region is free of dependencies.
   Value *insertDynamicChecks(AliasInstrumentationContext &context);
 
-  // Produce two versions of an instrumented region: one with the original
+  // Generates dynamic alias checks and performs region cloning.
+  // Produces two versions of an instrumented region: one with the original
   // alias info, if the run-time alias check fails, and one set to ignore
   // dependencies, in case the check passes.
   //     ____\|/___                 ____\|/___
@@ -113,8 +114,7 @@ class SCEVAliasInstrumenter : public FunctionPass {
   //         \|/            '-----.---'  '------.-----'
   //                              '------.------'
   //                                    \|/
-  void buildNoAliasClone(AliasInstrumentationContext &context,
-                         Value *checkResult);
+  void buildNoAliasClone(AliasInstrumentationContext &context);
 
   // Use scoped alias tags to tell the compiler that cloned regions are free of
   // dependencies. Basically creates a separate alias scope for each base
@@ -139,6 +139,7 @@ enum AliasInstrumenterMode {
   InstrumentAndClone,
   MeasureCheckCosts,
   MeasureCheckCostsBaseline,
+  CountScops,
 };
 
 extern AliasInstrumenterMode PollyAliasInstrumenterMode;

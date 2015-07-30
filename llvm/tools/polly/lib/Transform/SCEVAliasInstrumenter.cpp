@@ -87,17 +87,18 @@ void SCEVAliasInstrumenter::fixAliasInfo(AliasInstrumentationContext &ctx) {
   }
 }
 
-void SCEVAliasInstrumenter::buildNoAliasClone(AliasInstrumentationContext &context,
-                                              Value *checkResult) {
-  Region         *region = context.region;
-  TerminatorInst *br     = region->getEnteringBlock()->getTerminator();
+void SCEVAliasInstrumenter::buildNoAliasClone(AliasInstrumentationContext &context) {
+  Region *region = context.region;
 
   switch (PollyAliasInstrumenterMode) {
     case InstrumentAndClone: {
+      auto checkResult = insertDynamicChecks(context);
+
       if (!checkResult)
         return;
 
-      Region *clonedRegion = cloneRegion(region, nullptr, ri, dt, df);
+      auto* br           = region->getEnteringBlock()->getTerminator();
+      auto* clonedRegion = cloneRegion(region, nullptr, ri, dt, df);
 
       // Build the conditional brach based on the dynamic test result.
       BuilderType builder(se->getContext(), TargetFolder(se->getDataLayout()));
@@ -112,26 +113,35 @@ void SCEVAliasInstrumenter::buildNoAliasClone(AliasInstrumentationContext &conte
         pair.second.oldLoad->eraseFromParent();
       }
 
-      // Mark the cloned region as free of dependencies.
+      // Mark the original region as free of dependencies.
       fixAliasInfo(context);
       break;
     }
     case MeasureCheckCosts: {
+      auto checkResult = insertDynamicChecks(context);
+
       if (!checkResult)
         return;
+
       GlobalValue *blackhole = defineBlackhole();
 
-      IRBuilder<> irb(br);
+      IRBuilder<> irb(region->getEnteringBlock()->getTerminator());
       irb.CreateStore(checkResult, blackhole);
       break;
     }
     case MeasureCheckCostsBaseline: {
+      auto checkResult = insertDynamicChecks(context);
       assert(!checkResult);
 
       GlobalValue *blackhole = defineBlackhole();
 
-      IRBuilder<> irb(br);
+      IRBuilder<> irb(region->getEnteringBlock()->getTerminator());
       irb.CreateStore(irb.getFalse(), blackhole);
+      break;
+    }
+    case CountScops: {
+      // Mark the original region as free of dependencies.
+      fixAliasInfo(context);
       break;
     }
   }
@@ -258,8 +268,7 @@ bool SCEVAliasInstrumenter::runOnFunction(llvm::Function &F) {
 
   // Instrument and clone each target region.
   for (auto& context : targetRegions) {
-    auto checkResult = insertDynamicChecks(*context);
-    buildNoAliasClone(*context, checkResult);
+    buildNoAliasClone(*context);
   }
 
   return changed;

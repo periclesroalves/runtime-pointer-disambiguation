@@ -52,8 +52,8 @@ using namespace polly;
 
 #define DEBUG_TYPE "polly-scops"
 
-STATISTIC(ScopFound, "Number of valid Scops");
-STATISTIC(RichScopFound, "Number of Scops containing a loop");
+STATISTIC(ScopFound, "XXX Number of valid Scops");
+STATISTIC(RichScopFound, "XXX Number of Scops containing a loop");
 
 // Multiplicative reductions can be disabled separately as these kind of
 // operations can overflow easily. Additive reductions and bit operations
