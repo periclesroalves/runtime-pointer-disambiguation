@@ -274,7 +274,6 @@ static void registerPollyPasses(llvm::PassManagerBase &PM) {
 
   if (checkFlags) {
     PM.add(polly::createSCEVAliasInstrumenterPass(checkFlags));
-    PM.add(llvm::createLICMPass());
   }
 
   PM.add(polly::createScopInfoPass());
