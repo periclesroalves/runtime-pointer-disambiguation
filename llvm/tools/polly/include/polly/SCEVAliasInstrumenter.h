@@ -86,12 +86,12 @@ class SCEVAliasInstrumenter : public FunctionPass {
 
   // Information regarding an artificial back edge count created for a loop.
   struct ArtificialBECount {
-    Instruction *addr; // Address of the loaded loop bound.
+    Value *addr; // Address of the loaded loop bound.
     Instruction *oldLoad; // Original loop-variant load.
     Instruction *hoistedLoad; // Hoisted copy of the bound load.
     const SCEV *count; // New artificial BE count.
 
-    ArtificialBECount(Instruction *addr, Instruction *oldLoad,
+    ArtificialBECount(Value *addr, Instruction *oldLoad,
                       Instruction *hoistedLoad, const SCEV *count)
       : addr(addr), oldLoad(oldLoad), hoistedLoad(hoistedLoad), count(count) {}
   };

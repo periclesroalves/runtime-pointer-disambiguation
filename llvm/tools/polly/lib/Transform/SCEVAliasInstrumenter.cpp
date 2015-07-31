@@ -456,7 +456,7 @@ bool SCEVAliasInstrumenter::createArtificialInvariantBECount(Loop *l,
     return false;
 
   LoadInst *oldLoad = dyn_cast<LoadInst>(exitCond->getOperand(1));
-  Instruction *addr = dyn_cast<Instruction>(oldLoad->getPointerOperand());
+  Value *addr = oldLoad->getPointerOperand();
 
   // The loaded address must be loop-invariant.
   if (!addr || !se->isLoopInvariant(se->getSCEVAtScope(addr, l), l))
