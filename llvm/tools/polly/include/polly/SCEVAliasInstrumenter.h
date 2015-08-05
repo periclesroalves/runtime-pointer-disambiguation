@@ -167,6 +167,10 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // safely instrumented.
   void findTargetRegions(Region &r);
 
+  // Returns the single exiting block of the current function if it exists.
+  // Returns NULL if more than one exit block is found.
+  BasicBlock *getFnExitingBlock();
+
   // Checks if the given region has all the properties needed for
   // instrumentation.
   bool canInstrument(InstrumentationContext &context);
@@ -250,11 +254,6 @@ class SCEVAliasInstrumenter : public FunctionPass {
   // Create single entry and exit EDGES in a region (thus creating entering and
   // exiting blocks).
   void simplifyRegion(Region *r);
-
-  // Checks if a region can be simplified to have single entry and exit EDGES
-  // without breaking the sinlge entry and exit BLOCKS property. This can happen
-  // when edges from within the region point to its entry or exit.
-  bool isSafeToSimplify(Region *r);
 
   // Use scoped alias tags to tell the compiler that cloned regions are free of
   // dependencies. Basically creates a separate alias scope for each base

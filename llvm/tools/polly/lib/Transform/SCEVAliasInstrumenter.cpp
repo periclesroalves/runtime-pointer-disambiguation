@@ -100,48 +100,32 @@ void SCEVAliasInstrumenter::fixAliasInfo(Region *r) {
   }
 }
 
-bool SCEVAliasInstrumenter::isSafeToSimplify(Region *r) {
-  if (r->isSimple())
-    return true;
-
-  bool safeToSimplify = true;
-
-  // Check if a region edge's destination won't taken to outside the region.
-  for (auto *p : make_range(pred_begin(r->getEntry()), pred_end(r->getEntry())))
-    if (r->contains(p) && p != r->getExit())
-      safeToSimplify = false;
-
-  // Check if a region edge's source won't taken to outside the region.
-  for (auto *s : make_range(succ_begin(r->getExit()), succ_end(r->getExit())))
-    if (r->contains(s) && s != r->getEntry())
-      safeToSimplify = false;
-
-  return safeToSimplify;
-}
-
 void SCEVAliasInstrumenter::simplifyRegion(Region *r) {
-  assert (isSafeToSimplify(r) && "Can't simplify unsafe regions");
-
-  BasicBlock *entering = r->getEnteringBlock();
-
-  // Create a new entering block to host the checks. If an entering block
-  // already exists, just reuse it. If not, create one from the region entry.
-  if (entering && (entering != &entering->getParent()->getEntryBlock()) &&
-      isa<BranchInst>(entering->getTerminator()) &&
-      dyn_cast<BranchInst>(entering->getTerminator())->isUnconditional()) {
-    SplitBlock(entering, entering->getTerminator(), li);
-  } else {
-    BasicBlock *entry = r->getEntry();
-    r->replaceEntryRecursive(SplitBlock(entry, entry->begin(), li));
+  // If this is a top-level region, create an exit block for it.
+  if (!r->getExit()) {
+    BasicBlock *exiting = getFnExitingBlock();
+    assert(exiting && "Candidate top-level regions need an exiting block");
+    r->replaceExitRecursive(SplitBlock(exiting, exiting->begin(), this));
   }
+
+  // If the region doesn't have an entering block, create one.
+  if (!r->getEnteringBlock()) {
+    BasicBlock *entry = r->getEntry();
+
+    SmallVector<BasicBlock *, 4> preds;
+    for (pred_iterator pi = pred_begin(entry), pe = pred_end(entry); pi != pe; ++pi)
+      if (!r->contains(*pi))
+        preds.push_back(*pi);
+
+    SplitBlockPredecessors(entry, preds, ".region", this);
+  }
+
+  // Split the entering block, so the checks will be in a single block.
+  SplitBlock(r->getEnteringBlock(), r->getEnteringBlock()->getTerminator(), this);
 
   // Create exiting block.
-  if (!r->getExitingBlock()) {
-    BasicBlock *newExit = createSingleExitEdge(r, li);
-
-    for (auto &&subRegion : *r)
-      subRegion->replaceExitRecursive(newExit);
-  }
+  if (!r->getExitingBlock())
+    createSingleExitEdge(r, this);
 }
 
 void SCEVAliasInstrumenter::buildNoAliasClone(InstrumentationContext &context,
@@ -421,9 +405,8 @@ bool SCEVAliasInstrumenter::createArtificialInvariantBECount(Loop *l,
   Region &r = context.r;
   BasicBlock *entering = r.getEnteringBlock();
 
-  // We need an entering block to put the hoisted load, which cannot be the
-  // function entry block.
-  if (!entering || (entering ==  &(entering->getParent()->getEntryBlock())))
+  // We need an entering block to put the hoisted load.
+  if (!entering)
     return false;
 
   SmallVector<BasicBlock *, 8> exitingBlocks;
@@ -497,11 +480,24 @@ bool SCEVAliasInstrumenter::createArtificialInvariantBECount(Loop *l,
   return true;
 }
 
+BasicBlock *SCEVAliasInstrumenter::getFnExitingBlock() {
+  std::vector<BasicBlock*> returnBlocks;
+
+  for (Function::iterator i = currFn->begin(), e = currFn->end(); i != e; ++i)
+    if (isa<ReturnInst>(i->getTerminator()))
+      returnBlocks.push_back(i);
+
+  if (returnBlocks.size() != 1)
+    return nullptr;
+
+  return returnBlocks.front();
+}
+
 bool SCEVAliasInstrumenter::canInstrument(InstrumentationContext &context) {
   Region &r = context.r;
 
-  // Top-level regions can't be instrumented.
-  if (r.isTopLevelRegion())
+  // Top-level regions need at least an exiting block to be instrumented.
+  if (!r.getExit() && !getFnExitingBlock())
     return false;
 
   bool hasLoop = false;
@@ -533,11 +529,6 @@ bool SCEVAliasInstrumenter::canInstrument(InstrumentationContext &context) {
 
   // If dependencies can't be fully defined, then we can't instrument.
   if (!collectDependencyData(context))
-    return false;
-
-  // We need an entering block to insert the dynamic checks, so if a region
-  // can't simplified, it can't be instrumented.
-  if (!isSafeToSimplify(&r))
     return false;
 
   Instruction *insertPt = r.getEntry()->getFirstNonPHI();
