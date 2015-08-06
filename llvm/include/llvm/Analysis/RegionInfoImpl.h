@@ -57,7 +57,6 @@ void RegionBase<Tr>::replaceEntry(BlockT *BB) {
 
 template <class Tr>
 void RegionBase<Tr>::replaceExit(BlockT *BB) {
-  assert(exit && "No exit to replace!");
   exit = BB;
 }
 

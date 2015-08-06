@@ -117,7 +117,12 @@ void SCEVAliasInstrumenter::simplifyRegion(Region *r) {
       if (!r->contains(*pi))
         preds.push_back(*pi);
 
-    SplitBlockPredecessors(entry, preds, ".region", this);
+    // Weird things happen when we call SplitBlockPredecessors on a block with
+    // no predecessors.
+    if (preds.size() > 0)
+      SplitBlockPredecessors(entry, preds, ".region", this);
+    else
+      r->replaceEntryRecursive(SplitBlock(entry, entry->begin(), this));
   }
 
   // Split the entering block, so the checks will be in a single block.
