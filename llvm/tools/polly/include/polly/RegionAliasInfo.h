@@ -146,7 +146,8 @@ void findAliasInstrumentableRegions(
 
 /// Create single entry and exit EDGES in a region (thus creating entering and
 /// exiting blocks).
-void simplifyRegion(Region *r, LoopInfo *li);
+void simplifyRegion(Region *r, Pass *p);
+BasicBlock *getFnExitingBlock(Function *f);
 
 } // end namespace polly
 

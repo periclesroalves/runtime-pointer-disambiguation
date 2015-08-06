@@ -66,7 +66,7 @@ private:
     auto region = ctx.region;
 
     /// Create an entering block to receive the checks.
-    simplifyRegion(region, li);
+    simplifyRegion(region, this);
 
     // Set instruction insertion context. We'll insert the run-time tests in the
     // region entering block.

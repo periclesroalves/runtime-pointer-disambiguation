@@ -82,10 +82,8 @@ private:
 
     // ** check basic properties of region
 
-    if (region->isTopLevelRegion())
-      return false;
-
-    if (!isSafeToSimplify(region))
+    // Top-level regions need at least an exiting block to be instrumented.
+    if (!region->getExit() && !getFnExitingBlock(region->getEntry()->getParent()))
       return false;
 
     if (!containsLoops(region))
@@ -155,28 +153,6 @@ private:
     if (auto *inst = dyn_cast<Instruction>(v))
       return !r->contains(inst);
     return true;
-  }
-
-  // Checks if a region can be simplified to have single entry and exit EDGES
-  // without breaking the sinlge entry and exit BLOCKS property. This can happen
-  // when edges from within the region point to its entry or exit.
-  bool isSafeToSimplify(const Region *r) {
-    if (r->isSimple())
-      return true;
-
-    bool safeToSimplify = true;
-
-    // Check if a region edge's destination won't taken to outside the region.
-    for (auto *p : make_range(pred_begin(r->getEntry()), pred_end(r->getEntry())))
-      if (r->contains(p) && p != r->getExit())
-        safeToSimplify = false;
-
-    // Check if a region edge's source won't taken to outside the region.
-    for (auto *s : make_range(succ_begin(r->getExit()), succ_end(r->getExit())))
-      if (r->contains(s) && s != r->getEntry())
-        safeToSimplify = false;
-
-    return safeToSimplify;
   }
 
   bool collectMemoryAccesses(AliasInstrumentationContext &context) {
@@ -422,27 +398,50 @@ void polly::findAliasInstrumentableRegions(
   builder.findTargetRegions(region);
 }
 
-void polly::simplifyRegion(Region *r, LoopInfo *li) {
-  auto entering = r->getEnteringBlock();
+BasicBlock *polly::getFnExitingBlock(Function *f) {
+  std::vector<BasicBlock*> returnBlocks;
 
-  // Create a new entering block to host the checks. If an entering block
-  // already exists, just reuse it. If not, create one from the region entry.
-  if (entering && (entering != &entering->getParent()->getEntryBlock()) &&
-      isa<BranchInst>(entering->getTerminator()) &&
-      dyn_cast<BranchInst>(entering->getTerminator())->isUnconditional()) {
-    SplitBlock(entering, entering->getTerminator(), li);
-  } else {
+  for (Function::iterator i = f->begin(), e = f->end(); i != e; ++i)
+    if (isa<ReturnInst>(i->getTerminator()))
+      returnBlocks.push_back(i);
+
+  if (returnBlocks.size() != 1)
+    return nullptr;
+
+  return returnBlocks.front();
+}
+
+void polly::simplifyRegion(Region *r, Pass *p) {
+  // If this is a top-level region, create an exit block for it.
+  if (!r->getExit()) {
+    BasicBlock *exiting = getFnExitingBlock(r->getEntry()->getParent());
+    assert(exiting && "Candidate top-level regions need an exiting block");
+    r->replaceExitRecursive(SplitBlock(exiting, exiting->begin(), p));
+  } 
+
+  // If the region doesn't have an entering block, create one.
+  if (!r->getEnteringBlock()) {
     auto entry = r->getEntry();
-    r->replaceEntryRecursive(SplitBlock(entry, entry->begin(), li));
+
+    SmallVector<BasicBlock *, 4> preds;
+    for (pred_iterator pi = pred_begin(entry), pe = pred_end(entry); pi != pe; ++pi)
+      if (!r->contains(*pi))
+        preds.push_back(*pi);
+
+    // Weird things happen when we call SplitBlockPredecessors on a block with
+    // no predecessors.
+    if (preds.size() > 0)
+      SplitBlockPredecessors(entry, preds, ".region", p);
+    else
+      r->replaceEntryRecursive(SplitBlock(entry, entry->begin(), p)); 
   }
+
+  // Split the entering block, so the checks will be in a single block.         
+  SplitBlock(r->getEnteringBlock(), r->getEnteringBlock()->getTerminator(), p);
 
   // Create exiting block.
-  if (!r->getExitingBlock()) {
-    BasicBlock *newExit = createSingleExitEdge(r, li);
-
-    for (auto &&subRegion : *r)
-      subRegion->replaceExitRecursive(newExit);
-  }
+  if (!r->getExitingBlock())
+    createSingleExitEdge(r, p);
 }
 
 Value *RegionAliasInfoBuilder::getBasePtrValue(Instruction &inst,
@@ -475,9 +474,8 @@ bool RegionAliasInfoBuilder::createArtificialInvariantBECount(Loop *l,
   Region     &r        = *context.region;
   BasicBlock *entering = r.getEnteringBlock();
 
-  // We need an entering block to put the hoisted load, which cannot be the
-  // function entry block.
-  if (!entering || (entering ==  &(entering->getParent()->getEntryBlock())))
+  // We need an entering block to put the hoisted load.
+  if (!entering) 
     return false;
 
   SmallVector<BasicBlock *, 8> exitingBlocks;

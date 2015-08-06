@@ -153,7 +153,7 @@ Value *SCEVAliasInstrumenter::insertDynamicChecks(
   auto region = context.region;
 
   // Create an entering block to receive the checks.
-  simplifyRegion(region, li);
+  simplifyRegion(region, this);
 
   if (PollyAliasInstrumenterMode == MeasureCheckCostsBaseline)
     return nullptr;
